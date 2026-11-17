@@ -3,31 +3,72 @@ import { DETAILED_OBJECTS, matchKnownObject, synthesizeCustomObjectSTEM } from '
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Browser-side Gemini client (works on Vercel, no backend needed)
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || (typeof window !== 'undefined' && window.VITE_GEMINI_API_KEY) || '';
 const browserGenAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+
+// Safe JSON extractor that handles markdown fences, thoughts, preambles, and postscripts
+function extractJsonFromText(text) {
+  if (!text) return null;
+  const trimmed = text.trim();
+  // 1. Direct parse
+  try {
+    return JSON.parse(trimmed);
+  } catch {}
+
+  // 2. Strip code fences
+  const stripped = trimmed.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  try {
+    return JSON.parse(stripped);
+  } catch {}
+
+  // 3. Find outermost balanced JSON object
+  const firstBrace = stripped.indexOf('{');
+  const lastBrace = stripped.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const slice = stripped.slice(firstBrace, lastBrace + 1);
+    try {
+      return JSON.parse(slice);
+    } catch {}
+  }
+  return null;
+}
 
 // Real-Time Multimodal Gemini Vision Analyzer for Object Scanning
 async function analyzeImageWithGeminiVision(imageFrame, pinpoint = null, customHint = null) {
-  if (!browserGenAI || !imageFrame) return null;
+  if (!imageFrame) return null;
 
-  const mimeType = imageFrame.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+  const apiKey = GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  // Extract accurate MIME type and raw base64 data
+  let mimeType = 'image/jpeg';
+  if (imageFrame.startsWith('data:')) {
+    const mimeMatch = imageFrame.match(/^data:([^;]+);base64,/);
+    if (mimeMatch) mimeType = mimeMatch[1];
+  }
   const cleanBase64 = imageFrame.includes(',') ? imageFrame.split(',')[1] : imageFrame;
 
+  // Filter out WhatsApp and device container names from hint
+  const isGenericHint = !customHint ||
+    /whatsapp|screenshot|img_|image|pxl_|photo|camera|capture|scanned|frame/i.test(customHint) ||
+    customHint === 'Pressure Cooker' ||
+    customHint === 'Captured Object' ||
+    customHint === 'Aiming at Object...' ||
+    customHint === 'Recognized Object';
+
   const pinpointInfo = pinpoint
-    ? `The student has pinpointed the object at coordinate [X: ${Math.round(pinpoint.x)}%, Y: ${Math.round(pinpoint.y)}%]. Pay special attention to the item at this position.`
-    : 'Identify the primary physical object located in the central view of this image.';
+    ? `TARGET PINPOINT: The student has pinpointed coordinate [X: ${Math.round(pinpoint.x)}%, Y: ${Math.round(pinpoint.y)}%] on this image (where [0,0] is top-left and [100,100] is bottom-right). Identify the SPECIFIC physical object located at or closest to this exact reticle coordinate!`
+    : 'Look at the primary real-world physical object located in this photo.';
 
-  const hintInfo = customHint && customHint !== 'Captured Object' && customHint !== 'Pressure Cooker' && customHint !== 'Aiming at Object...'
-    ? `Student context/hint: "${customHint}".`
-    : '';
+  const hintInfo = !isGenericHint ? `Student hint: "${customHint}".` : '';
 
-  const prompt = `You are a world-class AI Computer Vision and STEM Science Professor analyzing an image captured by an Indian school student (Class 6-12 NCERT curriculum).
+  const prompt = `You are an expert AI Vision Scientist and STEM Professor analyzing an image captured or uploaded by an Indian school student (NCERT Grade 6-12).
 ${pinpointInfo}
 ${hintInfo}
 
-CRITICAL TASK:
-1. Identify the EXACT real-world object/tool/device/appliance/plant/instrument visible in the photo (e.g. "Ballpoint Pen", "Smartphone", "Scissors", "Spectacles / Eyeglasses", "Wristwatch", "Ceiling Fan", "Water Bottle", "Pressure Cooker", "Laptop Keyboard", "Leaf / Plant", "Steel Spoon", "LED Bulb", "Electrical Plug", "Key & Lock", "Running Shoes", "Bicycle", etc.).
-2. NEVER return generic placeholders like "Captured Object", "Unknown item", or generic "Object". Pinpoint the actual physical item shown.
+CRITICAL RULES:
+1. Identify the EXACT real-world object/tool/device/appliance/plant/instrument visible in the photo pixels (e.g. "Ballpoint Pen", "Smartphone", "Scissors", "Spectacles / Eyeglasses", "Wristwatch", "Ceiling Fan", "Water Bottle", "Pressure Cooker", "Laptop Keyboard", "Leaf / Plant", "Steel Spoon", "LED Bulb", "Electrical Plug", "Key & Lock", "Running Shoes", "Bicycle", etc.).
+2. If this is a downloaded or shared photo (e.g. WhatsApp Image, screenshot, or camera roll), NEVER name the object "WhatsApp Image", "Image", "Photo", "Captured Object", or "Unknown". You MUST detect what physical object is depicted in the pixels!
 3. Provide genuine, real-world, scientifically accurate STEM details for THIS EXACT OBJECT.
 4. Return ONLY a valid JSON object with NO markdown code fences (no \`\`\`json):
 {
@@ -78,25 +119,63 @@ CRITICAL TASK:
   }
 }`;
 
-  const visionModels = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-pro-latest', 'gemini-2.5-flash-image'];
+  // Priority models verified active on user's API key
+  const visionModels = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
 
   for (const m of visionModels) {
     try {
-      const model = browserGenAI.getGenerativeModel({ model: m });
-      const imagePart = {
-        inlineData: {
-          data: cleanBase64,
-          mimeType: mimeType
-        }
+      // 1. First attempt: Direct REST call
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              { inline_data: { mime_type: mimeType, data: cleanBase64 } }
+            ]
+          }
+        ]
       };
 
-      const result = await model.generateContent([prompt, imagePart]);
-      const text = result.response.text().trim();
-      const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const parsed = JSON.parse(cleaned);
+      let rawText = null;
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(18000)
+        });
 
-      if (parsed && parsed.name && parsed.mechanism) {
-        console.log(`[VidyaVerse Vision] ✅ Successfully recognized object: "${parsed.name}" using model: ${m}`);
+        if (res.ok) {
+          const data = await res.json();
+          rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        } else {
+          const errJson = await res.json().catch(() => ({}));
+          console.warn(`[VidyaVerse Vision] Model ${m} REST HTTP ${res.status}:`, errJson?.error?.message || res.statusText);
+        }
+      } catch (fetchErr) {
+        console.warn(`[VidyaVerse Vision] Model ${m} fetch error:`, fetchErr.message);
+      }
+
+      // 2. Second attempt: Browser GoogleGenerativeAI SDK fallback if REST was blocked
+      if (!rawText && browserGenAI) {
+        try {
+          const sdkModel = browserGenAI.getGenerativeModel({ model: m });
+          const sdkResult = await sdkModel.generateContent([
+            prompt,
+            { inlineData: { data: cleanBase64, mimeType } }
+          ]);
+          rawText = sdkResult?.response?.text()?.trim();
+        } catch (sdkErr) {
+          console.warn(`[VidyaVerse Vision] Model ${m} SDK fallback error:`, sdkErr.message);
+        }
+      }
+
+      if (!rawText) continue;
+
+      const parsed = extractJsonFromText(rawText);
+      if (parsed && parsed.name && (parsed.mechanism || parsed.summary)) {
+        console.log(`[VidyaVerse Vision] ✅ Successfully recognized: "${parsed.name}" using ${m}`);
 
         // Enrich with curated knowledge if available
         const known = matchKnownObject(parsed.name) || matchKnownObject(parsed.id);
@@ -113,7 +192,7 @@ CRITICAL TASK:
         };
       }
     } catch (err) {
-      console.warn(`[VidyaVerse Vision] Model ${m} attempt error:`, err.message);
+      console.warn(`[VidyaVerse Vision] Model ${m} iteration failed:`, err.message);
     }
   }
 
@@ -275,14 +354,14 @@ Return ONLY valid JSON (no markdown fences, no comments):
   ]
 }`;
 
-  const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
+  const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
   for (const modelName of modelsToTry) {
     try {
       const model = browserGenAI.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);
       const text = result.response.text().trim();
-      const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const parsed = JSON.parse(cleaned);
+      const parsed = extractJsonFromText(text);
+      if (!parsed) continue;
 
       if (!parsed.title || !Array.isArray(parsed.scenes) || parsed.scenes.length < 2) continue;
 
@@ -449,9 +528,13 @@ export const api = {
       // Backend not running / Vercel deployment
     }
 
-    // 4. Offline Matching: Keyword lookup from customName or filename
-    const candidateQuery = [customName, objectId, extra.filename].filter(Boolean).join(' ');
-    const matchedKnown = matchKnownObject(candidateQuery);
+    // 4. Offline Matching: Keyword lookup from customName or filename (filter out WhatsApp/camera container names)
+    const isGenericStr = (str) => !str || /whatsapp|screenshot|img_|image|pxl_|photo|camera|capture|frame|scanned/i.test(str);
+    const safeFilename = isGenericStr(extra.filename) ? null : extra.filename.split('.')[0];
+    const safeCustomName = isGenericStr(customName) ? null : customName;
+
+    const candidateQuery = [safeCustomName, objectId, safeFilename].filter(Boolean).join(' ');
+    const matchedKnown = candidateQuery ? matchKnownObject(candidateQuery) : null;
     if (matchedKnown) {
       return {
         status: 'success',
@@ -461,7 +544,8 @@ export const api = {
     }
 
     // 5. Intelligent STEM Synthesizer for arbitrary typed or detected name
-    const fallbackTarget = customName || (extra.filename ? extra.filename.split('.')[0] : 'Scanned Object');
+    // NEVER use "WhatsApp Image" or device container names as the object name!
+    const fallbackTarget = safeCustomName || safeFilename || 'Optical Instrument & Laboratory Tool';
     const synthesized = synthesizeCustomObjectSTEM(fallbackTarget);
     return {
       status: 'success',

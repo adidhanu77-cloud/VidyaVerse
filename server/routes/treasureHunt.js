@@ -163,7 +163,7 @@ Return ONLY a valid JSON array with this EXACT structure (no markdown, no code b
 ]
 Make questions progressively harder within the 10. Use simple language. correctAnswer is the 0-based index (0=A, 1=B, 2=C, 3=D).`;
 
-  const modelsToTry = ['gemini-1.5-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro'];
+  const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
 
   for (const modelName of modelsToTry) {
     try {

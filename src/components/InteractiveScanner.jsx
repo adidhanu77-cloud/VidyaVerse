@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { DETAILED_OBJECTS } from '../data/scannerKnowledge';
+import { compressImageForVision } from '../utils/imageCompress';
 
 export default function InteractiveScanner({ currentLang }) {
   // Camera & Media Refs
@@ -123,12 +124,12 @@ export default function InteractiveScanner({ currentLang }) {
   const loadObjectFromBackend = async (objectId, customName = null, extra = {}) => {
     setIsAnalyzing(true);
     setAnalysisStep('📸 Locking onto target pixels...');
+    if (extra.imageFrame) {
+      setDetectedLabel('Scanning Object Pixels...');
+      setAnalysisStep('🤖 AI Vision scanning image contours & components...');
+    }
 
     try {
-      if (extra.imageFrame) {
-        setAnalysisStep('🤖 AI Vision scanning image contours & components...');
-      }
-
       const response = await api.scanObject(objectId, customName, currentLang, extra);
       if (response && response.result) {
         setCurrentObject(response.result);
@@ -199,7 +200,7 @@ export default function InteractiveScanner({ currentLang }) {
   };
 
   // 1. Capture frame from Live Camera and send for real-time AI recognition
-  const captureAndAnalyzeFrame = () => {
+  const captureAndAnalyzeFrame = async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -209,58 +210,70 @@ export default function InteractiveScanner({ currentLang }) {
 
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const frameData = canvas.toDataURL('image/jpeg', 0.9);
+    const rawFrame = canvas.toDataURL('image/jpeg', 0.9);
 
-    // Save captured snapshot to display in the viewfinder!
-    setCapturedMediaUrl(frameData);
-    setMediaType('camera_snapshot');
     stopCamera();
+    setMediaType('camera_snapshot');
+
+    // Compress to optimal dimensions for instantaneous Gemini Vision inference
+    const optimizedFrame = await compressImageForVision(rawFrame, 1024, 0.85);
+    setCapturedMediaUrl(optimizedFrame || rawFrame);
 
     // Critical: Send null for customName so Gemini Vision identifies the real object from pixels!
     loadObjectFromBackend(null, null, {
-      imageFrame: frameData,
+      imageFrame: optimizedFrame || rawFrame,
       mediaType: 'camera_snapshot',
       pinpoint: pinpointTarget,
     });
   };
 
   // 2. Handle File Upload (Image or Video)
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
     stopCamera();
-    const fileUrl = URL.createObjectURL(file);
-    setCapturedMediaUrl(fileUrl);
     setUploadedFileName(file.name);
 
     const isVideo = file.type.startsWith('video');
     setMediaType(isVideo ? 'video_upload' : 'image_upload');
 
     if (isVideo) {
+      const fileUrl = URL.createObjectURL(file);
+      setCapturedMediaUrl(fileUrl);
       loadObjectFromBackend(null, file.name.split('.')[0], {
         mediaType: 'video_upload',
         filename: file.name,
-        pinpoint: { x: 50, y: 50 },
+        pinpoint: pinpointTarget,
       });
     } else {
-      // Read base64 data so Gemini Vision can analyze the real image
-      const reader = new FileReader();
-      reader.onload = (uploadEvt) => {
-        const base64Data = uploadEvt.target.result;
-        loadObjectFromBackend(null, null, {
-          imageFrame: base64Data,
-          mediaType: 'image_upload',
-          filename: file.name,
-          pinpoint: { x: 50, y: 50 },
-        });
-      };
-      reader.readAsDataURL(file);
+      setAnalysisStep('⚡ Optimizing image & analyzing pixels with Gemini Vision...');
+      // Compress any large photo or WhatsApp image to 1024px @ 0.85 JPEG for instant analysis
+      const optimizedBase64 = await compressImageForVision(file, 1024, 0.85);
+      setCapturedMediaUrl(optimizedBase64);
+
+      loadObjectFromBackend(null, null, {
+        imageFrame: optimizedBase64,
+        mediaType: 'image_upload',
+        filename: file.name,
+        pinpoint: pinpointTarget,
+      });
     }
   };
 
-  // 3. Capture a specific frame from an uploaded video
-  const captureFrameFromUploadedVideo = () => {
+  // 3. Re-scan current captured or uploaded image at the pinpoint reticle position
+  const rescanAtPinpoint = async () => {
+    if (!capturedMediaUrl) return;
+    loadObjectFromBackend(null, null, {
+      imageFrame: capturedMediaUrl,
+      mediaType: mediaType || 'camera_snapshot',
+      filename: uploadedFileName,
+      pinpoint: pinpointTarget,
+    });
+  };
+
+  // 4. Capture a specific frame from an uploaded video
+  const captureFrameFromUploadedVideo = async () => {
     if (!userUploadedVideoRef.current || !canvasRef.current) return;
     const video = userUploadedVideoRef.current;
     const canvas = canvasRef.current;
@@ -270,13 +283,14 @@ export default function InteractiveScanner({ currentLang }) {
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const frameData = canvas.toDataURL('image/jpeg', 0.9);
+    const optimizedFrame = await compressImageForVision(frameData, 1024, 0.85);
 
-    setCapturedMediaUrl(frameData);
+    setCapturedMediaUrl(optimizedFrame || frameData);
     setMediaType('camera_snapshot');
 
     // Re-analyze for that specific video frame
     loadObjectFromBackend(null, null, {
-      imageFrame: frameData,
+      imageFrame: optimizedFrame || frameData,
       mediaType: 'video_frame',
       pinpoint: pinpointTarget,
     });
@@ -549,9 +563,9 @@ export default function InteractiveScanner({ currentLang }) {
                 {isCameraActive
                   ? 'LIVE CAMERA — TAP OBJECT TO PINPOINT'
                   : mediaType === 'camera_snapshot'
-                  ? 'CAPTURED REAL PHOTO'
+                  ? 'CAPTURED REAL PHOTO (Tap to Pinpoint)'
                   : mediaType === 'image_upload'
-                  ? `UPLOADED IMAGE: ${uploadedFileName || 'Photo'}`
+                  ? (/whatsapp|screenshot|img_|image|pxl_|photo/i.test(uploadedFileName) ? 'SHARED PHOTO SCAN (Tap to Pinpoint)' : `UPLOADED PHOTO: ${uploadedFileName}`)
                   : mediaType === 'video_upload'
                   ? `VIDEO FRAME: ${uploadedFileName || 'Video'}`
                   : 'SAMPLE INTERACTIVE SCHEMATIC'}
@@ -867,23 +881,38 @@ export default function InteractiveScanner({ currentLang }) {
                 Capture Video Frame For Analysis 📸
               </button>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                <button
-                  onClick={startCamera}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#ffc531',
-                    fontSize: 13,
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <Camera size={16} /> Take New Camera Shot
-                </button>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button
+                    onClick={startCamera}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#ffc531',
+                      fontSize: 13,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <Camera size={16} /> New Camera Shot
+                  </button>
+
+                  {capturedMediaUrl && (
+                    <button
+                      onClick={rescanAtPinpoint}
+                      disabled={isAnalyzing}
+                      className="btn-candy primary"
+                      style={{ fontSize: 12.5, padding: '7px 14px', gap: 6 }}
+                      title="Tap anywhere on the photo above to position the reticle, then click here to focus on that specific object"
+                    >
+                      <Crosshair size={14} />
+                      {isAnalyzing ? 'Scanning Target...' : `Scan Pinpoint [${pinpointTarget.x}%, ${pinpointTarget.y}%] 🎯`}
+                    </button>
+                  )}
+                </div>
 
                 <button
                   onClick={handleSpeak}

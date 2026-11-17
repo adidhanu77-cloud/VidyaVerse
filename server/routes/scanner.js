@@ -92,7 +92,7 @@ Return strictly valid raw JSON only:
   }
 }`;
 
-      const modelsToTry = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-pro-latest'];
+      const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
       for (const m of modelsToTry) {
         try {
           const model = genAI.getGenerativeModel({ model: m });
@@ -101,10 +101,21 @@ Return strictly valid raw JSON only:
             { inlineData: { data: cleanBase64, mimeType } },
           ]);
           const text = result.response.text().trim();
-          const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-          const parsed = JSON.parse(cleaned);
+          let parsed = null;
+          try {
+            parsed = JSON.parse(text);
+          } catch {
+            const stripped = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+            const firstBrace = stripped.indexOf('{');
+            const lastBrace = stripped.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace > firstBrace) {
+              try {
+                parsed = JSON.parse(stripped.slice(firstBrace, lastBrace + 1));
+              } catch {}
+            }
+          }
 
-          if (parsed && parsed.name && parsed.mechanism) {
+          if (parsed && parsed.name && (parsed.mechanism || parsed.summary)) {
             const known = matchKnownObject(parsed.name) || matchKnownObject(parsed.id);
             if (known) {
               parsed.audioText = { ...known.audioText, ...parsed.audioText };
@@ -122,15 +133,21 @@ Return strictly valid raw JSON only:
     }
   }
 
-  // Step 3: Check keyword / alias match from customName or filename
+  // Step 3: Check keyword / alias match from customName or filename (sanitizing generic filenames like WhatsApp Image)
+  const isGeneric = (str) => !str || /whatsapp|screenshot|img_|image|pxl_|photo|camera|capture|frame|scanned/i.test(str);
+  const safeFilename = isGeneric(filename) ? null : filename.split('.')[0];
+  const safeCustomName = isGeneric(customName) ? null : customName;
+
   if (!matched) {
-    const candidateQuery = [customName, objectId, filename].filter(Boolean).join(' ');
-    matched = matchKnownObject(candidateQuery);
+    const candidateQuery = [safeCustomName, objectId, safeFilename].filter(Boolean).join(' ');
+    if (candidateQuery) {
+      matched = matchKnownObject(candidateQuery);
+    }
   }
 
   // Step 4: Intelligent STEM Synthesizer for arbitrary uncataloged object
   if (!matched) {
-    const targetName = customName || (filename ? filename.split('.')[0] : 'Scanned Object');
+    const targetName = safeCustomName || safeFilename || 'Optical Instrument & Laboratory Tool';
     matched = synthesizeCustomObjectSTEM(targetName);
   }
 

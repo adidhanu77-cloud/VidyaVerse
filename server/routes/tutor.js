@@ -1,5 +1,6 @@
 import express from 'express';
 import { broadcastEvent } from '../realtime/broadcast.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const router = express.Router();
 
@@ -39,9 +40,33 @@ const answerKnowledgeBase = {
   },
 };
 
-// 1. ASK DR. APJ MENTOR (Socratic Doubt Resolution)
-router.post('/ask', (req, res) => {
-  const { question = '', language = 'en', studentGrade = 'Class 8' } = req.body;
+
+const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+
+// Safe JSON extractor
+function extractJson(text) {
+  if (!text) return null;
+  const trimmed = text.trim();
+  try { return JSON.parse(trimmed); } catch {}
+  const stripped = trimmed.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  try { return JSON.parse(stripped); } catch {}
+  const firstBrace = stripped.indexOf('{');
+  const lastBrace = stripped.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    try { return JSON.parse(stripped.slice(firstBrace, lastBrace + 1)); } catch {}
+  }
+  return null;
+}
+
+// 1. ASK DR. APJ MENTOR (Socratic Doubt Resolution with Multimodal AI)
+router.post('/ask', async (req, res) => {
+  const {
+    question = '',
+    language = 'en',
+    studentGrade = 'Class 8-10',
+    learningStyle = 'visual',
+    persona = 'kalam',
+  } = req.body;
   const qLower = question.toLowerCase();
 
   let matched = null;
@@ -53,25 +78,66 @@ router.post('/ask', (req, res) => {
     }
   }
 
+  let aiLesson = null;
+  if (genAI) {
+    const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
+    const prompt = `You are "MentorAI", an advanced Socratic STEM Teacher for Indian students (Grade: ${studentGrade}, Language: ${language}, Style: ${learningStyle}).
+Student asks: "${question}".
+Return strictly valid raw JSON only (no markdown code blocks):
+{
+  "concept": "Concept Name",
+  "subject": "Physics | Chemistry | Biology | Mathematics",
+  "intuition": "2 engaging sentences introducing the real-world observation.",
+  "explanation": ["Step 1", "Step 2", "Step 3", "Step 4"],
+  "visualSchematic": "ASCII visual schematic",
+  "misconception": { "myth": "Common myth", "reality": "Scientific truth" },
+  "diyExperiment": { "title": "Home Experiment", "items": ["Item 1"], "steps": ["Step 1", "Step 2"] },
+  "checkQuestion": {
+    "question": "Concept check question",
+    "options": [
+      { "text": "A) ...", "correct": false, "feedback": "..." },
+      { "text": "B) ...", "correct": true, "feedback": "..." }
+    ]
+  }
+}`;
+
+    for (const m of modelsToTry) {
+      try {
+        const model = genAI.getGenerativeModel({ model: m });
+        const result = await model.generateContent(prompt);
+        const text = result?.response?.text()?.trim();
+        const parsed = extractJson(text);
+        if (parsed && parsed.concept && parsed.explanation) {
+          aiLesson = parsed;
+          break;
+        }
+      } catch (e) {
+        console.warn(`[Backend Tutor] Model ${m} error:`, e.message);
+      }
+    }
+  }
+
   let finalAnswer = '';
-  if (matched) {
+  if (aiLesson) {
+    finalAnswer = `${aiLesson.intuition}\n\n${aiLesson.explanation.join('\n')}`;
+  } else if (matched) {
     if (language !== 'en' && matched.translations[language]) {
       finalAnswer = `${matched.translations[language]} (English: ${matched.answer})`;
     } else {
       finalAnswer = matched.answer;
     }
   } else {
-    // Socratic guided answer
     finalAnswer = `Dr. APJ Mentor Guidance for "${question}":\n` +
-      `1. Let's observe the energy or physical forces involved.\n` +
-      `2. Remember the law of conservation: Energy cannot be destroyed, only converted.\n` +
-      `3. Look around your home or village: Have you observed a similar behavior in a bicycle, cooker, or water pump?`;
+      `1. Observe the natural forces and energy involved.\n` +
+      `2. By the Law of Conservation of Energy, energy cannot be created or destroyed, only transformed.\n` +
+      `3. Look around your home or village: Have you observed this in a bicycle, cooker, or water well?`;
   }
 
   // Broadcast question to real-time teacher monitor
   broadcastEvent('TUTOR_DOUBT_ASKED', {
     question,
     language,
+    concept: aiLesson?.concept || matched?.patterns?.[0] || 'General Science',
     timestamp: new Date().toISOString(),
   });
 
@@ -80,7 +146,8 @@ router.post('/ask', (req, res) => {
     question,
     language,
     answer: finalAnswer,
-    mentor: 'Dr. APJ Mentor (Socratic AI)',
+    lesson: aiLesson,
+    mentor: 'MentorAI (Socratic & Empirical Teacher)',
   });
 });
 

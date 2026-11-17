@@ -18,13 +18,13 @@ const BASE_TABS = [
   { id: 'labs',      title: 'Virtual Labs',           subtitle: 'Zero-glassware PhET simulations for every science subject', badge: 'PhET Sims',   color: '#12b3a4', bg: '#f0fbfa', icon: Beaker,    emoji: '🧪' },
   { id: 'hunt',      title: 'Treasure Hunt',          subtitle: 'AI quiz quest paths with XP, streaks & badges',             badge: 'Gemini AI',   color: '#ffc531', bg: '#fffbf0', icon: Compass,   emoji: '🧭' },
   { id: 'stories',   title: 'StoryVerse Learning',    subtitle: 'Disney/Pixar cartoon adventures, voice narration, decisions & labs', badge: 'StoryVerse',  color: '#3aa0ff', bg: '#f0f7ff', icon: BookOpen,  emoji: '🎬' },
-  { id: 'mentor',    title: 'AI Tutor',               subtitle: 'Dr. APJ Mentor — 6 Indic languages, voice-enabled',         badge: '6 Langs',     color: '#6b5be6', bg: '#f4f2ff', icon: Bot,       emoji: '🤖' },
+  { id: 'mentor',    title: 'MentorAI — Intelligent STEM Tutor', subtitle: 'Adaptive Socratic teacher, concept gap detector & multi-modal learning guide', badge: 'MentorAI',     color: '#6b5be6', bg: '#f4f2ff', icon: Bot,       emoji: '🤖' },
   { id: 'careers',   title: 'Career Navigator',       subtitle: 'From village curiosity to real research career roadmaps',   badge: 'Roadmaps',    color: '#2bd980', bg: '#efffed', icon: MapPin,    emoji: '🎯' },
   { id: 'analytics', title: 'Leaderboards & Gaps',    subtitle: 'School league tables & student concept gap analytics',      badge: 'Class Tool',  color: '#ff5b57', bg: '#fff0f0', icon: Trophy,    emoji: '🏆' },
 ];
 
 /* ─── Full-page wrapper for each feature ───────────────────────── */
-function FeaturePage({ tab, onBack, currentLang }) {
+function FeaturePage({ tab, onBack, currentLang, onSelectTab }) {
   return (
     <div style={{ minHeight: '100vh', background: tab.bg, fontFamily: "'DM Sans', sans-serif" }}>
 
@@ -87,7 +87,7 @@ function FeaturePage({ tab, onBack, currentLang }) {
         {tab.id === 'labs'      && <VirtualLabs />}
         {tab.id === 'hunt'      && <TreasureHunt />}
         {tab.id === 'stories'   && <StoryMode />}
-        {tab.id === 'mentor'    && <AiTutor currentLang={currentLang} />}
+        {tab.id === 'mentor'    && <AiTutor currentLang={currentLang} onNavigate={onSelectTab} />}
         {tab.id === 'careers'   && <CareerNavigator />}
         {tab.id === 'analytics' && <LeaderboardAndDashboards />}
       </div>
@@ -285,7 +285,7 @@ export default function PocketLabStudio({ currentLang, activeTabId, onSelectTab 
   // ── Full-page feature view
   if (currentTab && activeTabObj) {
     return (
-      <FeaturePage tab={activeTabObj} onBack={goHome} currentLang={currentLang} />
+      <FeaturePage tab={activeTabObj} onBack={goHome} currentLang={currentLang} onSelectTab={openTab} />
     );
   }
 

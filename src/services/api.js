@@ -1,6 +1,7 @@
 import { CURATED_STORIES, getTopicCartoonVideo } from '../data/curatedStories';
 import { DETAILED_OBJECTS, matchKnownObject, synthesizeCustomObjectSTEM } from '../data/scannerKnowledge';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { queryMentorAI } from './mentorAiEngine';
 
 // Browser-side Gemini client (works on Vercel, no backend needed)
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || (typeof window !== 'undefined' && window.VITE_GEMINI_API_KEY) || '';
@@ -598,13 +599,35 @@ export const api = {
     }
   },
 
-  // 4. AI Tutor Socratic Backend
-  async askTutor(question, language = 'en') {
+  // 4. AI Tutor Socratic & MentorAI Engine
+  async askTutor(question, language = 'en', options = {}) {
+    // 1. Client-Side MentorAI (works directly on Vercel without backend dependency)
+    try {
+      const mentorResult = await queryMentorAI({
+        question,
+        language,
+        grade: options.grade || 'Class 8-10',
+        learningStyle: options.learningStyle || 'visual',
+        persona: options.persona || 'kalam',
+      });
+      if (mentorResult && mentorResult.data) {
+        return {
+          status: 'success',
+          answer: `${mentorResult.data.intuition}\n\n${mentorResult.data.explanation.join('\n')}`,
+          lesson: mentorResult.data,
+          mentor: 'MentorAI (Adaptive Socratic Teacher)',
+        };
+      }
+    } catch (e) {
+      console.warn('[api.askTutor] Client MentorAI fallback:', e);
+    }
+
+    // 2. Fallback to backend endpoint if online
     try {
       const res = await fetch(`${API_BASE}/tutor/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, language }),
+        body: JSON.stringify({ question, language, ...options }),
       });
       return await res.json();
     } catch (err) {

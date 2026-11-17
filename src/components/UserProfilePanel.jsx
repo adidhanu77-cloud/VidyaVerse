@@ -35,19 +35,19 @@ export default function UserProfilePanel({ isOpen, onClose }) {
   const fileRef = useRef();
 
   useEffect(() => {
-    let uid = localStorage.getItem('stemverse_userId');
-    if (!uid) { uid = 'user_' + Date.now(); localStorage.setItem('stemverse_userId', uid); }
+    let uid = localStorage.getItem('vidyaverse_userId') || localStorage.getItem('stemverse_userId');
+    if (!uid) { uid = 'user_' + Date.now(); localStorage.setItem('vidyaverse_userId', uid); }
     setUserId(uid);
   }, []);
 
   useEffect(() => {
     if (!isOpen || !userId) return;
-    const cached = localStorage.getItem('stemverse_profile');
+    const cached = localStorage.getItem('vidyaverse_profile') || localStorage.getItem('stemverse_profile');
     if (cached) { try { setProfile(JSON.parse(cached)); } catch {} }
     fetch(`${API}/user/profile/${userId}`).then(r => r.json())
-      .then(d => { if (d.profile) { setProfile(d.profile); localStorage.setItem('stemverse_profile', JSON.stringify(d.profile)); }}).catch(() => {});
+      .then(d => { if (d.profile) { setProfile(d.profile); localStorage.setItem('vidyaverse_profile', JSON.stringify(d.profile)); }}).catch(() => {});
     fetch(`${API}/treasure-hunt/progress/${userId}`).then(r => r.json())
-      .then(d => { if (d.progress) { setProgress(d.progress); localStorage.setItem('stemverse_progress', JSON.stringify(d.progress)); }}).catch(() => {});
+      .then(d => { if (d.progress) { setProgress(d.progress); localStorage.setItem('vidyaverse_progress', JSON.stringify(d.progress)); }}).catch(() => {});
   }, [isOpen, userId]);
 
   function startEdit() { setForm({ ...profile }); setEditing(true); }
@@ -59,7 +59,7 @@ export default function UserProfilePanel({ isOpen, onClose }) {
       const res = await fetch(`${API}/user/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updated) });
       const data = await res.json();
       setProfile(data.profile);
-      localStorage.setItem('stemverse_profile', JSON.stringify(data.profile));
+      localStorage.setItem('vidyaverse_profile', JSON.stringify(data.profile));
       setEditing(false);
       showToast('Profile saved! ✅');
     } catch { showToast('Could not save. Backend offline?'); }
@@ -72,7 +72,7 @@ export default function UserProfilePanel({ isOpen, onClose }) {
     reader.onload = async (ev) => {
       const b64 = ev.target.result;
       const updated = { ...profile, avatar: b64, userId };
-      setProfile(updated); localStorage.setItem('stemverse_profile', JSON.stringify(updated));
+      setProfile(updated); localStorage.setItem('vidyaverse_profile', JSON.stringify(updated));
       try { await fetch(`${API}/user/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updated) }); } catch {}
       showToast('Avatar updated! 📸');
     };

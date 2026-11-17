@@ -293,7 +293,7 @@ export default function Hero({ currentLang, onStartScan, onOpenLabs }) {
                   <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#ffc531', border: '2px solid #17140d' }} />
                   <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#12b3a4', border: '2px solid #17140d' }} />
                   <span style={{ marginLeft: 8, fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 13, color: '#17140d' }}>
-                    STEMVerse AI • Live Lens 3.2
+                    VidyaVerse • Live Lens 3.2
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

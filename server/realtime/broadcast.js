@@ -13,7 +13,7 @@ export function initWebSocketServer(server) {
     // Send initial handshake
     ws.send(JSON.stringify({
       type: 'CONNECTED',
-      message: 'Connected to STEMVerse AI Real-Time Stream',
+      message: 'Connected to VidyaVerse Real-Time Stream',
       timestamp: new Date().toISOString(),
       activeStudents: clients.size + 1420, // Real-time community presence
     }));

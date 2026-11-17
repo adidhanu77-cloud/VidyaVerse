@@ -37,7 +37,7 @@ function pathD() {
 }
 
 export default function TreasureHunt({ userId: propUserId }) {
-  const userId = propUserId || localStorage.getItem('stemverse_userId') || 'guest_user';
+  const userId = propUserId || localStorage.getItem('vidyaverse_userId') || localStorage.getItem('stemverse_userId') || 'guest_user';
   const [selPath, setSelPath] = useState('physics');
   const [pathsData, setPathsData] = useState(null);
   const [progress, setProgress] = useState(null);
@@ -129,7 +129,7 @@ export default function TreasureHunt({ userId: propUserId }) {
       loadProgress();
       // Also update localStorage progress snapshot
       fetch(`${API}/progress/${userId}`).then(r => r.json()).then(d => {
-        localStorage.setItem('stemverse_progress', JSON.stringify(d.progress));
+        localStorage.setItem('vidyaverse_progress', JSON.stringify(d.progress));
       });
     } catch (e) {
       console.error(e);

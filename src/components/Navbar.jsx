@@ -20,9 +20,9 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
   useEffect(() => {
     function loadFromStorage() {
       try {
-        const p = localStorage.getItem('stemverse_profile');
+        const p = localStorage.getItem('vidyaverse_profile') || localStorage.getItem('stemverse_profile');
         if (p) setProfile(JSON.parse(p));
-        const prog = localStorage.getItem('stemverse_progress');
+        const prog = localStorage.getItem('vidyaverse_progress') || localStorage.getItem('stemverse_progress');
         if (prog) setProgress(JSON.parse(prog));
       } catch {}
     }
@@ -87,8 +87,7 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
               <Microscope size={24} color="#17140d" strokeWidth={2.6} />
             </div>
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: '#17140d', letterSpacing: '-0.03em' }}>
-              STEM<span style={{ color: '#ff5b57' }}>Verse</span>{' '}
-              <span style={{ fontSize: 14, backgroundColor: '#12b3a4', color: '#fff', padding: '2px 8px', borderRadius: 9999, border: '2px solid #17140d' }}>AI</span>
+              Vidya<span style={{ color: '#ff5b57' }}>Verse</span>
             </span>
           </button>
 

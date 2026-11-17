@@ -13,7 +13,7 @@ class RealtimeClient {
 
       this.ws.onopen = () => {
         this.connected = true;
-        console.log('[Realtime Client] Connected to STEMVerse WebSocket server.');
+        console.log('[Realtime Client] Connected to VidyaVerse WebSocket server.');
         this.emit('STATUS_CHANGE', { connected: true });
       };
 

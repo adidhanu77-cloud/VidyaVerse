@@ -37,7 +37,7 @@ app.use('/api/user', userRoutes);
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ONLINE',
-    system: 'STEMVerse AI Real-Time Backend',
+    system: 'VidyaVerse Real-Time Backend',
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     featureBackends: [
@@ -60,7 +60,7 @@ initWebSocketServer(server);
 
 server.listen(PORT, () => {
   console.log(`=======================================================`);
-  console.log(`🚀 STEMVerse AI Real-Time Server running on port ${PORT}`);
+  console.log(`🚀 VidyaVerse Real-Time Server running on port ${PORT}`);
   console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
   console.log(`🔗 API Base: http://localhost:${PORT}/api/health`);
   console.log(`=======================================================`);

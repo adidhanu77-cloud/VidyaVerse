@@ -83,7 +83,7 @@ export default function CoreFeatures({ onSelectSection }) {
                 display: 'inline-block',
               }}
             />
-            HOW STEMVERSE REVOLUTIONIZES LEARNING
+            HOW VIDYAVERSE REVOLUTIONIZES LEARNING
           </div>
 
           <h2
@@ -94,7 +94,7 @@ export default function CoreFeatures({ onSelectSection }) {
             }}
           >
             Boring textbooks kill curiosity.{' '}
-            <span className="marker-highlight teal">STEMVerse turns the world into your lab.</span>
+            <span className="marker-highlight teal">VidyaVerse turns the world into your lab.</span>
           </h2>
 
           <p style={{ fontSize: 18, color: '#444' }}>

@@ -38,7 +38,7 @@ export default function Footer() {
                 <Microscope size={22} color="#17140d" strokeWidth={2.6} />
               </div>
               <span style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800 }}>
-                STEM<span style={{ color: '#ff5b57' }}>Verse</span> AI
+                Vidya<span style={{ color: '#ff5b57' }}>Verse</span>
               </span>
             </div>
             <p style={{ fontSize: 14, color: '#555', lineHeight: 1.6, maxWidth: 300 }}>
@@ -120,7 +120,7 @@ export default function Footer() {
           }}
         >
           <div>
-            © {new Date().getFullYear()} STEMVerse AI. Made with <Heart size={14} color="#ff5b57" style={{ display: 'inline', verticalAlign: 'middle' }} /> for rural student empowerment.
+            © {new Date().getFullYear()} VidyaVerse. Made with <Heart size={14} color="#ff5b57" style={{ display: 'inline', verticalAlign: 'middle' }} /> for rural student empowerment.
           </div>
           <div>
             Memphis Neo-Brutalist Edition • Accessible on Any Device

@@ -1,5 +1,6 @@
 import { CURATED_STORIES, getTopicCartoonVideo } from '../data/curatedStories';
 import { DETAILED_OBJECTS, matchKnownObject, synthesizeCustomObjectSTEM } from '../data/scannerKnowledge';
+import { PHET_CATALOG } from '../data/phetSimulations';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { queryMentorAI } from './mentorAiEngine';
 
@@ -664,23 +665,50 @@ export const api = {
 
   // 7. PhET Virtual Labs - Get simulations by discipline
   async getPhetSimulations(discipline = 'physics') {
+    const disc = (discipline || 'physics').toLowerCase();
+    const fallbackSims = PHET_CATALOG[disc] || PHET_CATALOG.physics || [];
+
     try {
-      const res = await fetch(`${API_BASE}/labs/phet/${discipline}`);
-      return await res.json();
+      const res = await fetch(`${API_BASE}/labs/phet/${disc}`, {
+        signal: AbortSignal.timeout(3000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.status === 'success' && Array.isArray(data.simulations) && data.simulations.length > 0) {
+          return data;
+        }
+      }
     } catch (err) {
-      console.warn('PhET API fallback:', err);
-      return null;
+      // Backend offline / Vercel deployment - seamlessly fallback to local verified catalog
     }
+
+    return {
+      status: 'success',
+      source: 'local_verified_catalog',
+      discipline: disc,
+      count: fallbackSims.length,
+      simulations: fallbackSims,
+    };
   },
 
   async getPhetCatalog() {
     try {
-      const res = await fetch(`${API_BASE}/labs/phet-catalog`);
-      return await res.json();
+      const res = await fetch(`${API_BASE}/labs/phet-catalog`, {
+        signal: AbortSignal.timeout(3000),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.status === 'success') return data;
+      }
     } catch (err) {
-      console.warn('PhET catalog fallback:', err);
-      return null;
+      // fallback
     }
+
+    return {
+      status: 'success',
+      source: 'local_verified_catalog',
+      catalog: PHET_CATALOG,
+    };
   },
 
   // 8. Separate User Backend (Personal Dashboard architecture)

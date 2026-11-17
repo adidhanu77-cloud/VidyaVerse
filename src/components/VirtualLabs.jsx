@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '../services/api';
+import { PHET_CATALOG } from '../data/phetSimulations';
 
 /* ─── Discipline config ─────────────────────────────── */
 const DISCIPLINES = [
@@ -336,13 +337,17 @@ export default function VirtualLabs() {
 
     api.getPhetSimulations(activeDiscipline)
       .then((data) => {
-        if (data?.status === 'success') {
-          setSimulations(data.simulations || []);
+        if (data?.status === 'success' && Array.isArray(data.simulations) && data.simulations.length > 0) {
+          setSimulations(data.simulations);
         } else {
-          setError('Could not load simulations. Is the backend running?');
+          const fallback = PHET_CATALOG[activeDiscipline] || PHET_CATALOG.physics || [];
+          setSimulations(fallback);
         }
       })
-      .catch(() => setError('Network error — make sure the backend is running on port 5000.'))
+      .catch(() => {
+        const fallback = PHET_CATALOG[activeDiscipline] || PHET_CATALOG.physics || [];
+        setSimulations(fallback);
+      })
       .finally(() => setLoading(false));
   }, [activeDiscipline]);
 

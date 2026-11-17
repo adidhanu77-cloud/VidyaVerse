@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Camera, Beaker, Compass, BookOpen, Bot, MapPin, Trophy,
-  Layers, ArrowLeft, ChevronRight,
+  Layers, ArrowLeft, ChevronRight, ClipboardCheck,
 } from 'lucide-react';
 
 import InteractiveScanner from './InteractiveScanner';
@@ -13,15 +13,15 @@ import CareerNavigator from './CareerNavigator';
 import LeaderboardAndDashboards from './LeaderboardAndDashboards';
 import SkillAssessment from './SkillAssessment';
 
-/* ─── Tab definitions (7 Core Modules) ───────────────────────────── */
+/* ─── Tab definitions (8 Core Modules) ───────────────────────────── */
 const BASE_TABS = [
   { id: 'scanner',   title: 'Object Scanner',        subtitle: 'Point your camera at any everyday object to decode STEM', badge: 'AI Vision',   color: '#ff5b57', bg: '#fff0f0', icon: Camera,    emoji: '📷' },
   { id: 'labs',      title: 'Virtual Labs',           subtitle: 'Zero-glassware PhET simulations for every science subject', badge: 'PhET Sims',   color: '#12b3a4', bg: '#f0fbfa', icon: Beaker,    emoji: '🧪' },
   { id: 'hunt',      title: 'Treasure Hunt',          subtitle: 'AI quiz quest paths with XP, streaks & badges',             badge: 'Gemini AI',   color: '#ffc531', bg: '#fffbf0', icon: Compass,   emoji: '🧭' },
   { id: 'stories',   title: 'StoryVerse Learning',    subtitle: 'Disney/Pixar cartoon adventures, voice narration, decisions & labs', badge: 'StoryVerse',  color: '#3aa0ff', bg: '#f0f7ff', icon: BookOpen,  emoji: '🎬' },
   { id: 'mentor',    title: 'MentorAI — Intelligent STEM Tutor', subtitle: 'Adaptive Socratic teacher, concept gap detector & multi-modal learning guide', badge: 'MentorAI',     color: '#6b5be6', bg: '#f4f2ff', icon: Bot,       emoji: '🤖' },
-  { id: 'assessment', title: 'Weekly Skill Assessment', subtitle: 'Class-calibrated 40-question benchmark test u2014 drives Career Navigator real-time', badge: 'Weekly Test', color: '#804dee', bg: '#f5f0ff', icon: ClipboardCheck, emoji: 'u{1F4DD}' },
-  { id: 'careers',   title: 'Career Navigator',       subtitle: 'From village curiosity to real research career roadmaps',   badge: 'Roadmaps',    color: '#2bd980', bg: '#efffed', icon: MapPin,    emoji: '🎯' },
+  { id: 'assessment', title: 'Weekly Skill Assessment', subtitle: 'Class-calibrated 40-question benchmark test — drives Career Navigator real-time', badge: 'Weekly Test', color: '#804dee', bg: '#f5f0ff', icon: ClipboardCheck, emoji: '📝' },
+  { id: 'careers',   title: 'Career Navigator',       subtitle: 'AI-powered career roadmap built from your actual test scores, not fake data',   badge: 'Live Roadmap', color: '#2bd980', bg: '#efffed', icon: MapPin,         emoji: '🎯' },
   { id: 'analytics', title: 'Leaderboards & Gaps',    subtitle: 'School league tables & student concept gap analytics',      badge: 'Class Tool',  color: '#ff5b57', bg: '#fff0f0', icon: Trophy,    emoji: '🏆' },
 ];
 

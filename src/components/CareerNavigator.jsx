@@ -1,8 +1,7 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Compass, CheckCircle2, ArrowRight, Sparkles, Trophy, FlaskConical,
-  GraduationCap, Briefcase, Leaf, Target, AlertTriangle, Clock, TrendingUp,
-  RefreshCw, ChevronDown, ChevronRight, BarChart3
+  Compass, CheckCircle2, ArrowRight, Sparkles, Briefcase,
+  Clock, RefreshCw, ChevronRight, BarChart3
 } from 'lucide-react';
 import { generateCareerWorkflowFromAssessment } from '../services/careerWorkflowEngine';
 import { getLatestAssessment, checkWeeklyStatus } from '../services/assessmentEngine';

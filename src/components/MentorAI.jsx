@@ -22,30 +22,46 @@ import {
   Cpu,
   Brain,
   Lightbulb,
+  X,
+  FileText,
+  Sliders,
 } from 'lucide-react';
 import {
   queryMentorAI,
+  fetchGradeMisconceptions,
+  fetchGradeExperiments,
+  fetchSocraticLesson,
+  normalizeGradeBracket,
+  GRADE_CURIOSITY_DOUBTS,
   MENTOR_PERSONAS,
   LEARNING_STYLES,
-  MENTOR_CURATED_KNOWLEDGE,
   getMentorSessionAnalytics,
   logConceptInteraction,
 } from '../services/mentorAiEngine';
 
 export default function MentorAI({ currentLang = 'en', onNavigate }) {
-  // Mentor & Student Context States
+  // Student Context States
   const [selectedPersona, setSelectedPersona] = useState('kalam');
   const [selectedStyle, setSelectedStyle] = useState('visual');
-  const [studentGrade, setStudentGrade] = useState('Class 8-10');
+  const [studentGrade, setStudentGrade] = useState('Class 9-10');
 
-  // Interactive Tab Modes
-  // 'ask' | 'misconceptions' | 'experiments' | 'analytics'
+  // Interactive Tab Modes: 'ask' | 'misconceptions' | 'experiments' | 'analytics'
   const [activeMode, setActiveMode] = useState('ask');
 
   // Doubt Query & Loading States
   const [inputQuery, setInputQuery] = useState('');
   const [isQuerying, setIsQuerying] = useState(false);
   const [currentLesson, setCurrentLesson] = useState(null);
+
+  // Grade-Specific Content Lists
+  const [gradeMisconceptions, setGradeMisconceptions] = useState([]);
+  const [gradeExperiments, setGradeExperiments] = useState([]);
+  const [isLoadingGradeContent, setIsLoadingGradeContent] = useState(false);
+
+  // Dedicated Experiment Modal
+  const [activeExperimentModal, setActiveExperimentModal] = useState(null);
+  const [checkedMaterials, setCheckedMaterials] = useState({});
+  const [experimentQuizState, setExperimentQuizState] = useState({ answeredIndex: null, isCorrect: null });
 
   // Audio & Speech States
   const [isListening, setIsListening] = useState(false);
@@ -57,21 +73,56 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
 
   // Session Analytics
   const [analytics, setAnalytics] = useState(getMentorSessionAnalytics());
-
-  // Recognition ref
   const speechRecognitionRef = useRef(null);
 
-  // Load initial default question on mount
+  // 1. Initial Load and Grade Switch Handler
   useEffect(() => {
-    handleLoadPredefined('pump_compression');
-  }, []);
+    loadGradeContent(studentGrade);
+  }, [studentGrade]);
 
-  // Update analytics on state change
+  const loadGradeContent = async (grade) => {
+    setIsLoadingGradeContent(true);
+    const bracket = normalizeGradeBracket(grade);
+
+    try {
+      // 1. Load grade-specific misconceptions
+      const miscs = await fetchGradeMisconceptions(bracket);
+      setGradeMisconceptions(miscs || []);
+
+      // 2. Load grade-specific experiments
+      const exps = await fetchGradeExperiments(bracket);
+      setGradeExperiments(exps || []);
+
+      // 3. Load first default curiosity lesson for this grade
+      const doubts = GRADE_CURIOSITY_DOUBTS[bracket] || GRADE_CURIOSITY_DOUBTS['Class 9-10'];
+      const defaultDoubt = doubts[0];
+      if (defaultDoubt) {
+        const lesson = await fetchSocraticLesson({
+          conceptId: defaultDoubt.id,
+          conceptName: defaultDoubt.q.replace(/^[^\s]+\s*/, ''),
+          grade: bracket,
+          learningStyle: selectedStyle,
+          persona: selectedPersona,
+          language: currentLang,
+        });
+        if (lesson) {
+          setCurrentLesson(lesson);
+          setSelectedQuizOption(null);
+          setHasAnsweredQuiz(false);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to load grade content:', e);
+    } finally {
+      setIsLoadingGradeContent(false);
+    }
+  };
+
   const refreshAnalytics = () => {
     setAnalytics(getMentorSessionAnalytics());
   };
 
-  // 1. Submit Query to MentorAI
+  // 2. Submit Query to MentorAI
   const handleAskMentor = async (queryText = inputQuery) => {
     const q = (queryText || '').trim();
     if (!q) return;
@@ -101,17 +152,45 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
     }
   };
 
-  // 2. Load Predefined Core Knowledge Lesson
-  const handleLoadPredefined = (knowledgeKey) => {
-    const item = MENTOR_CURATED_KNOWLEDGE[knowledgeKey];
-    if (item) {
-      setCurrentLesson(item);
-      setSelectedQuizOption(null);
-      setHasAnsweredQuiz(false);
+  // 3. Explore Dedicated Socratic Lesson from Misconception or Curiosity Click
+  const handleExploreSocraticLesson = async (conceptKey, conceptTitle) => {
+    setIsQuerying(true);
+    setSelectedQuizOption(null);
+    setHasAnsweredQuiz(false);
+    setActiveMode('ask');
+
+    try {
+      const lesson = await fetchSocraticLesson({
+        conceptId: conceptKey,
+        conceptName: conceptTitle,
+        grade: studentGrade,
+        learningStyle: selectedStyle,
+        persona: selectedPersona,
+        language: currentLang,
+      });
+      if (lesson) {
+        setCurrentLesson(lesson);
+        refreshAnalytics();
+      }
+    } catch (err) {
+      console.error('Failed to explore Socratic lesson:', err);
+    } finally {
+      setIsQuerying(false);
     }
   };
 
-  // 3. Handle Interactive Quiz Choice
+  // 4. View Full Experiment Modal
+  const handleOpenExperimentModal = (exp) => {
+    setActiveExperimentModal(exp);
+    setCheckedMaterials({});
+    setExperimentQuizState({ answeredIndex: null, isCorrect: null });
+  };
+
+  const toggleMaterialCheck = (idx) => {
+    setCheckedMaterials((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  // 5. Handle Interactive Quiz Choice
   const handleQuizSelection = (index, option) => {
     if (hasAnsweredQuiz) return;
     setSelectedQuizOption(index);
@@ -127,7 +206,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
     }
   };
 
-  // 4. Voice Input (Speech to Text)
+  // 6. Voice Input (Speech to Text)
   const toggleVoiceInput = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -163,7 +242,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
     }
   };
 
-  // 5. Speech Synthesis Audio Readout
+  // 7. Speech Synthesis Audio Readout
   const handleReadAloud = (textToRead) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -188,9 +267,11 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
   };
 
   const activePersonaData = MENTOR_PERSONAS[selectedPersona] || MENTOR_PERSONAS.kalam;
+  const currentBracket = normalizeGradeBracket(studentGrade);
+  const activeDoubts = GRADE_CURIOSITY_DOUBTS[currentBracket] || GRADE_CURIOSITY_DOUBTS['Class 9-10'];
 
   return (
-    <div className="memphis-card" style={{ padding: '36px 32px', backgroundColor: '#ffffff' }}>
+    <div className="memphis-card" style={{ padding: '36px 32px', backgroundColor: '#ffffff', position: 'relative' }}>
       
       {/* ================= 1. MENTOR HEADER & CONTEXT BAR ================= */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 14 }}>
@@ -230,7 +311,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                 }}
               >
                 <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#047857', animation: 'pulse 1.5s infinite' }} />
-                SOCRATIC AI ACTIVE
+                REAL-TIME ADAPTIVE
               </span>
             </div>
             <p style={{ fontSize: 13.5, color: '#555', fontWeight: 600, margin: '4px 0 0' }}>
@@ -270,50 +351,74 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
         </div>
       </div>
 
-      {/* ================= 2. STUDENT CONTEXT CONTROLS (GRADE & LEARNING STYLE) ================= */}
+      {/* ================= 2. STUDENT CONTEXT CONTROLS (GRADE SELECTION & ADAPTIVE DIFFICULTY) ================= */}
       <div
         style={{
           backgroundColor: '#f5efe2',
           borderRadius: 16,
           border: '2.5px solid #17140d',
-          padding: '14px 18px',
+          padding: '16px 20px',
           marginBottom: 24,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 12,
+          gap: 14,
         }}
       >
-        {/* Grade Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 900, textTransform: 'uppercase', color: '#17140d' }}>
-            🎓 Grade:
+        {/* Grade Selector with Dynamic Difficulty Indicators */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: 12.5, fontWeight: 900, textTransform: 'uppercase', color: '#17140d', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Sliders size={15} color="#6b5be6" /> Select Grade Level:
           </span>
-          {['Class 6-8', 'Class 9-10', 'Class 11-12'].map((g) => (
-            <button
-              key={g}
-              onClick={() => setStudentGrade(g)}
-              style={{
-                padding: '4px 10px',
-                borderRadius: 8,
-                border: '1.5px solid #17140d',
-                backgroundColor: studentGrade === g ? '#6b5be6' : '#ffffff',
-                color: studentGrade === g ? '#ffffff' : '#17140d',
-                fontSize: 11.5,
-                fontWeight: 800,
-                cursor: 'pointer',
-              }}
-            >
-              {g}
-            </button>
-          ))}
+          {[
+            { id: 'Class 6-8', label: 'Class 6-8', badge: '🟢 Foundational', color: '#2bd980' },
+            { id: 'Class 9-10', label: 'Class 9-10', badge: '🟡 Secondary / Boards', color: '#ffc531' },
+            { id: 'Class 11-12', label: 'Class 11-12', badge: '🔴 Advanced / JEE / NEET', color: '#ff5b57' },
+          ].map((g) => {
+            const isSelected = studentGrade === g.id;
+            return (
+              <button
+                key={g.id}
+                onClick={() => setStudentGrade(g.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '7px 14px',
+                  borderRadius: 10,
+                  border: '2px solid #17140d',
+                  backgroundColor: isSelected ? '#17140d' : '#ffffff',
+                  color: isSelected ? '#ffffff' : '#17140d',
+                  boxShadow: isSelected ? '3px 3px 0 #ffc531' : '1.5px 1.5px 0 #17140d',
+                  fontSize: 12.5,
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span>{g.label}</span>
+                <span
+                  style={{
+                    fontSize: 10,
+                    padding: '1px 6px',
+                    borderRadius: 4,
+                    backgroundColor: isSelected ? g.color : '#f0f0f0',
+                    color: '#17140d',
+                    fontWeight: 900,
+                  }}
+                >
+                  {g.badge}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Learning Persona / Style Pills */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 12, fontWeight: 900, textTransform: 'uppercase', color: '#17140d' }}>
-            🎨 Learning Style:
+            🎨 Style:
           </span>
           {Object.values(LEARNING_STYLES).map((s) => {
             const isCurrent = selectedStyle === s.id;
@@ -325,7 +430,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 4,
-                  padding: '4px 10px',
+                  padding: '5px 10px',
                   borderRadius: 8,
                   border: '1.5px solid #17140d',
                   backgroundColor: isCurrent ? '#12b3a4' : '#ffffff',
@@ -347,9 +452,9 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
       {/* ================= 3. FEATURE MODES SUB-NAV ================= */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '2.5px solid #17140d', paddingBottom: 12, flexWrap: 'wrap' }}>
         {[
-          { id: 'ask', label: '💬 Socratic Classroom (Ask Doubts)', color: '#6b5be6' },
-          { id: 'misconceptions', label: '🔍 Misconception Buster (Gap Detector)', color: '#ff5b57' },
-          { id: 'experiments', label: '🛠️ Pocket Lab DIY Experiments', color: '#12b3a4' },
+          { id: 'ask', label: `💬 Socratic Classroom (${currentBracket})`, color: '#6b5be6' },
+          { id: 'misconceptions', label: `🔍 Misconception Buster (${currentBracket})`, color: '#ff5b57' },
+          { id: 'experiments', label: `🛠️ Pocket Lab DIY Experiments (${currentBracket})`, color: '#12b3a4' },
           { id: 'analytics', label: '📊 Student Mastery Radar', color: '#ffc531' },
         ].map((tab) => {
           const isActive = activeMode === tab.id;
@@ -380,39 +485,32 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
       {/* ================= 4. TAB MODE: ASK SOCRATIC MENTOR ================= */}
       {activeMode === 'ask' && (
         <div>
-          {/* Preset Curiosity Triggers */}
+          {/* Preset Curiosity Triggers Calibrated to Grade */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
               <span style={{ fontSize: 12, fontWeight: 900, textTransform: 'uppercase', color: '#17140d' }}>
-                💡 Popular Village & Daily Life STEM Curiosities:
+                💡 {currentBracket} Curiosity Doubts & Core Laws:
               </span>
-              <span style={{ fontSize: 11, color: '#777', fontWeight: 700 }}>
-                Click any curiosity to explore!
+              <span style={{ fontSize: 11, color: '#6b5be6', fontWeight: 800 }}>
+                ⚡ Auto-calibrated for {studentGrade} difficulty
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
-              {[
-                { id: 'pump_compression', q: '🚲 Why does my bicycle pump barrel get hot?', icon: '🔥' },
-                { id: 'sky_scattering', q: '🌅 Why is the sky blue and sunset orange-red?', icon: '🌈' },
-                { id: 'cooker_pressure', q: '🍲 Why does a pressure cooker cook 3x faster?', icon: '💨' },
-                { id: 'ice_floating', q: '🧊 Why does solid ice float on liquid water?', icon: '💧' },
-                { id: 'photosynthesis_energy', q: '🌱 How do green leaves make food from sunlight?', icon: '☀️' },
-                { id: 'gravity_free_fall', q: '⚖️ Do heavy cricket balls fall faster than light balls?', icon: '🍎' },
-              ].map((item) => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 }}>
+              {activeDoubts.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleLoadPredefined(item.id)}
+                  onClick={() => handleExploreSocraticLesson(item.id, item.q.replace(/^[^\s]+\s*/, ''))}
                   style={{
                     textAlign: 'left',
                     padding: '10px 14px',
                     borderRadius: 12,
                     border: '2px solid #17140d',
-                    backgroundColor: currentLesson && currentLesson.id === item.id ? '#ffc531' : '#fcfaf6',
-                    boxShadow: currentLesson && currentLesson.id === item.id ? '3px 3px 0 #17140d' : '1.5px 1.5px 0 #17140d',
+                    backgroundColor: currentLesson && (currentLesson.id === item.id || currentLesson.concept.includes(item.id)) ? '#ffc531' : '#fcfaf6',
+                    boxShadow: currentLesson && (currentLesson.id === item.id || currentLesson.concept.includes(item.id)) ? '3px 3px 0 #17140d' : '1.5px 1.5px 0 #17140d',
                     cursor: 'pointer',
                     fontWeight: 700,
-                    fontSize: 13,
+                    fontSize: 12.5,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 8,
@@ -437,7 +535,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
             <div style={{ position: 'relative', flex: 1 }}>
               <input
                 type="text"
-                placeholder="Ask any science question (e.g. Why does salt melt ice? How do bats navigate in darkness?)"
+                placeholder={`Ask any doubt for ${studentGrade} (e.g. why does a pressure cooker whistle? How does Lenz's law work?)`}
                 value={inputQuery}
                 onChange={(e) => setInputQuery(e.target.value)}
                 disabled={isQuerying}
@@ -483,7 +581,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
               style={{ padding: '14px 28px', fontSize: 14.5, borderRadius: 9999, gap: 8 }}
             >
               <Send size={16} />
-              {isQuerying ? 'Mentoring...' : 'Ask Mentor'}
+              {isQuerying ? 'Formulating...' : 'Ask Mentor'}
             </button>
           </form>
 
@@ -503,10 +601,10 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                 🔬
               </div>
               <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16, color: '#6b5be6' }}>
-                Dr. APJ Mentor is formulating your personalized Socratic lesson...
+                Dr. APJ Mentor is formulating your personalized Socratic lesson for {studentGrade}...
               </div>
               <p style={{ fontSize: 12.5, color: '#666', margin: '4px 0 0' }}>
-                Connecting to NCERT curriculum, generating everyday village analogies & micro-experiments.
+                Connecting to NCERT curriculum, generating everyday village analogies, derivations & micro-experiments.
               </p>
             </div>
           )}
@@ -531,8 +629,18 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                       <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', color: '#6b5be6' }}>
                         {currentLesson.subject || 'Physical Sciences'} • {currentLesson.grade || studentGrade}
                       </span>
-                      <span style={{ fontSize: 10, fontWeight: 900, backgroundColor: '#2bd980', color: '#17140d', padding: '1px 6px', borderRadius: 4, border: '1px solid #17140d' }}>
-                        VERIFIED NCERT PEDAGOGY
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 900,
+                          backgroundColor: currentLesson.difficulty === 'Advanced' ? '#ff5b57' : currentLesson.difficulty === 'Secondary' ? '#ffc531' : '#2bd980',
+                          color: '#17140d',
+                          padding: '2px 8px',
+                          borderRadius: 4,
+                          border: '1px solid #17140d',
+                        }}
+                      >
+                        {currentLesson.difficulty || currentBracket} RIGOR
                       </span>
                     </div>
                     <h4 style={{ fontSize: 24, margin: '2px 0 0', fontFamily: 'var(--font-display)' }}>
@@ -577,7 +685,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                           alignItems: 'flex-start',
                           gap: 12,
                           backgroundColor: '#f5efe2',
-                          padding: '10px 14px',
+                          padding: '12px 16px',
                           borderRadius: 10,
                           border: '1.5px solid #17140d',
                         }}
@@ -600,7 +708,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                         >
                           {idx + 1}
                         </span>
-                        <span style={{ fontSize: 13.5, lineHeight: 1.5, color: '#222', fontWeight: 600 }}>
+                        <span style={{ fontSize: 13.5, lineHeight: 1.55, color: '#222', fontWeight: 600 }}>
                           {step}
                         </span>
                       </div>
@@ -624,7 +732,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Brain size={18} color="#ffc531" />
                       <span style={{ color: '#ffc531', fontWeight: 800, fontSize: 13.5, fontFamily: 'var(--font-display)' }}>
-                        VISUAL SCHEMATIC & MENTAL MODEL
+                        VISUAL SCHEMATIC & MENTAL MODEL ({currentLesson.grade || studentGrade})
                       </span>
                     </div>
                     <span style={{ fontSize: 10, color: '#aaa', fontWeight: 700 }}>
@@ -664,7 +772,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <AlertTriangle size={20} color="#ff5b57" />
                     <span style={{ fontWeight: 800, fontSize: 15, fontFamily: 'var(--font-display)', color: '#17140d' }}>
-                      ⚡ COMMON MISCONCEPTION BUSTER
+                      ⚡ {currentLesson.grade || studentGrade} MISCONCEPTION BUSTER
                     </span>
                   </div>
 
@@ -718,7 +826,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <Beaker size={20} color="#12b3a4" />
                     <span style={{ fontWeight: 800, fontSize: 15, fontFamily: 'var(--font-display)', color: '#17140d' }}>
-                      🔬 TRY THIS RIGHT NOW (60-SECOND DIY EXPERIMENT)
+                      🔬 TABLETOP EXPERIMENT ({currentLesson.grade || studentGrade})
                     </span>
                   </div>
 
@@ -727,26 +835,27 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                   </div>
 
                   <div style={{ fontSize: 12, fontWeight: 800, color: '#666', marginBottom: 10 }}>
-                    📦 Everyday Items Needed: {currentLesson.diyExperiment.items.join(', ')}
+                    📦 Everyday Items Needed: {Array.isArray(currentLesson.diyExperiment.items) ? currentLesson.diyExperiment.items.join(', ') : currentLesson.diyExperiment.items}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {currentLesson.diyExperiment.steps.map((st, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          fontSize: 13,
-                          color: '#333',
-                          fontWeight: 600,
-                          backgroundColor: '#f0fbfa',
-                          padding: '8px 12px',
-                          borderRadius: 8,
-                          borderLeft: '4px solid #12b3a4',
-                        }}
-                      >
-                        {st}
-                      </div>
-                    ))}
+                    {currentLesson.diyExperiment.steps &&
+                      currentLesson.diyExperiment.steps.map((st, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            fontSize: 13,
+                            color: '#333',
+                            fontWeight: 600,
+                            backgroundColor: '#f0fbfa',
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            borderLeft: '4px solid #12b3a4',
+                          }}
+                        >
+                          {st}
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}
@@ -766,7 +875,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <HelpCircle size={20} color="#ff5b57" />
                       <span style={{ fontWeight: 800, fontSize: 15, fontFamily: 'var(--font-display)', color: '#17140d' }}>
-                        🎯 MENTOR CHECK FOR UNDERSTANDING
+                        🎯 MENTOR CHECK QUESTION ({currentLesson.grade || studentGrade})
                       </span>
                     </div>
                     <span style={{ fontSize: 11, backgroundColor: '#ffc531', padding: '2px 8px', borderRadius: 6, border: '1.5px solid #17140d', fontWeight: 800 }}>
@@ -779,53 +888,54 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                   </p>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {currentLesson.checkQuestion.options.map((opt, oIdx) => {
-                      const isChosen = selectedQuizOption === oIdx;
-                      let bg = '#ffffff';
-                      if (hasAnsweredQuiz) {
-                        if (opt.correct) bg = '#efffed';
-                        else if (isChosen) bg = '#fff2f1';
-                      }
+                    {currentLesson.checkQuestion.options &&
+                      currentLesson.checkQuestion.options.map((opt, oIdx) => {
+                        const isChosen = selectedQuizOption === oIdx;
+                        let bg = '#ffffff';
+                        if (hasAnsweredQuiz) {
+                          if (opt.correct) bg = '#efffed';
+                          else if (isChosen) bg = '#fff2f1';
+                        }
 
-                      return (
-                        <button
-                          key={oIdx}
-                          onClick={() => handleQuizSelection(oIdx, opt)}
-                          disabled={hasAnsweredQuiz}
-                          style={{
-                            textAlign: 'left',
-                            padding: '10px 14px',
-                            borderRadius: 10,
-                            border: '2px solid #17140d',
-                            backgroundColor: bg,
-                            cursor: hasAnsweredQuiz ? 'default' : 'pointer',
-                            fontSize: 13,
-                            fontWeight: 700,
-                            color: '#17140d',
-                            transition: 'all 0.15s',
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>{opt.text}</span>
-                            {hasAnsweredQuiz && opt.correct && <CheckCircle2 size={16} color="#047857" />}
-                          </div>
-
-                          {/* Instant Feedback on Choice */}
-                          {hasAnsweredQuiz && (isChosen || opt.correct) && (
-                            <div
-                              style={{
-                                marginTop: 6,
-                                fontSize: 11.5,
-                                color: opt.correct ? '#047857' : '#c72c21',
-                                fontWeight: 800,
-                              }}
-                            >
-                              {opt.feedback}
+                        return (
+                          <button
+                            key={oIdx}
+                            onClick={() => handleQuizSelection(oIdx, opt)}
+                            disabled={hasAnsweredQuiz}
+                            style={{
+                              textAlign: 'left',
+                              padding: '10px 14px',
+                              borderRadius: 10,
+                              border: '2px solid #17140d',
+                              backgroundColor: bg,
+                              cursor: hasAnsweredQuiz ? 'default' : 'pointer',
+                              fontSize: 13,
+                              fontWeight: 700,
+                              color: '#17140d',
+                              transition: 'all 0.15s',
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span>{opt.text}</span>
+                              {hasAnsweredQuiz && opt.correct && <CheckCircle2 size={16} color="#047857" />}
                             </div>
-                          )}
-                        </button>
-                      );
-                    })}
+
+                            {/* Instant Feedback on Choice */}
+                            {hasAnsweredQuiz && (isChosen || opt.correct) && (
+                              <div
+                                style={{
+                                  marginTop: 6,
+                                  fontSize: 11.5,
+                                  color: opt.correct ? '#047857' : '#c72c21',
+                                  fontWeight: 800,
+                                }}
+                              >
+                                {opt.feedback}
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
               )}
@@ -844,16 +954,15 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <Compass size={20} color="#6b5be6" />
                     <span style={{ fontWeight: 800, fontSize: 15, fontFamily: 'var(--font-display)', color: '#17140d' }}>
-                      🚀 NEXT RECOMMENDED LEARNING ADVENTURES
+                      🚀 NEXT RECOMMENDED LEARNING ADVENTURES ({currentBracket})
                     </span>
                   </div>
 
                   <p style={{ fontSize: 13, color: '#555', marginBottom: 14 }}>
-                    Continue exploring this exact principle through interactive simulations, 3D camera scanning, and video stories:
+                    Explore this exact principle hands-on through PhET simulations, 3D camera scanning, and video stories:
                   </p>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
-                    {/* Launchpad 1: PhET Virtual Lab */}
                     {onNavigate && (
                       <button
                         onClick={() => onNavigate('labs')}
@@ -866,7 +975,6 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                       </button>
                     )}
 
-                    {/* Launchpad 2: Object Scanner */}
                     {onNavigate && (
                       <button
                         onClick={() => onNavigate('scanner')}
@@ -879,7 +987,6 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                       </button>
                     )}
 
-                    {/* Launchpad 3: StoryVerse Learning */}
                     {onNavigate && (
                       <button
                         onClick={() => onNavigate('stories')}
@@ -892,7 +999,6 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                       </button>
                     )}
 
-                    {/* Launchpad 4: Treasure Hunt */}
                     {onNavigate && (
                       <button
                         onClick={() => onNavigate('hunt')}
@@ -915,91 +1021,66 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
       {/* ================= 6. TAB MODE: MISCONCEPTION BUSTER (GAP DETECTOR) ================= */}
       {activeMode === 'misconceptions' && (
         <div>
-          <div style={{ backgroundColor: '#fff2f1', border: '2px solid #ff5b57', borderRadius: 16, padding: '16px 20px', marginBottom: 20 }}>
-            <h4 style={{ margin: '0 0 6px', fontSize: 18, color: '#c72c21', fontFamily: 'var(--font-display)' }}>
-              🎯 Misconception Pulse Check: Do You Fall Into These Science Traps?
-            </h4>
-            <p style={{ margin: 0, fontSize: 13, color: '#444' }}>
-              Over 80% of students harbor subtle misconceptions because of common intuition. Tap each trap to see the genuine scientific reality:
+          <div style={{ backgroundColor: '#fff2f1', border: '2.5px solid #ff5b57', borderRadius: 16, padding: '18px 22px', marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 6 }}>
+              <h4 style={{ margin: 0, fontSize: 18, color: '#c72c21', fontFamily: 'var(--font-display)' }}>
+                🎯 {currentBracket} Misconception Radar: Science Cognitive Traps
+              </h4>
+              <span style={{ fontSize: 11, backgroundColor: '#ff5b57', color: '#fff', padding: '2px 8px', borderRadius: 6, fontWeight: 900 }}>
+                {currentBracket} DIFFICULTY
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: '#444', lineHeight: 1.5 }}>
+              Concepts calibrated strictly for <strong>{studentGrade}</strong>. Tap "Explore Socratic Lesson" to fetch real backend mechanisms and derivations:
             </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
-            {[
-              {
-                concept: 'Gravity in Space',
-                myth: 'Astronauts float in the ISS because there is zero gravity in space.',
-                fact: 'Gravity at ISS orbit is still 90% as strong as on Earth! Astronauts float because they and the space station are in continuous free-fall around Earth.',
-                key: 'gravity_free_fall',
-              },
-              {
-                concept: 'Why Pump Gets Warm',
-                myth: 'A bicycle pump heats up purely from mechanical friction of the rubber seal.',
-                fact: 'Friction accounts for <15% of the heat! Adiabatic thermodynamic gas compression does work on air molecules, raising kinetic energy.',
-                key: 'pump_compression',
-              },
-              {
-                concept: 'Ocean vs Sky Color',
-                myth: 'The sky is blue because it reflects the ocean waters.',
-                fact: 'The opposite is true! Nitrogen and oxygen gas molecules scatter short blue wavelengths 10x more than red rays (Rayleigh Scattering).',
-                key: 'sky_scattering',
-              },
-              {
-                concept: 'Ice Density & Lattice',
-                myth: 'Ice floats because air bubbles are trapped inside during freezing.',
-                fact: 'Pure bubble-free ice floats! Hydrogen bonds form an open hexagonal crystal lattice, causing water to expand by 9% upon freezing.',
-                key: 'ice_floating',
-              },
-              {
-                concept: 'Plant Respiration',
-                myth: 'Plants only do photosynthesis and never breathe or consume oxygen.',
-                fact: 'Plant cells have mitochondria and breathe oxygen 24 hours a day! In daytime, photosynthesis simply produces more O2 than they consume.',
-                key: 'photosynthesis_energy',
-              },
-              {
-                concept: 'Boiling Stove Flame',
-                myth: 'Turning the gas stove to high after a cooker whistles makes it cook even faster.',
-                fact: 'Water is pinned at 121°C inside! High flame only wastes gas by venting extra steam; cooking speed remains exactly the same.',
-                key: 'cooker_pressure',
-              },
-            ].map((m, i) => (
+            {gradeMisconceptions.map((m, i) => (
               <div
                 key={i}
                 style={{
                   backgroundColor: '#ffffff',
                   border: '2.5px solid #17140d',
                   borderRadius: 14,
-                  padding: '16px 18px',
-                  boxShadow: '3px 3px 0 #17140d',
+                  padding: '18px 20px',
+                  boxShadow: '4px 4px 0 #17140d',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                 }}
               >
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ fontSize: 11, fontWeight: 900, color: '#6b5be6', textTransform: 'uppercase' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, color: '#6b5be6', textTransform: 'uppercase' }}>
                       {m.concept}
                     </span>
-                    <span style={{ fontSize: 10, backgroundColor: '#ff5b57', color: '#fff', padding: '1px 6px', borderRadius: 4, fontWeight: 800 }}>
-                      TRAP
+                    <span
+                      style={{
+                        fontSize: 10,
+                        backgroundColor: m.difficulty === 'Advanced' ? '#ff5b57' : m.difficulty === 'Secondary / Boards' ? '#ffc531' : '#2bd980',
+                        color: '#17140d',
+                        padding: '1px 6px',
+                        borderRadius: 4,
+                        fontWeight: 900,
+                        border: '1px solid #17140d',
+                      }}
+                    >
+                      {m.difficulty}
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#c72c21', marginBottom: 6 }}>
-                    ❌ Myth: "{m.myth}"
+                  <div style={{ fontSize: 13.5, fontWeight: 800, color: '#c72c21', marginBottom: 8, lineHeight: 1.4 }}>
+                    ❌ Common Trap: "{m.myth}"
                   </div>
-                  <div style={{ fontSize: 12.5, color: '#047857', fontWeight: 600, lineHeight: 1.45, marginBottom: 12 }}>
-                    ✅ Truth: {m.fact}
+                  <div style={{ fontSize: 13, color: '#047857', fontWeight: 600, lineHeight: 1.5, marginBottom: 14 }}>
+                    ✅ Scientific Reality: {m.fact}
                   </div>
                 </div>
 
                 <button
-                  onClick={() => {
-                    handleLoadPredefined(m.key);
-                    setActiveMode('ask');
-                  }}
+                  onClick={() => handleExploreSocraticLesson(m.key, m.concept)}
                   className="btn-candy primary"
-                  style={{ padding: '6px 12px', fontSize: 11.5, alignSelf: 'flex-start' }}
+                  style={{ padding: '8px 14px', fontSize: 12, alignSelf: 'flex-start', gap: 6 }}
                 >
                   Explore Socratic Lesson →
                 </button>
@@ -1012,55 +1093,75 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
       {/* ================= 7. TAB MODE: POCKET LAB DIY EXPERIMENTS ================= */}
       {activeMode === 'experiments' && (
         <div>
-          <div style={{ backgroundColor: '#f0fbfa', border: '2px solid #12b3a4', borderRadius: 16, padding: '16px 20px', marginBottom: 20 }}>
-            <h4 style={{ margin: '0 0 6px', fontSize: 18, color: '#0f766e', fontFamily: 'var(--font-display)' }}>
-              🛠️ Pocket Lab: 60-Second DIY Science You Can Do at Home
-            </h4>
-            <p style={{ margin: 0, fontSize: 13, color: '#444' }}>
-              No expensive glassware or chemicals required. Test real physics, chemistry, and biology with everyday kitchen utensils:
+          <div style={{ backgroundColor: '#f0fbfa', border: '2.5px solid #12b3a4', borderRadius: 16, padding: '18px 22px', marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 6 }}>
+              <h4 style={{ margin: 0, fontSize: 18, color: '#0f766e', fontFamily: 'var(--font-display)' }}>
+                🛠️ {currentBracket} Pocket Lab: Hands-On Science Workbench
+              </h4>
+              <span style={{ fontSize: 11, backgroundColor: '#12b3a4', color: '#fff', padding: '2px 8px', borderRadius: 6, fontWeight: 900 }}>
+                {currentBracket} EXPERIMENTS
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: '#444', lineHeight: 1.5 }}>
+              Authentic tabletop experiments for <strong>{studentGrade}</strong>. Click "View Full Experiment & Quiz" to open the interactive worksheet:
             </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
-            {Object.values(MENTOR_CURATED_KNOWLEDGE).map((item) => (
+            {gradeExperiments.map((exp) => (
               <div
-                key={item.id}
+                key={exp.id}
                 style={{
                   backgroundColor: '#ffffff',
                   border: '2.5px solid #17140d',
                   borderRadius: 14,
-                  padding: '16px 18px',
-                  boxShadow: '3px 3px 0 #17140d',
+                  padding: '18px 20px',
+                  boxShadow: '4px 4px 0 #17140d',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                 }}
               >
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 900, color: '#12b3a4', textTransform: 'uppercase', marginBottom: 4 }}>
-                    {item.subject} • {item.grade}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, color: '#12b3a4', textTransform: 'uppercase' }}>
+                      {exp.subject}
+                    </span>
+                    <span style={{ fontSize: 10, backgroundColor: '#f5efe2', color: '#17140d', padding: '1px 6px', borderRadius: 4, fontWeight: 900, border: '1px solid #17140d' }}>
+                      {exp.difficulty}
+                    </span>
                   </div>
+
                   <h5 style={{ fontSize: 16, margin: '0 0 8px', fontFamily: 'var(--font-display)' }}>
-                    🔬 {item.diyExperiment.title}
+                    🔬 {exp.title}
                   </h5>
-                  <div style={{ fontSize: 11.5, color: '#666', fontWeight: 700, marginBottom: 8 }}>
-                    📦 Items: {item.diyExperiment.items.join(', ')}
+
+                  <div style={{ fontSize: 12, color: '#555', fontWeight: 800, marginBottom: 8 }}>
+                    📦 Materials: {Array.isArray(exp.items) ? exp.items.join(', ') : exp.items}
                   </div>
-                  <p style={{ fontSize: 12.5, color: '#333', lineHeight: 1.45, fontWeight: 500, margin: '0 0 12px' }}>
-                    {item.diyExperiment.steps[0]}
-                  </p>
+
+                  <div style={{ fontSize: 12.5, color: '#222', lineHeight: 1.45, fontWeight: 600, backgroundColor: '#f5efe2', padding: '8px 10px', borderRadius: 8, marginBottom: 14 }}>
+                    ⚖️ <strong>Principle:</strong> {exp.principle}
+                  </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    handleLoadPredefined(item.id);
-                    setActiveMode('ask');
-                  }}
-                  className="btn-candy teal"
-                  style={{ padding: '6px 12px', fontSize: 11.5, alignSelf: 'flex-start' }}
-                >
-                  View Full Experiment & Quiz →
-                </button>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => handleOpenExperimentModal(exp)}
+                    className="btn-candy teal"
+                    style={{ padding: '8px 14px', fontSize: 12, gap: 6 }}
+                  >
+                    View Full Experiment & Quiz 🧪
+                  </button>
+
+                  <button
+                    onClick={() => handleExploreSocraticLesson(exp.id, exp.title)}
+                    className="btn-candy secondary"
+                    style={{ padding: '8px 12px', fontSize: 12 }}
+                  >
+                    Socratic Theory →
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1203,6 +1304,241 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= 9. DEDICATED FULL EXPERIMENT & QUIZ WORKBENCH MODAL ================= */}
+      {activeExperimentModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(23, 20, 13, 0.75)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+          }}
+          onClick={() => setActiveExperimentModal(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              border: '3px solid #17140d',
+              borderRadius: 20,
+              boxShadow: '8px 8px 0 #17140d',
+              maxWidth: 720,
+              width: '100%',
+              maxHeight: '88vh',
+              overflowY: 'auto',
+              padding: '28px 30px',
+              position: 'relative',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, fontWeight: 900, color: '#12b3a4', textTransform: 'uppercase' }}>
+                    {activeExperimentModal.subject} • {activeExperimentModal.grade}
+                  </span>
+                  <span style={{ fontSize: 10, backgroundColor: '#2bd980', color: '#17140d', padding: '1px 6px', borderRadius: 4, fontWeight: 900, border: '1px solid #17140d' }}>
+                    VERIFIED REAL DATA
+                  </span>
+                </div>
+                <h3 style={{ fontSize: 22, margin: 0, fontFamily: 'var(--font-display)' }}>
+                  🔬 {activeExperimentModal.title}
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setActiveExperimentModal(null)}
+                style={{
+                  background: '#f5efe2',
+                  border: '2px solid #17140d',
+                  borderRadius: '50%',
+                  width: 32,
+                  height: 32,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Scientific Principle */}
+            <div style={{ backgroundColor: '#f0fbfa', border: '2px solid #12b3a4', borderRadius: 12, padding: '12px 16px', marginBottom: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 900, color: '#0f766e', textTransform: 'uppercase', marginBottom: 2 }}>
+                ⚖️ Governing Scientific Law & Formula:
+              </div>
+              <div style={{ fontSize: 13.5, color: '#17140d', fontWeight: 600 }}>
+                {activeExperimentModal.principle}
+              </div>
+            </div>
+
+            {/* Checklist of Materials */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, textTransform: 'uppercase', marginBottom: 8, color: '#17140d' }}>
+                📦 Materials Checklist (Tap to check):
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {Array.isArray(activeExperimentModal.items) &&
+                  activeExperimentModal.items.map((item, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => toggleMaterialCheck(idx)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        border: '1.5px solid #17140d',
+                        backgroundColor: checkedMaterials[idx] ? '#efffed' : '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: 13,
+                        fontWeight: 700,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={Boolean(checkedMaterials[idx])}
+                        onChange={() => {}}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <span style={{ textDecoration: checkedMaterials[idx] ? 'line-through' : 'none', color: checkedMaterials[idx] ? '#047857' : '#17140d' }}>
+                        {item}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Step-by-Step Procedure */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 13, fontWeight: 900, textTransform: 'uppercase', marginBottom: 8, color: '#17140d' }}>
+                📋 Hands-on Step-by-Step Procedure:
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Array.isArray(activeExperimentModal.steps) &&
+                  activeExperimentModal.steps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: 'flex',
+                        gap: 10,
+                        backgroundColor: '#f5efe2',
+                        padding: '10px 14px',
+                        borderRadius: 8,
+                        border: '1.5px solid #17140d',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 22,
+                          height: 22,
+                          borderRadius: '50%',
+                          backgroundColor: '#12b3a4',
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 11,
+                          fontWeight: 900,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {idx + 1}
+                      </span>
+                      <span style={{ fontSize: 13, color: '#222', fontWeight: 600, lineHeight: 1.5 }}>
+                        {step}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Experiment Conceptual Quiz */}
+            <div style={{ backgroundColor: '#fffae5', border: '2px solid #17140d', borderRadius: 14, padding: '16px 18px', marginBottom: 20 }}>
+              <div style={{ fontSize: 12, fontWeight: 900, color: '#ff5b57', textTransform: 'uppercase', marginBottom: 6 }}>
+                🎯 Laboratory Verification Quiz (+30 XP)
+              </div>
+              <p style={{ fontSize: 13.5, fontWeight: 700, margin: '0 0 10px', color: '#17140d' }}>
+                What proves the scientific principle during this experiment?
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {[
+                  { text: 'A) The observed values match the theoretical formula prediction.', correct: true, feedback: 'Correct! Scientific truth is validated when experimental measurements match the mathematical model!' },
+                  { text: 'B) The materials disappear completely from existence.', correct: false, feedback: 'Incorrect. Conservation of mass dictates matter cannot be destroyed.' },
+                  { text: 'C) The temperature always rises to infinity.', correct: false, feedback: 'Incorrect. Energy transfer is strictly bounded by the laws of thermodynamics.' },
+                ].map((qOpt, qIdx) => {
+                  const isPicked = experimentQuizState.answeredIndex === qIdx;
+                  let optBg = '#ffffff';
+                  if (experimentQuizState.answeredIndex !== null) {
+                    if (qOpt.correct) optBg = '#efffed';
+                    else if (isPicked) optBg = '#fff2f1';
+                  }
+
+                  return (
+                    <button
+                      key={qIdx}
+                      onClick={() => setExperimentQuizState({ answeredIndex: qIdx, isCorrect: qOpt.correct })}
+                      disabled={experimentQuizState.answeredIndex !== null}
+                      style={{
+                        textAlign: 'left',
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        border: '1.5px solid #17140d',
+                        backgroundColor: optBg,
+                        fontSize: 12.5,
+                        fontWeight: 700,
+                        cursor: experimentQuizState.answeredIndex !== null ? 'default' : 'pointer',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>{qOpt.text}</span>
+                        {experimentQuizState.answeredIndex !== null && qOpt.correct && <CheckCircle2 size={15} color="#047857" />}
+                      </div>
+                      {experimentQuizState.answeredIndex !== null && (isPicked || qOpt.correct) && (
+                        <div style={{ marginTop: 4, fontSize: 11, color: qOpt.correct ? '#047857' : '#c72c21', fontWeight: 800 }}>
+                          {qOpt.feedback}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                onClick={() => {
+                  const expTitle = activeExperimentModal.title;
+                  setActiveExperimentModal(null);
+                  handleExploreSocraticLesson(activeExperimentModal.id, expTitle);
+                }}
+                className="btn-candy primary"
+                style={{ padding: '10px 18px', fontSize: 13 }}
+              >
+                Open Full Socratic Lesson 🚀
+              </button>
+              <button
+                onClick={() => setActiveExperimentModal(null)}
+                className="btn-candy secondary"
+                style={{ padding: '10px 18px', fontSize: 13 }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

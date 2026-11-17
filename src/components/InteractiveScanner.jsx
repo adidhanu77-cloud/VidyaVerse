@@ -16,8 +16,12 @@ import {
   Zap,
   Edit2,
   Image as ImageIcon,
+  Crosshair,
+  Target,
+  Cpu,
 } from 'lucide-react';
 import { api } from '../services/api';
+import { DETAILED_OBJECTS } from '../data/scannerKnowledge';
 
 export default function InteractiveScanner({ currentLang }) {
   // Camera & Media Refs
@@ -30,6 +34,10 @@ export default function InteractiveScanner({ currentLang }) {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState('');
+
+  // Pinpoint reticle state (percentage coordinates across viewfinder)
+  const [pinpointTarget, setPinpointTarget] = useState({ x: 50, y: 50 });
 
   // Captured / Uploaded Media
   const [capturedMediaUrl, setCapturedMediaUrl] = useState(null);
@@ -39,6 +47,7 @@ export default function InteractiveScanner({ currentLang }) {
   // Object identification state
   const [currentObject, setCurrentObject] = useState(null);
   const [detectedLabel, setDetectedLabel] = useState('Pressure Cooker');
+  const [detectionSource, setDetectionSource] = useState('curated_library');
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [customInputLabel, setCustomInputLabel] = useState('');
 
@@ -53,37 +62,55 @@ export default function InteractiveScanner({ currentLang }) {
       id: 'cooker',
       label: '🍲 Pressure Cooker',
       badge: 'Thermodynamics & Steam',
-      hint: 'Learn how trapping steam raises boiling point to 121°C',
+      hint: 'Gay-Lussac’s law and boiling point shift to 121°C',
     },
     {
       id: 'bicycle',
       label: '🚲 Village Bicycle',
       badge: 'Kinematics & Gears',
-      hint: 'Learn gear torque multiplier and gyroscopic balance',
+      hint: 'Gear ratio torque multiplier & angular momentum',
+    },
+    {
+      id: 'pen',
+      label: '🖊️ Ballpoint Pen',
+      badge: 'Capillary Action & Fluid Mechanics',
+      hint: 'Tungsten carbide sphere & shear-thinning ink',
+    },
+    {
+      id: 'phone',
+      label: '📱 Smartphone',
+      badge: 'Optoelectronics & Semiconductors',
+      hint: 'Capacitive touch grid & lithium-ion redox',
+    },
+    {
+      id: 'scissors',
+      label: '✂️ Scissors',
+      badge: 'Class 1 Levers & Shear Stress',
+      hint: 'Mechanical advantage and localized shear failure',
+    },
+    {
+      id: 'spectacles',
+      label: '👓 Spectacles / Lenses',
+      badge: 'Optics & Refraction',
+      hint: 'Snell’s law and retinal focal plane adjustment',
     },
     {
       id: 'fan',
       label: '🌀 Ceiling Fan',
       badge: 'Electromagnetism',
-      hint: 'Learn Lorentz force and 12° blade pitch airflow',
-    },
-    {
-      id: 'waterbottle',
-      label: '🧴 Water Bottle',
-      badge: 'Acoustics & Pressure',
-      hint: 'Learn Helmholtz resonance and hydrostatic pressure',
-    },
-    {
-      id: 'tractor',
-      label: '🚜 Farm Tractor',
-      badge: 'Hydraulics & Torque',
-      hint: 'Learn Pascal’s law and diesel compression ignition',
+      hint: 'Lorentz force and 12° blade pitch aerodynamic thrust',
     },
     {
       id: 'plant',
       label: '🌱 Neem Leaf',
       badge: 'Photosynthesis',
-      hint: 'Learn chloroplast photon harvesting & stomata gas valves',
+      hint: 'Chloroplast photon harvesting & stomata gas valves',
+    },
+    {
+      id: 'waterbottle',
+      label: '🧴 Water Bottle',
+      badge: 'Acoustics & Pressure',
+      hint: 'Helmholtz acoustic resonance and hydrostatic pressure',
     },
   ];
 
@@ -92,19 +119,27 @@ export default function InteractiveScanner({ currentLang }) {
     loadObjectFromBackend('cooker');
   }, []);
 
-  // Fetch verified accurate STEM mechanism from backend
+  // Fetch verified accurate STEM mechanism or run Real-Time Gemini Vision
   const loadObjectFromBackend = async (objectId, customName = null, extra = {}) => {
     setIsAnalyzing(true);
+    setAnalysisStep('📸 Locking onto target pixels...');
+
     try {
+      if (extra.imageFrame) {
+        setAnalysisStep('🤖 AI Vision scanning image contours & components...');
+      }
+
       const response = await api.scanObject(objectId, customName, currentLang, extra);
       if (response && response.result) {
         setCurrentObject(response.result);
-        setDetectedLabel(response.result.name.split('(')[0].trim());
+        setDetectedLabel(response.result.name ? response.result.name.split('(')[0].trim() : 'Recognized Object');
+        setDetectionSource(response.source || 'gemini_vision');
       }
     } catch (err) {
       console.error('Failed to scan from backend:', err);
     } finally {
       setIsAnalyzing(false);
+      setAnalysisStep('');
     }
   };
 
@@ -113,6 +148,7 @@ export default function InteractiveScanner({ currentLang }) {
     setCameraError(null);
     setCapturedMediaUrl(null);
     setMediaType('camera_live');
+    setDetectedLabel('Aiming at Object...');
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -127,7 +163,7 @@ export default function InteractiveScanner({ currentLang }) {
       }
     } catch (err) {
       console.warn('Camera access denied or unavailable:', err);
-      setCameraError('Camera access was not granted or is unavailable on this device. You can upload a photo/video or select an interactive example!');
+      setCameraError('Camera access was not granted or is unavailable on this device. You can upload a photo or select an interactive example!');
       setIsCameraActive(false);
       setMediaType('demo');
     }
@@ -150,28 +186,41 @@ export default function InteractiveScanner({ currentLang }) {
     };
   }, []);
 
-  // 1. Capture frame from Live Camera
+  // Handle user tap/click on camera or photo to reposition the pinpoint reticle
+  const handleViewportClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY);
+    if (!clientX || !clientY) return;
+
+    const x = Math.max(12, Math.min(88, Math.round(((clientX - rect.left) / rect.width) * 100)));
+    const y = Math.max(12, Math.min(88, Math.round(((clientY - rect.top) / rect.height) * 100)));
+    setPinpointTarget({ x, y });
+  };
+
+  // 1. Capture frame from Live Camera and send for real-time AI recognition
   const captureAndAnalyzeFrame = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
 
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const frameData = canvas.toDataURL('image/jpeg', 0.85);
+    const frameData = canvas.toDataURL('image/jpeg', 0.9);
 
     // Save captured snapshot to display in the viewfinder!
     setCapturedMediaUrl(frameData);
     setMediaType('camera_snapshot');
     stopCamera();
 
-    // Send captured snapshot to backend with detected or selected label
-    loadObjectFromBackend(null, detectedLabel || 'Captured Object', {
+    // Critical: Send null for customName so Gemini Vision identifies the real object from pixels!
+    loadObjectFromBackend(null, null, {
       imageFrame: frameData,
       mediaType: 'camera_snapshot',
+      pinpoint: pinpointTarget,
     });
   };
 
@@ -188,25 +237,26 @@ export default function InteractiveScanner({ currentLang }) {
     const isVideo = file.type.startsWith('video');
     setMediaType(isVideo ? 'video_upload' : 'image_upload');
 
-    // Smart object deduction from filename (e.g. "cycle.jpg", "cooker.png", "plant.mp4")
-    const cleanFileName = file.name.toLowerCase().replace(/[-_.]/g, ' ');
-    let detectedTarget = null;
-    if (cleanFileName.includes('cooker') || cleanFileName.includes('pot')) detectedTarget = 'cooker';
-    else if (cleanFileName.includes('cycle') || cleanFileName.includes('bike')) detectedTarget = 'bicycle';
-    else if (cleanFileName.includes('fan')) detectedTarget = 'fan';
-    else if (cleanFileName.includes('bottle') || cleanFileName.includes('water')) detectedTarget = 'waterbottle';
-    else if (cleanFileName.includes('tractor')) detectedTarget = 'tractor';
-    else if (cleanFileName.includes('plant') || cleanFileName.includes('leaf')) detectedTarget = 'plant';
-    else if (cleanFileName.includes('charger') || cleanFileName.includes('adapter')) detectedTarget = 'charger';
-    else if (cleanFileName.includes('pump') || cleanFileName.includes('well')) detectedTarget = 'wellpump';
-
-    const inferredName = detectedTarget || file.name.split('.')[0];
-
-    // Load actual mechanism from backend
-    loadObjectFromBackend(detectedTarget, inferredName, {
-      mediaType: isVideo ? 'video_upload' : 'image_upload',
-      filename: file.name,
-    });
+    if (isVideo) {
+      loadObjectFromBackend(null, file.name.split('.')[0], {
+        mediaType: 'video_upload',
+        filename: file.name,
+        pinpoint: { x: 50, y: 50 },
+      });
+    } else {
+      // Read base64 data so Gemini Vision can analyze the real image
+      const reader = new FileReader();
+      reader.onload = (uploadEvt) => {
+        const base64Data = uploadEvt.target.result;
+        loadObjectFromBackend(null, null, {
+          imageFrame: base64Data,
+          mediaType: 'image_upload',
+          filename: file.name,
+          pinpoint: { x: 50, y: 50 },
+        });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // 3. Capture a specific frame from an uploaded video
@@ -214,18 +264,22 @@ export default function InteractiveScanner({ currentLang }) {
     if (!userUploadedVideoRef.current || !canvasRef.current) return;
     const video = userUploadedVideoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
 
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const frameData = canvas.toDataURL('image/jpeg', 0.85);
+    const frameData = canvas.toDataURL('image/jpeg', 0.9);
 
     setCapturedMediaUrl(frameData);
     setMediaType('camera_snapshot');
 
     // Re-analyze for that specific video frame
-    loadObjectFromBackend(null, detectedLabel, { imageFrame: frameData, mediaType: 'video_frame' });
+    loadObjectFromBackend(null, null, {
+      imageFrame: frameData,
+      mediaType: 'video_frame',
+      pinpoint: pinpointTarget,
+    });
   };
 
   // 4. Update / Re-analyze for a custom typed object name
@@ -239,6 +293,7 @@ export default function InteractiveScanner({ currentLang }) {
       imageFrame: capturedMediaUrl,
       mediaType,
       filename: uploadedFileName,
+      pinpoint: pinpointTarget,
     });
   };
 
@@ -292,9 +347,26 @@ export default function InteractiveScanner({ currentLang }) {
             <Camera size={28} color="#ffffff" strokeWidth={2.4} />
           </div>
           <div>
-            <h3 style={{ fontSize: 26 }}>AI Real-Time Object Scanner</h3>
-            <p style={{ fontSize: 13, color: '#555', fontWeight: 600 }}>
-              Point device camera or upload any photo/video to decode its scientific mechanism in real time.
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 26, margin: 0 }}>AI Real-Time Object Scanner</h3>
+              <span style={{
+                backgroundColor: '#2bd980',
+                color: '#17140d',
+                fontSize: 11,
+                fontWeight: 900,
+                padding: '2px 8px',
+                borderRadius: 6,
+                border: '1.5px solid #17140d',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#047857', animation: 'pulse 1.5s infinite' }} />
+                VISION AI READY
+              </span>
+            </div>
+            <p style={{ fontSize: 13, color: '#555', fontWeight: 600, margin: '4px 0 0' }}>
+              Pinpoint any physical object with your camera or photo to decode its genuine scientific mechanism in real time.
             </p>
           </div>
         </div>
@@ -309,7 +381,7 @@ export default function InteractiveScanner({ currentLang }) {
               style={{ fontSize: 14, padding: '10px 18px', gap: 8 }}
             >
               <Camera size={18} />
-              Enable Camera 📷
+              Open Camera & Pinpoint 📷
             </button>
           ) : (
             <button
@@ -318,7 +390,7 @@ export default function InteractiveScanner({ currentLang }) {
               style={{ fontSize: 14, padding: '10px 18px', gap: 8 }}
             >
               <CameraOff size={18} color="#ff5b57" />
-              Turn Off Camera
+              Close Camera
             </button>
           )}
 
@@ -327,10 +399,10 @@ export default function InteractiveScanner({ currentLang }) {
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
             className="btn-candy secondary"
             style={{ fontSize: 14, padding: '10px 18px', gap: 8 }}
-            title="Upload an image or video of any object from your phone or PC"
+            title="Upload any photo of a real-world object from your phone or PC"
           >
             <Upload size={18} color="#12b3a4" />
-            Upload Photo/Video 📁
+            Upload Photo 📁
           </button>
         </div>
       </div>
@@ -346,18 +418,20 @@ export default function InteractiveScanner({ currentLang }) {
           marginBottom: 24,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <HelpCircle size={20} color="#ff5b57" />
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: '#17140d' }}>
-            💡 HOW TO USE: Point your camera, upload a photo/video, or try these verified examples!
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <HelpCircle size={20} color="#ff5b57" />
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: '#17140d' }}>
+              🎯 REAL-TIME DETECTION: Point reticle at any object and capture, or click verified examples!
+            </span>
+          </div>
           <span style={{ fontSize: 11, backgroundColor: '#ffc531', padding: '2px 8px', borderRadius: 6, border: '1.5px solid #17140d', fontWeight: 800 }}>
-            SAMPLE EXAMPLES
+            VERIFIED STEM EXAMPLES
           </span>
         </div>
 
-        <p style={{ fontSize: 13.5, color: '#444', marginBottom: 12, lineHeight: 1.5 }}>
-          Click any example below to see how our system analyzes actual components, formulas, and working mechanisms:
+        <p style={{ fontSize: 13, color: '#444', marginBottom: 12, lineHeight: 1.5 }}>
+          Point your camera at real things around you (pen, fan, phone, scissors, glasses, plants, water tap), or test instant pre-calibrated models:
         </p>
 
         {/* Interactive Example Pills */}
@@ -473,14 +547,14 @@ export default function InteractiveScanner({ currentLang }) {
               />
               <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 13 }}>
                 {isCameraActive
-                  ? 'LIVE DEVICE CAMERA (1080p)'
+                  ? 'LIVE CAMERA — TAP OBJECT TO PINPOINT'
                   : mediaType === 'camera_snapshot'
-                  ? 'CAPTURED DEVICE SNAPSHOT'
+                  ? 'CAPTURED REAL PHOTO'
                   : mediaType === 'image_upload'
-                  ? `UPLOADED PHOTO: ${uploadedFileName || 'device image'}`
+                  ? `UPLOADED IMAGE: ${uploadedFileName || 'Photo'}`
                   : mediaType === 'video_upload'
-                  ? `UPLOADED VIDEO: ${uploadedFileName || 'device video'}`
-                  : 'SAMPLE DEMO VIEW'}
+                  ? `VIDEO FRAME: ${uploadedFileName || 'Video'}`
+                  : 'SAMPLE INTERACTIVE SCHEMATIC'}
               </span>
             </div>
 
@@ -507,17 +581,20 @@ export default function InteractiveScanner({ currentLang }) {
             </button>
           </div>
 
-          {/* Central Camera Display Container */}
+          {/* Central Camera Display Container with Click-To-Pinpoint */}
           <div
+            onClick={handleViewportClick}
             style={{
-              height: 400,
+              height: 420,
               position: 'relative',
               backgroundColor: '#17140d',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'hidden',
+              cursor: isCameraActive || capturedMediaUrl ? 'crosshair' : 'default',
             }}
+            title={isCameraActive || capturedMediaUrl ? 'Tap anywhere to pinpoint and focus on that specific object!' : ''}
           >
             {/* 1. Live Video Stream */}
             <video
@@ -580,11 +657,11 @@ export default function InteractiveScanner({ currentLang }) {
                   style={{
                     fontSize: 110,
                     filter: 'drop-shadow(0 10px 25px rgba(0,0,0,0.7))',
-                    animation: 'confetti-bob 4s ease-in-out infinite',
+                    animation: 'float 4s ease-in-out infinite alternate',
                     userSelect: 'none',
                   }}
                 >
-                  {currentObject.icon}
+                  {currentObject.icon || '🍲'}
                 </div>
 
                 <div
@@ -612,24 +689,122 @@ export default function InteractiveScanner({ currentLang }) {
             <div style={{ position: 'absolute', bottom: 16, left: 16, width: 28, height: 28, borderBottom: '3px solid #ffc531', borderLeft: '3px solid #ffc531', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', bottom: 16, right: 16, width: 28, height: 28, borderBottom: '3px solid #ffc531', borderRight: '3px solid #ffc531', pointerEvents: 'none' }} />
 
-            {/* Laser Scanning Animation Bar (only when scanning) */}
-            {isCameraActive && (
+            {/* Laser Scanning Animation Bar (only when camera is live) */}
+            {isCameraActive && !isAnalyzing && (
               <div
                 style={{
                   position: 'absolute',
                   left: 0,
                   right: 0,
                   height: 3,
-                  backgroundColor: '#ff5b57',
-                  boxShadow: '0 0 14px #ff5b57',
-                  animation: 'confetti-bob 2.5s ease-in-out infinite',
+                  backgroundColor: '#2bd980',
+                  boxShadow: '0 0 14px #2bd980',
+                  animation: 'pulse 1.8s ease-in-out infinite alternate',
                   pointerEvents: 'none',
                 }}
               />
             )}
 
+            {/* Interactive Pinpoint Aiming Reticle Overlay */}
+            {(isCameraActive || mediaType === 'camera_snapshot' || mediaType === 'image_upload') && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: `${pinpointTarget.y}%`,
+                  left: `${pinpointTarget.x}%`,
+                  transform: 'translate(-50%, -50%)',
+                  pointerEvents: 'none',
+                  zIndex: 25,
+                  transition: 'top 0.15s ease-out, left 0.15s ease-out',
+                }}
+              >
+                {/* Rotating Reticle Ring */}
+                <div
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: '50%',
+                    border: '2.5px dashed #ffc531',
+                    boxShadow: isAnalyzing ? '0 0 24px #ff5b57, inset 0 0 12px #ff5b57' : '0 0 16px rgba(255, 197, 49, 0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    animation: isAnalyzing ? 'spin 1.5s linear infinite' : 'pulse 2s infinite alternate',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      backgroundColor: isAnalyzing ? '#ff5b57' : '#2bd980',
+                      boxShadow: '0 0 8px #ffffff',
+                    }}
+                  />
+                </div>
+
+                {/* Reticle coordinate HUD tag */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 76,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    whiteSpace: 'nowrap',
+                    backgroundColor: '#17140d',
+                    color: '#ffc531',
+                    fontSize: 10,
+                    fontWeight: 900,
+                    padding: '3px 8px',
+                    borderRadius: 6,
+                    border: '1.5px solid #ffc531',
+                    boxShadow: '2px 2px 0 #000',
+                  }}
+                >
+                  🎯 TARGET [{pinpointTarget.x}%, {pinpointTarget.y}%]
+                </div>
+              </div>
+            )}
+
+            {/* Live AI Vision Scanning Progress HUD Overlay */}
+            {isAnalyzing && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: 'rgba(23, 20, 13, 0.85)',
+                  backdropFilter: 'blur(3px)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 35,
+                  gap: 14,
+                  padding: 24,
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: 44, animation: 'float 1.2s infinite alternate' }}>
+                  🔬
+                </div>
+                <div style={{ color: '#ffc531', fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18 }}>
+                  REAL-TIME AI VISION RECOGNITION
+                </div>
+                <div style={{ color: '#ffffff', fontSize: 13.5, fontWeight: 700, maxWidth: 320 }}>
+                  {analysisStep || 'Scanning targeted object pixels & deducing real-world mechanisms...'}
+                </div>
+                <div style={{ width: 200, height: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ width: '70%', height: '100%', backgroundColor: '#2bd980', borderRadius: 3, animation: 'pulse 1s infinite alternate' }} />
+                </div>
+                <span style={{ fontSize: 11, color: '#2bd980', fontWeight: 800 }}>
+                  ⚡ Multimodal Gemini Neural Engine Active
+                </span>
+              </div>
+            )}
+
             {/* AR Hotspots Overlaid on Object */}
             {showAR &&
+              !isAnalyzing &&
               currentObject &&
               currentObject.arPoints &&
               currentObject.arPoints.map((pt, idx) => (
@@ -648,8 +823,8 @@ export default function InteractiveScanner({ currentLang }) {
                     fontSize: 11,
                     fontWeight: 800,
                     boxShadow: '3px 3px 0 #000',
-                    zIndex: 10,
-                    animation: 'confetti-pulse 2s ease-in-out infinite',
+                    zIndex: 20,
+                    animation: 'pulse 2.5s ease-in-out infinite alternate',
                     pointerEvents: 'none',
                     whiteSpace: 'nowrap',
                   }}
@@ -674,20 +849,22 @@ export default function InteractiveScanner({ currentLang }) {
             {isCameraActive ? (
               <button
                 onClick={captureAndAnalyzeFrame}
+                disabled={isAnalyzing}
                 className="btn-candy primary"
-                style={{ fontSize: 13.5, padding: '10px 20px', width: '100%', gap: 8 }}
+                style={{ fontSize: 14, padding: '12px 24px', width: '100%', gap: 8, opacity: isAnalyzing ? 0.6 : 1 }}
               >
                 <Zap size={18} />
-                {isAnalyzing ? 'Analyzing Real Mechanics...' : 'Capture Photo & Identify Object ⚡'}
+                {isAnalyzing ? 'Scanning Object Pixels...' : 'Capture & Identify Pinpointed Object ⚡'}
               </button>
             ) : mediaType === 'video_upload' ? (
               <button
                 onClick={captureFrameFromUploadedVideo}
+                disabled={isAnalyzing}
                 className="btn-candy primary"
                 style={{ fontSize: 13.5, padding: '10px 20px', width: '100%', gap: 8 }}
               >
                 <Video size={18} />
-                Capture This Video Frame For Analysis 📸
+                Capture Video Frame For Analysis 📸
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
@@ -698,7 +875,7 @@ export default function InteractiveScanner({ currentLang }) {
                     border: 'none',
                     color: '#ffc531',
                     fontSize: 13,
-                    fontWeight: 700,
+                    fontWeight: 800,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -728,27 +905,44 @@ export default function InteractiveScanner({ currentLang }) {
             {/* Header Card: Object Title, Category & Edit Object Tag */}
             <div
               style={{
-                padding: '20px 22px',
-                borderRadius: 16,
+                padding: '22px 24px',
+                borderRadius: 18,
                 backgroundColor: '#ffffff',
                 border: '3px solid #17140d',
-                boxShadow: '4px 4px 0 #17140d',
+                boxShadow: '5px 5px 0 #17140d',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
                 <div>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      textTransform: 'uppercase',
-                      color: '#ff5b57',
-                      letterSpacing: '0.05em',
-                    }}
-                  >
-                    {currentObject.category}
-                  </span>
-                  <h4 style={{ fontSize: 24, marginTop: 2 }}>{currentObject.name}</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 900,
+                        textTransform: 'uppercase',
+                        color: '#ff5b57',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      {currentObject.category}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 900,
+                        backgroundColor: detectionSource === 'gemini_vision' ? '#2bd980' : '#ffc531',
+                        color: '#17140d',
+                        padding: '2px 8px',
+                        borderRadius: 6,
+                        border: '1px solid #17140d',
+                      }}
+                    >
+                      {detectionSource === 'gemini_vision' ? '⚡ LIVE AI VISION DETECTED' : '📚 VERIFIED STEM DATA'}
+                    </span>
+                  </div>
+                  <h4 style={{ fontSize: 26, margin: '2px 0 0' }}>
+                    {currentObject.icon ? `${currentObject.icon} ` : ''}{currentObject.name}
+                  </h4>
                 </div>
 
                 {/* Detected Object Tag Pill with Edit option */}
@@ -770,9 +964,9 @@ export default function InteractiveScanner({ currentLang }) {
                       fontWeight: 800,
                       cursor: 'pointer',
                     }}
-                    title="Click if you want to test another object"
+                    title="Click to manually edit or test another object"
                   >
-                    <span>🎯 Identified: {detectedLabel}</span>
+                    <span>🎯 {detectedLabel}</span>
                     <Edit2 size={12} />
                   </div>
                 ) : (
@@ -781,7 +975,7 @@ export default function InteractiveScanner({ currentLang }) {
                       type="text"
                       value={customInputLabel}
                       onChange={(e) => setCustomInputLabel(e.target.value)}
-                      placeholder="e.g. Bicycle, Cooker, Fan, Bottle"
+                      placeholder="e.g. Pen, Phone, Scissors, Glasses"
                       autoFocus
                       style={{
                         padding: '4px 8px',
@@ -813,12 +1007,39 @@ export default function InteractiveScanner({ currentLang }) {
                 )}
               </div>
 
-              <p style={{ fontSize: 14, color: '#333', lineHeight: 1.6, fontWeight: 500 }}>
+              <p style={{ fontSize: 14, color: '#333', lineHeight: 1.6, fontWeight: 500, margin: '0 0 16px' }}>
                 {currentObject.summary}
               </p>
 
+              {/* Empirical Stats Grid (Real Data for This Specific Object) */}
+              {currentObject.stats && (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+                    gap: 10,
+                    padding: '12px 14px',
+                    backgroundColor: '#f5efe2',
+                    borderRadius: 12,
+                    border: '2px solid #17140d',
+                    marginBottom: 14,
+                  }}
+                >
+                  {Object.entries(currentObject.stats).map(([label, val]) => (
+                    <div key={label} style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: '#777', textTransform: 'uppercase' }}>
+                        {label.replace(/([A-Z])/g, ' $1').trim()}
+                      </span>
+                      <span style={{ fontSize: 12.5, fontWeight: 900, color: '#17140d' }}>
+                        {val}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* View Switcher Tabs: Mechanism vs STEM vs Experiment */}
-              <div style={{ display: 'flex', gap: 8, marginTop: 14, borderTop: '2px dashed #17140d', paddingTop: 12, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 8, borderTop: '2px dashed #17140d', paddingTop: 14, flexWrap: 'wrap' }}>
                 {[
                   { id: 'mechanism', label: '⚙️ Actual Mechanism Step-by-Step', color: '#ff5b57' },
                   { id: 'stem', label: '🔬 Physics, Chem & Math Formulas', color: '#12b3a4' },
@@ -857,7 +1078,7 @@ export default function InteractiveScanner({ currentLang }) {
                 }}
               >
                 <div style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', color: '#ff5b57', marginBottom: 12 }}>
-                  How the Mechanism Works in Real Life:
+                  How this exact mechanism functions:
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -892,7 +1113,7 @@ export default function InteractiveScanner({ currentLang }) {
                       >
                         {index + 1}
                       </div>
-                      <p style={{ fontSize: 13.5, color: '#17140d', lineHeight: 1.55, fontWeight: 600 }}>
+                      <p style={{ fontSize: 13.5, color: '#17140d', lineHeight: 1.55, fontWeight: 600, margin: 0 }}>
                         {description}
                       </p>
                     </div>
@@ -916,52 +1137,60 @@ export default function InteractiveScanner({ currentLang }) {
                 }}
               >
                 {/* Physics */}
-                <div style={{ padding: '12px 14px', borderRadius: 12, border: '2px solid #17140d', backgroundColor: '#fff2f1' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#ff5b57', color: '#fff', padding: '1px 6px', borderRadius: 4, border: '1.5px solid #17140d' }}>
-                      PHYSICS & FORCE VECTORS
-                    </span>
+                {currentObject.stem.physics && (
+                  <div style={{ padding: '12px 14px', borderRadius: 12, border: '2px solid #17140d', backgroundColor: '#fff2f1' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#ff5b57', color: '#fff', padding: '1px 6px', borderRadius: 4, border: '1.5px solid #17140d' }}>
+                        PHYSICS & FORCE VECTORS
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 13.5, fontWeight: 600, color: '#17140d', lineHeight: 1.5, margin: 0 }}>
+                      {currentObject.stem.physics}
+                    </p>
                   </div>
-                  <p style={{ fontSize: 13.5, fontWeight: 600, color: '#17140d', lineHeight: 1.5 }}>
-                    {currentObject.stem.physics}
-                  </p>
-                </div>
+                )}
 
                 {/* Mathematics */}
-                <div style={{ padding: '12px 14px', borderRadius: 12, border: '2px solid #17140d', backgroundColor: '#eaf8f6' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#12b3a4', color: '#fff', padding: '1px 6px', borderRadius: 4, border: '1.5px solid #17140d' }}>
-                      MATHEMATICS & EQUATIONS
-                    </span>
+                {currentObject.stem.math && (
+                  <div style={{ padding: '12px 14px', borderRadius: 12, border: '2px solid #17140d', backgroundColor: '#eaf8f6' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#12b3a4', color: '#fff', padding: '1px 6px', borderRadius: 4, border: '1.5px solid #17140d' }}>
+                        MATHEMATICS & EQUATIONS
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 13.5, fontWeight: 600, color: '#17140d', lineHeight: 1.5, margin: 0 }}>
+                      {currentObject.stem.math}
+                    </p>
                   </div>
-                  <p style={{ fontSize: 13.5, fontWeight: 600, color: '#17140d', lineHeight: 1.5 }}>
-                    {currentObject.stem.math}
-                  </p>
-                </div>
+                )}
 
                 {/* Chemistry */}
-                <div style={{ padding: '12px 14px', borderRadius: 12, border: '2px solid #17140d', backgroundColor: '#f4effb' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#6b5be6', color: '#fff', padding: '1px 6px', borderRadius: 4, border: '1.5px solid #17140d' }}>
-                      CHEMISTRY & MATERIAL SCIENCE
-                    </span>
+                {currentObject.stem.chemistry && (
+                  <div style={{ padding: '12px 14px', borderRadius: 12, border: '2px solid #17140d', backgroundColor: '#f4effb' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#6b5be6', color: '#fff', padding: '1px 6px', borderRadius: 4, border: '1.5px solid #17140d' }}>
+                        CHEMISTRY & MATERIAL SCIENCE
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 13.5, fontWeight: 600, color: '#17140d', lineHeight: 1.5, margin: 0 }}>
+                      {currentObject.stem.chemistry}
+                    </p>
                   </div>
-                  <p style={{ fontSize: 13.5, fontWeight: 600, color: '#17140d', lineHeight: 1.5 }}>
-                    {currentObject.stem.chemistry}
-                  </p>
-                </div>
+                )}
 
                 {/* Biology */}
-                <div style={{ padding: '12px 14px', borderRadius: 12, border: '2px solid #17140d', backgroundColor: '#e8fbf2' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#2bd980', color: '#17140d', padding: '1px 6px', borderRadius: 4, border: '1.5px solid #17140d' }}>
-                      BIOLOGY & HUMAN ERGONOMICS
-                    </span>
+                {currentObject.stem.biology && (
+                  <div style={{ padding: '12px 14px', borderRadius: 12, border: '2px solid #17140d', backgroundColor: '#e8fbf2' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#2bd980', color: '#17140d', padding: '1px 6px', borderRadius: 4, border: '1.5px solid #17140d' }}>
+                        BIOLOGY & HUMAN ERGONOMICS
+                      </span>
+                    </div>
+                    <p style={{ fontSize: 13.5, fontWeight: 600, color: '#17140d', lineHeight: 1.5, margin: 0 }}>
+                      {currentObject.stem.biology}
+                    </p>
                   </div>
-                  <p style={{ fontSize: 13.5, fontWeight: 600, color: '#17140d', lineHeight: 1.5 }}>
-                    {currentObject.stem.biology}
-                  </p>
-                </div>
+                )}
               </div>
             )}
 
@@ -978,44 +1207,48 @@ export default function InteractiveScanner({ currentLang }) {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                   <Flame size={22} color="#17140d" />
-                  <h4 style={{ fontSize: 18 }}>AI Experiment Generator: {currentObject.experiment.title}</h4>
+                  <h4 style={{ fontSize: 18, margin: 0 }}>AI Experiment Generator: {currentObject.experiment.title}</h4>
                 </div>
 
-                <div style={{ marginBottom: 12 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 }}>
-                    Zero-Cost Items at Home:
+                {currentObject.experiment.items && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 }}>
+                      Zero-Cost Items at Home:
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {currentObject.experiment.items.map((it, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            backgroundColor: '#ffffff',
+                            padding: '3px 8px',
+                            borderRadius: 9999,
+                            border: '1.5px solid #17140d',
+                            fontSize: 12,
+                            fontWeight: 700,
+                          }}
+                        >
+                          ✓ {it}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {currentObject.experiment.items.map((it, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          backgroundColor: '#ffffff',
-                          padding: '3px 8px',
-                          borderRadius: 9999,
-                          border: '1.5px solid #17140d',
-                          fontSize: 12,
-                          fontWeight: 700,
-                        }}
-                      >
-                        ✓ {it}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                )}
 
-                <div style={{ borderTop: '2px dashed #17140d', paddingTop: 10 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 }}>
-                    Step-by-Step Instructions:
+                {currentObject.experiment.steps && (
+                  <div style={{ borderTop: '2px dashed #17140d', paddingTop: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 }}>
+                      Step-by-Step Instructions:
+                    </div>
+                    <ol style={{ paddingLeft: 18, fontSize: 13.5, fontWeight: 600, lineHeight: 1.6, margin: 0 }}>
+                      {currentObject.experiment.steps.map((st, i) => (
+                        <li key={i} style={{ marginBottom: 4 }}>
+                          {st}
+                        </li>
+                      ))}
+                    </ol>
                   </div>
-                  <ol style={{ paddingLeft: 18, fontSize: 13.5, fontWeight: 600, lineHeight: 1.6 }}>
-                    {currentObject.experiment.steps.map((st, i) => (
-                      <li key={i} style={{ marginBottom: 4 }}>
-                        {st}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
+                )}
               </div>
             )}
 

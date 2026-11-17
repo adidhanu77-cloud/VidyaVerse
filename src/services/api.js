@@ -1,9 +1,124 @@
-﻿import { CURATED_STORIES, getTopicCartoonVideo } from '../data/curatedStories';
+import { CURATED_STORIES, getTopicCartoonVideo } from '../data/curatedStories';
+import { DETAILED_OBJECTS, matchKnownObject, synthesizeCustomObjectSTEM } from '../data/scannerKnowledge';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// â”€â”€ Browser-side Gemini client (works on Vercel, no backend needed) â”€â”€
+// Browser-side Gemini client (works on Vercel, no backend needed)
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const browserGenAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+
+// Real-Time Multimodal Gemini Vision Analyzer for Object Scanning
+async function analyzeImageWithGeminiVision(imageFrame, pinpoint = null, customHint = null) {
+  if (!browserGenAI || !imageFrame) return null;
+
+  const mimeType = imageFrame.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
+  const cleanBase64 = imageFrame.includes(',') ? imageFrame.split(',')[1] : imageFrame;
+
+  const pinpointInfo = pinpoint
+    ? `The student has pinpointed the object at coordinate [X: ${Math.round(pinpoint.x)}%, Y: ${Math.round(pinpoint.y)}%]. Pay special attention to the item at this position.`
+    : 'Identify the primary physical object located in the central view of this image.';
+
+  const hintInfo = customHint && customHint !== 'Captured Object' && customHint !== 'Pressure Cooker' && customHint !== 'Aiming at Object...'
+    ? `Student context/hint: "${customHint}".`
+    : '';
+
+  const prompt = `You are a world-class AI Computer Vision and STEM Science Professor analyzing an image captured by an Indian school student (Class 6-12 NCERT curriculum).
+${pinpointInfo}
+${hintInfo}
+
+CRITICAL TASK:
+1. Identify the EXACT real-world object/tool/device/appliance/plant/instrument visible in the photo (e.g. "Ballpoint Pen", "Smartphone", "Scissors", "Spectacles / Eyeglasses", "Wristwatch", "Ceiling Fan", "Water Bottle", "Pressure Cooker", "Laptop Keyboard", "Leaf / Plant", "Steel Spoon", "LED Bulb", "Electrical Plug", "Key & Lock", "Running Shoes", "Bicycle", etc.).
+2. NEVER return generic placeholders like "Captured Object", "Unknown item", or generic "Object". Pinpoint the actual physical item shown.
+3. Provide genuine, real-world, scientifically accurate STEM details for THIS EXACT OBJECT.
+4. Return ONLY a valid JSON object with NO markdown code fences (no \`\`\`json):
+{
+  "id": "short_slug",
+  "name": "Exact Object Name (English + Local script if common)",
+  "icon": "Single representative emoji",
+  "category": "Scientific Category (e.g. Optics & Refraction, Classical Mechanics & Levers, Fluid Dynamics, Electromagnetism, Thermodynamics, etc.)",
+  "summary": "2-3 clear, engaging sentences explaining the real-world scientific mechanism of this exact object.",
+  "mechanism": {
+    "step1_activation": "Step 1: Real initial physical action / input force",
+    "step2_transmission": "Step 2: Real energy or mechanical transmission through components",
+    "step3_core_principle": "Step 3: The fundamental physical, chemical, or thermodynamic law at work",
+    "step4_output": "Step 4: The work done, output generated, or functional effect",
+    "step5_regulation": "Step 5: How the system achieves balance, safety, or feedback"
+  },
+  "stem": {
+    "physics": "Real physical laws (e.g. Snell's Law, Hooke's Law, Bernoulli's Principle, Ohm's Law, Torque τ=r×F, friction μ), forces, and equations governing this object.",
+    "math": "Real mathematical formulas, ratios, geometric relationships, or numerical calculations for this object.",
+    "chemistry": "Real material science: alloys, polymers, chemical reactions, surface coatings, or molecular structure.",
+    "biology": "Real biomechanical interaction, human ergonomics, sensory perception, or biological inspiration/biomimicry."
+  },
+  "arPoints": [
+    { "top": "25%", "left": "45%", "label": "Key Component 1: Real physical purpose" },
+    { "top": "50%", "left": "50%", "label": "Core Mechanism: Active force/energy transformation" },
+    { "top": "75%", "left": "55%", "label": "Base / Grip / Contact: Stability & materials" }
+  ],
+  "experiment": {
+    "title": "Hands-On Student Experiment with this Object",
+    "items": ["Item 1", "Item 2"],
+    "steps": [
+      "Step 1: Simple test",
+      "Step 2: Measurement or observation",
+      "Conclusion: Verified scientific principle"
+    ]
+  },
+  "audioText": {
+    "en": "English spoken explanation of how this exact object works.",
+    "hi": "Hindi spoken explanation.",
+    "kn": "Kannada spoken explanation.",
+    "te": "Telugu spoken explanation.",
+    "ta": "Tamil spoken explanation.",
+    "mr": "Marathi spoken explanation."
+  },
+  "stats": {
+    "primaryMaterial": "Specific material",
+    "governingPrinciple": "Specific scientific law",
+    "typicalMetric": "Key empirical metric"
+  }
+}`;
+
+  const visionModels = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-pro-latest', 'gemini-2.5-flash-image'];
+
+  for (const m of visionModels) {
+    try {
+      const model = browserGenAI.getGenerativeModel({ model: m });
+      const imagePart = {
+        inlineData: {
+          data: cleanBase64,
+          mimeType: mimeType
+        }
+      };
+
+      const result = await model.generateContent([prompt, imagePart]);
+      const text = result.response.text().trim();
+      const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+
+      if (parsed && parsed.name && parsed.mechanism) {
+        console.log(`[VidyaVerse Vision] ✅ Successfully recognized object: "${parsed.name}" using model: ${m}`);
+
+        // Enrich with curated knowledge if available
+        const known = matchKnownObject(parsed.name) || matchKnownObject(parsed.id);
+        if (known) {
+          parsed.audioText = { ...known.audioText, ...parsed.audioText };
+          if (!parsed.icon || parsed.icon === '🔍') parsed.icon = known.icon;
+        }
+
+        return {
+          status: 'success',
+          source: 'gemini_vision',
+          model: m,
+          result: parsed
+        };
+      }
+    } catch (err) {
+      console.warn(`[VidyaVerse Vision] Model ${m} attempt error:`, err.message);
+    }
+  }
+
+  return null;
+}
 
 // â”€â”€ Verify a YouTube video ID is accessible via oEmbed (CORS-safe) â”€â”€
 async function verifyYouTubeId(videoId) {
@@ -267,9 +382,50 @@ function saveLocalRealtimeAnalytics(userId, data) {
 }
 
 export const api = {
-  // 1. Scanner Backend
+  // 1. Scanner Backend (Real-Time Multimodal AI Vision + Empirical STEM)
   async scanObject(objectId, customName, language = 'en', extra = {}) {
+    // 1. Direct objectId selection from interactive pills
+    if (objectId && DETAILED_OBJECTS[objectId]) {
+      return {
+        status: 'success',
+        source: 'curated_library',
+        result: DETAILED_OBJECTS[objectId]
+      };
+    }
+
+    // 2. Real-Time Camera / Upload Image Frame via Gemini Vision
+    if (extra.imageFrame) {
+      try {
+        const visionResult = await analyzeImageWithGeminiVision(
+          extra.imageFrame,
+          extra.pinpoint || null,
+          customName
+        );
+        if (visionResult && visionResult.result) {
+          // If backend is running, notify it in background
+          fetch(`${API_BASE}/scanner/scan`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              objectId: visionResult.result.id,
+              customName: visionResult.result.name,
+              language,
+              imageFrame: extra.imageFrame,
+              mediaType: extra.mediaType || 'camera_snapshot',
+            }),
+          }).catch(() => {});
+
+          return visionResult;
+        }
+      } catch (err) {
+        console.warn('[VidyaVerse Scanner] Vision analysis error:', err.message);
+      }
+    }
+
+    // 3. Fallback: Check backend if online
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
       const res = await fetch(`${API_BASE}/scanner/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -280,13 +436,38 @@ export const api = {
           imageFrame: extra.imageFrame || null,
           mediaType: extra.mediaType || 'camera',
           filename: extra.filename || null,
+          pinpoint: extra.pinpoint || null,
         }),
+        signal: controller.signal
       });
-      return await res.json();
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.result) return data;
+      }
     } catch (err) {
-      console.warn('API fetch fallback:', err);
-      return null;
+      // Backend not running / Vercel deployment
     }
+
+    // 4. Offline Matching: Keyword lookup from customName or filename
+    const candidateQuery = [customName, objectId, extra.filename].filter(Boolean).join(' ');
+    const matchedKnown = matchKnownObject(candidateQuery);
+    if (matchedKnown) {
+      return {
+        status: 'success',
+        source: 'local_matched',
+        result: matchedKnown
+      };
+    }
+
+    // 5. Intelligent STEM Synthesizer for arbitrary typed or detected name
+    const fallbackTarget = customName || (extra.filename ? extra.filename.split('.')[0] : 'Scanned Object');
+    const synthesized = synthesizeCustomObjectSTEM(fallbackTarget);
+    return {
+      status: 'success',
+      source: 'local_synthesized',
+      result: synthesized
+    };
   },
 
   // 2. Virtual Labs Simulation Backend

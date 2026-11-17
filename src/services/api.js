@@ -139,4 +139,63 @@ export const api = {
       return null;
     }
   },
+
+  // 9. StoryVerse Learning Mode
+  async getStories() {
+    try {
+      const res = await fetch(`${API_BASE}/stories`);
+      return await res.json();
+    } catch (err) {
+      console.warn('getStories fallback:', err);
+      return null;
+    }
+  },
+
+  async getStoryById(id) {
+    try {
+      const res = await fetch(`${API_BASE}/stories/${id}`);
+      return await res.json();
+    } catch (err) {
+      console.warn('getStoryById fallback:', err);
+      return null;
+    }
+  },
+
+  async generateAIStory(params) {
+    try {
+      const res = await fetch(`${API_BASE}/stories/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      return await res.json();
+    } catch (err) {
+      console.warn('generateAIStory fallback:', err);
+      return null;
+    }
+  },
+
+  async getStoryAnalytics(userId) {
+    try {
+      const res = await fetch(`${API_BASE}/stories/analytics/${userId}`);
+      return await res.json();
+    } catch (err) {
+      console.warn('getStoryAnalytics fallback:', err);
+      return null;
+    }
+  },
+
+  async saveStoryProgress(progressData) {
+    try {
+      const res = await fetch(`${API_BASE}/stories/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(progressData),
+      });
+      return await res.json();
+    } catch (err) {
+      console.warn('saveStoryProgress fallback:', err);
+      return null;
+    }
+  },
 };

@@ -45,7 +45,7 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
     { id: 'scanner',   label: 'Object Scanner',        icon: '📷', tag: 'Vision' },
     { id: 'labs',      label: 'Virtual Labs',           icon: '🧪', tag: 'Physics/Chem' },
     { id: 'hunt',      label: 'Treasure Hunt',          icon: '🧭', tag: 'Gamified' },
-    { id: 'stories',   label: 'STEM Stories',           icon: '📖', tag: 'Rocket Raju' },
+    { id: 'stories',   label: 'StoryVerse Learning',    icon: '🎬', tag: 'Pixar Mode' },
     { id: 'mentor',    label: 'AI Tutor',               icon: '🤖', tag: 'Dr. APJ' },
     { id: 'careers',   label: 'Careers',                icon: '🎯', tag: 'Roadmaps' },
     { id: 'analytics', label: 'Leaderboards & Gaps',    icon: '🏆', tag: 'School League' },

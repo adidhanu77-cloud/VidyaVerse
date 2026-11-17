@@ -111,4 +111,61 @@ router.post('/student/:id/progress', (req, res) => {
   res.json({ status: 'success', message: 'Progress updated', updatedProfile: p });
 });
 
+// ── WEEKLY SKILL ASSESSMENT ROUTES ───────────────────────────────────
+// In-memory store for assessment records (per user)
+const assessmentRecords = {};
+
+// POST - save a completed assessment result
+router.post('/assessment', (req, res) => {
+  const { userId, assessment } = req.body;
+  if (!userId || !assessment) {
+    return res.status(400).json({ status: 'error', message: 'userId and assessment required' });
+  }
+  if (!assessmentRecords[userId]) assessmentRecords[userId] = [];
+  // Prepend latest, keep last 12
+  assessmentRecords[userId].unshift(assessment);
+  if (assessmentRecords[userId].length > 12) assessmentRecords[userId].length = 12;
+
+  res.json({
+    status: 'success',
+    message: 'Assessment saved successfully',
+    assessmentId: assessment.id,
+    grade: assessment.grade,
+    score: `${assessment.totalCorrect}/40`,
+    percentage: assessment.percentage,
+    nextEligibleDate: assessment.nextEligibleDate,
+    streamOrientation: assessment.streamOrientation
+  });
+});
+
+// GET - retrieve latest assessment for a user
+router.get('/assessment/:userId/latest', (req, res) => {
+  const records = assessmentRecords[req.params.userId] || [];
+  if (records.length === 0) {
+    return res.json({ status: 'not_found', message: 'No assessments found', data: null });
+  }
+  res.json({ status: 'success', data: records[0] });
+});
+
+// GET - retrieve full assessment history for a user
+router.get('/assessment/:userId/history', (req, res) => {
+  const records = assessmentRecords[req.params.userId] || [];
+  res.json({
+    status: 'success',
+    count: records.length,
+    history: records.map(r => ({
+      id: r.id,
+      grade: r.grade,
+      completedAt: r.completedAt,
+      weekNumber: r.weekNumber,
+      year: r.year,
+      totalCorrect: r.totalCorrect,
+      percentage: r.percentage,
+      masteryTier: r.masteryTier,
+      streamOrientation: r.streamOrientation,
+      subjectPercentages: r.subjectPercentages
+    }))
+  });
+});
+
 export default router;

@@ -42,13 +42,14 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
   ];
 
   const verticalTabs = [
-    { id: 'scanner',   label: 'Object Scanner',        icon: '📷', tag: 'Vision' },
-    { id: 'labs',      label: 'Virtual Labs',           icon: '🧪', tag: 'Physics/Chem' },
-    { id: 'hunt',      label: 'Treasure Hunt',          icon: '🧭', tag: 'Gamified' },
-    { id: 'stories',   label: 'StoryVerse Learning',    icon: '🎬', tag: 'Pixar Mode' },
-    { id: 'mentor',    label: 'AI Tutor',               icon: '🤖', tag: 'Dr. APJ' },
-    { id: 'careers',   label: 'Careers',                icon: '🎯', tag: 'Roadmaps' },
-    { id: 'analytics', label: 'Leaderboards & Gaps',    icon: '🏆', tag: 'School League' },
+    { id: 'scanner',    label: 'Object Scanner',        icon: '📷', tag: 'Vision' },
+    { id: 'labs',       label: 'Virtual Labs',           icon: '🧪', tag: 'Physics/Chem' },
+    { id: 'hunt',       label: 'Treasure Hunt',          icon: '🧭', tag: 'Gamified' },
+    { id: 'stories',    label: 'StoryVerse Learning',    icon: '🎬', tag: 'Pixar Mode' },
+    { id: 'mentor',     label: 'AI Tutor',               icon: '🤖', tag: 'Dr. APJ' },
+    { id: 'assessment', label: 'Skill Assessment',        icon: '📝', tag: 'Weekly Test' },
+    { id: 'careers',    label: 'Career Navigator',        icon: '🎯', tag: 'Live Roadmap' },
+    { id: 'analytics',  label: 'Leaderboards & Gaps',    icon: '🏆', tag: 'School League' },
   ];
 
   const handleSelectTab = (id) => { setShowDropdown(false); onSelectSection(id); };
@@ -116,7 +117,7 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
             <div style={{ position: 'relative' }}>
               <button onClick={() => setShowDropdown(!showDropdown)} className="btn-candy secondary" style={{ padding: '8px 18px', fontSize: 14, boxShadow: '3px 3px 0 #17140d', gap: 8 }}>
                 <Layers size={16} color="#ff5b57" />
-                <span>Select Modules (7)</span>
+                <span>Select Modules (8)</span>
                 <ChevronDown size={16} color="#17140d" style={{ transform: showDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
 

@@ -11,6 +11,7 @@ import StoryMode from './StoryMode';
 import AiTutor from './AiTutor';
 import CareerNavigator from './CareerNavigator';
 import LeaderboardAndDashboards from './LeaderboardAndDashboards';
+import SkillAssessment from './SkillAssessment';
 
 /* ─── Tab definitions (7 Core Modules) ───────────────────────────── */
 const BASE_TABS = [
@@ -19,6 +20,7 @@ const BASE_TABS = [
   { id: 'hunt',      title: 'Treasure Hunt',          subtitle: 'AI quiz quest paths with XP, streaks & badges',             badge: 'Gemini AI',   color: '#ffc531', bg: '#fffbf0', icon: Compass,   emoji: '🧭' },
   { id: 'stories',   title: 'StoryVerse Learning',    subtitle: 'Disney/Pixar cartoon adventures, voice narration, decisions & labs', badge: 'StoryVerse',  color: '#3aa0ff', bg: '#f0f7ff', icon: BookOpen,  emoji: '🎬' },
   { id: 'mentor',    title: 'MentorAI — Intelligent STEM Tutor', subtitle: 'Adaptive Socratic teacher, concept gap detector & multi-modal learning guide', badge: 'MentorAI',     color: '#6b5be6', bg: '#f4f2ff', icon: Bot,       emoji: '🤖' },
+  { id: 'assessment', title: 'Weekly Skill Assessment', subtitle: 'Class-calibrated 40-question benchmark test u2014 drives Career Navigator real-time', badge: 'Weekly Test', color: '#804dee', bg: '#f5f0ff', icon: ClipboardCheck, emoji: 'u{1F4DD}' },
   { id: 'careers',   title: 'Career Navigator',       subtitle: 'From village curiosity to real research career roadmaps',   badge: 'Roadmaps',    color: '#2bd980', bg: '#efffed', icon: MapPin,    emoji: '🎯' },
   { id: 'analytics', title: 'Leaderboards & Gaps',    subtitle: 'School league tables & student concept gap analytics',      badge: 'Class Tool',  color: '#ff5b57', bg: '#fff0f0', icon: Trophy,    emoji: '🏆' },
 ];
@@ -88,7 +90,8 @@ function FeaturePage({ tab, onBack, currentLang, onSelectTab }) {
         {tab.id === 'hunt'      && <TreasureHunt />}
         {tab.id === 'stories'   && <StoryMode />}
         {tab.id === 'mentor'    && <AiTutor currentLang={currentLang} onNavigate={onSelectTab} />}
-        {tab.id === 'careers'   && <CareerNavigator />}
+        {tab.id === 'assessment' && <SkillAssessment onNavigate={onSelectTab} />}
+        {tab.id === 'careers'   && <CareerNavigator onNavigate={onSelectTab} />}
         {tab.id === 'analytics' && <LeaderboardAndDashboards />}
       </div>
     </div>
@@ -152,7 +155,7 @@ function FeatureGrid({ tabs, onSelect }) {
             <span>🔬</span>
             <span>Select a Laboratory Module</span>
             <span style={{ backgroundColor: '#ffc531', padding: '1px 8px', borderRadius: 6, border: '1.5px solid #17140d', fontSize: 11 }}>
-              7 Modules
+              8 Modules
             </span>
           </div>
           <div style={{ height: 3, flex: 1, backgroundColor: '#17140d', borderRadius: 999 }} />
@@ -248,7 +251,8 @@ function getFeatureHighlights(id) {
     hunt:      ['🗺 Path Map', '🤖 Gemini Q&A', '🔥 Streaks', '🏆 Badges'],
     stories:   ['🎬 Pixar Cartoon', '🗣 Voice Narration', '🎮 RPG Decisions', '🧪 PhET Labs'],
     mentor:    ['🗣 Voice Input', '🌐 6 Languages', '💡 Socratic', '🤖 Dr. APJ'],
-    careers:   ['🎯 Roadmaps', '🏡 Village Jobs', '📈 STEM Paths', '💼 Guidance'],
+    assessment:['📝 40 Questions', '📅 Weekly Test', '🎯 Live Career Map', '📊 Subject Scores'],
+    careers:   ['🚀 Live Roadmap', '🏛 IIT/IISc Track', '💰 Salary Insight', '🌾 Village Impact'],
     analytics: ['🏆 School League', '📊 Concept Gaps', '📡 Real-Time', '👩‍🏫 Teacher View'],
   };
   return map[id] || [];

@@ -255,7 +255,7 @@ export default function Hero({ currentLang, onStartScan, onOpenLabs }) {
               {/* Two-Line Proof Copy */}
               <div>
                 <p style={{ fontWeight: 800, fontSize: 15, color: '#17140d', fontFamily: 'var(--font-display)' }}>
-                  48,000+ Students in 320+ Rural Schools
+                  Gamified Learning & Future Roadmaps
                 </p>
                 <p style={{ fontSize: 13, color: '#555', fontWeight: 500 }}>
                   Kannada • Hindi • Telugu • Tamil • 100% Offline Capable

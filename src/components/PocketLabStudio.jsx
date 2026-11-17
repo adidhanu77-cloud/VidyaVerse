@@ -109,8 +109,8 @@ function FeatureGrid({ tabs, onSelect }) {
           </div>
 
           <h1 style={{ fontSize: 'clamp(34px, 4.5vw, 62px)', lineHeight: 1.05, marginBottom: 18, letterSpacing: '-0.035em' }}>
-            Turn Every <span className="marker-highlight">Bicycle</span> & Village into a{' '}
-            <span className="marker-highlight teal">Pocket Lab.</span>
+            Bringing a <span className="marker-highlight">Universe of Learning</span> to{' '}
+            <span className="marker-highlight teal">Every Village.</span>
           </h1>
 
           <p style={{ fontSize: 'clamp(15px,1.2vw,18px)', color: '#444', lineHeight: 1.65, maxWidth: 740, margin: '0 auto 24px auto' }}>
@@ -119,8 +119,8 @@ function FeatureGrid({ tabs, onSelect }) {
 
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             {[
-              { text: '🎒 48,000+ Students', bg: '#fff' },
-              { text: '🏫 320+ Rural Schools', bg: '#fff' },
+              { text: '🎮 Gamified Learning', bg: '#fff' },
+              { text: '🚀 Future Roadmaps', bg: '#fff' },
               { text: '🗣️ 6 Indic Languages', bg: '#fff' },
               { text: '✓ 100% Free & Offline Ready', bg: '#2bd980' },
             ].map(p => (

@@ -86,9 +86,19 @@ const SCENE_THEMES = {
 
 /* ─── Dynamic Animated Science Concept Visualizer ───────────────── */
 function AnimatedScienceVisualizer({ storyId, topic, sceneNumber }) {
-  const isPhotosynthesis = (storyId === 'leo_leaf' || (topic || '').toLowerCase().includes('photo') || (topic || '').toLowerCase().includes('plant'));
-  const isElectricity = (storyId === 'eddy_electron' || (topic || '').toLowerCase().includes('electri') || (topic || '').toLowerCase().includes('circuit'));
-  const isAtoms = (storyId === 'atomia_quest' || (topic || '').toLowerCase().includes('atom') || (topic || '').toLowerCase().includes('bond'));
+  const t = (topic || '').toLowerCase();
+  const isPhotosynthesis = storyId === 'leo_leaf' || t.includes('photo') || t.includes('plant') || t.includes('chloro');
+  const isElectricity = storyId === 'eddy_electron' || t.includes('electri') || t.includes('circuit') || t.includes('ohm') || t.includes('current');
+  const isAtoms = storyId === 'atomia_quest' || t.includes('atom') || t.includes('bond') || t.includes('molecul') || t.includes('chemi');
+  const isSolar = storyId === 'solar_odyssey' || t.includes('solar') || t.includes('planet') || t.includes('orbit') || t.includes('space') || t.includes('galaxy');
+  const isHeart = storyId === 'bloodstream_express' || t.includes('heart') || t.includes('blood') || t.includes('circulat') || t.includes('pulse');
+  const isWater = storyId === 'water_cycle_drippy' || t.includes('water cycle') || t.includes('evapor') || t.includes('precipit') || t.includes('cloud');
+  const isGravity = storyId === 'gravity_quest' || t.includes('gravity') || t.includes('newton') || t.includes('force') || t.includes('motion') || t.includes('inertia');
+  const isDigestion = storyId === 'digestive_quest' || t.includes('digest') || t.includes('stomach') || t.includes('intestin') || t.includes('enzyme');
+  const isMagnet = storyId === 'magnet_master' || t.includes('magnet') || t.includes('magnetic') || t.includes('compass') || t.includes('pole');
+  const isLight = storyId === 'prism_light' || t.includes('light') || t.includes('prism') || t.includes('optic') || t.includes('rainbow') || t.includes('refract');
+  const isFriction = storyId === 'friction_clash' || t.includes('friction') || t.includes('surface') || t.includes('rough') || t.includes('smooth');
+  const isEcology = storyId === 'green_guardians' || t.includes('pollut') || t.includes('ecology') || t.includes('ecosystem') || t.includes('environment');
 
   if (isPhotosynthesis) {
     return (
@@ -367,36 +377,368 @@ function AnimatedScienceVisualizer({ storyId, topic, sceneNumber }) {
     );
   }
 
-  // General Topic Visualizer
-  return (
-    <div style={{
-      backgroundColor: 'rgba(23, 20, 13, 0.88)',
-      border: '3px solid #ffc531',
-      borderRadius: 20,
-      padding: '16px 20px',
-      maxWidth: 520,
-      margin: '0 auto',
-      boxShadow: '4px 4px 0 #17140d'
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-        <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>
-          🤖 Interactive Science Simulator
-        </span>
-        <span style={{ fontSize: 11, color: '#86efac', fontWeight: 800 }}>
-          {topic || 'Scientific Principles'}
-        </span>
+  // ── Solar System Visualizer ──────────────────────────────────────
+  if (isSolar) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🪐 Orbital Mechanics Simulator</span>
+          <span style={{ fontSize: 11, color: '#a5b4fc', fontWeight: 800 }}>Gravity × Velocity = Stable Orbit</span>
+        </div>
+        <div style={{ height: 140, background: 'radial-gradient(circle, #09090b 0%, #0f0a28 100%)', borderRadius: 14, border: '2px solid #312e81', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          {/* Stars */}
+          {['⭐','✨','⭐','✨','⭐'].map((s, i) => (
+            <span key={i} style={{ position: 'absolute', left: `${[8,80,20,70,45][i]}%`, top: `${[10,15,70,65,30][i]}%`, fontSize: 10, opacity: 0.7 }}>{s}</span>
+          ))}
+          {/* Sun */}
+          <div style={{ width: 50, height: 50, borderRadius: '50%', backgroundColor: '#fbbf24', boxShadow: '0 0 30px #fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, animation: 'pulse 2s infinite' }}>☀️</div>
+          {/* Orbiting Earth */}
+          <div style={{ position: 'absolute', width: 100, height: 100, borderRadius: '50%', border: '1.5px dashed #4f46e5', animation: 'spin 4s linear infinite', transformOrigin: 'center' }}>
+            <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', fontSize: 20 }}>🌍</div>
+          </div>
+          {/* Orbiting Mars */}
+          <div style={{ position: 'absolute', width: 150, height: 150, borderRadius: '50%', border: '1.5px dashed #ef4444', animation: 'spin 7s linear infinite reverse', transformOrigin: 'center' }}>
+            <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', fontSize: 16 }}>🔴</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Gravitational Force F = G×M×m / r² keeps planets in elliptical orbits
+        </div>
       </div>
+    );
+  }
 
-      <div style={{
-        height: 120,
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
-        borderRadius: 14,
-        border: '2px solid rgba(255,255,255,0.2)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 24
-      }}>
+  // ── Heart & Circulatory System Visualizer ────────────────────────
+  if (isHeart) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🫀 Cardiac Pump Cycle (Systole / Diastole)</span>
+          <span style={{ fontSize: 11, color: '#f43f5e', fontWeight: 800 }}>~72 BPM</span>
+        </div>
+        <div style={{ height: 140, background: 'linear-gradient(135deg, #881337 0%, #be123c 100%)', borderRadius: 14, border: '2px solid #f43f5e', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-around', overflow: 'hidden' }}>
+          {/* Lungs */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', padding: '8px 12px', borderRadius: 10, border: '1.5px dashed #fda4af' }}>
+            <span style={{ fontSize: 24 }}>🫁</span>
+            <span style={{ fontSize: 9, fontWeight: 800, color: '#fda4af' }}>LUNGS</span>
+            <span style={{ fontSize: 8, color: '#fecdd3' }}>O₂ In / CO₂ Out</span>
+          </div>
+          {/* Heart pulsing */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ fontSize: 48, animation: 'pulse 0.8s infinite', filter: 'drop-shadow(0 0 12px #ef4444)' }}>❤️</div>
+            <span style={{ fontSize: 9, fontWeight: 900, color: '#fef08a' }}>4 Chambers</span>
+            <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+              {['RA','RV','LA','LV'].map(ch => (
+                <span key={ch} style={{ fontSize: 8, fontWeight: 800, backgroundColor: 'rgba(255,255,255,0.2)', padding: '1px 4px', borderRadius: 4, color: '#fff' }}>{ch}</span>
+              ))}
+            </div>
+          </div>
+          {/* Body organs */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', padding: '8px 12px', borderRadius: 10, border: '1.5px dashed #fda4af' }}>
+            <span style={{ fontSize: 24, animation: 'jump 1.5s infinite' }}>🧠</span>
+            <span style={{ fontSize: 9, fontWeight: 800, color: '#fda4af' }}>BODY</span>
+            <span style={{ fontSize: 8, color: '#fecdd3' }}>O₂ Delivered</span>
+          </div>
+          {/* Blood flow arrows */}
+          <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', fontSize: 10, color: '#fda4af', fontWeight: 800, animation: 'walk 1.5s infinite' }}>
+            🔴 ➔ Arteries ➔ 🔵 ➔ Veins ➔ 🫀
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Heart pumps ~5 litres/min · Oxygenated blood: arteries · Deoxygenated: veins
+        </div>
+      </div>
+    );
+  }
+
+  // ── Water Cycle Visualizer ───────────────────────────────────────
+  if (isWater) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🌦️ Hydrological Cycle Engine</span>
+          <span style={{ fontSize: 11, color: '#38bdf8', fontWeight: 800 }}>Evaporation → Cloud → Rain</span>
+        </div>
+        <div style={{ height: 140, background: 'linear-gradient(180deg, #0369a1 0%, #0ea5e9 50%, #7dd3fc 100%)', borderRadius: 14, border: '2px solid #38bdf8', position: 'relative', overflow: 'hidden' }}>
+          {/* Sun evaporating water */}
+          <div style={{ position: 'absolute', top: 8, left: 12, fontSize: 28, animation: 'pulse 2s infinite' }}>☀️</div>
+          <div style={{ position: 'absolute', top: 10, left: 50, fontSize: 10, color: '#fef08a', fontWeight: 800, animation: 'float 1.5s infinite alternate' }}>↑ Evaporation</div>
+          {/* Rising vapor droplets */}
+          {[55,70,85,100].map((left, i) => (
+            <div key={i} style={{ position: 'absolute', left: `${left}px`, top: `${60 - i * 12}px`, fontSize: 12, animation: `float ${1.5 + i * 0.3}s infinite alternate`, opacity: 0.8 }}>💧</div>
+          ))}
+          {/* Cloud */}
+          <div style={{ position: 'absolute', top: 8, right: 20, fontSize: 36, animation: 'float 3s infinite alternate' }}>⛅</div>
+          <div style={{ position: 'absolute', top: 14, right: 22, fontSize: 9, color: '#fef08a', fontWeight: 800, textAlign: 'center' }}>Condensation</div>
+          {/* Rain falling */}
+          {[1,2,3,4].map(i => (
+            <div key={i} style={{ position: 'absolute', right: `${20 + i * 14}px`, top: 60, fontSize: 16, animation: `jump ${0.6 + i * 0.1}s infinite` }}>🌧️</div>
+          ))}
+          {/* Ocean / River at bottom */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 36, background: 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)', borderTopLeftRadius: 10, borderTopRightRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <span style={{ fontSize: 18 }}>🌊</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#fff' }}>Ocean · River · Groundwater Runoff</span>
+            <span style={{ fontSize: 18 }}>🌊</span>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Sun energy drives evaporation → water vapour rises → condenses into clouds → precipitation falls
+        </div>
+      </div>
+    );
+  }
+
+  // ── Gravity & Newton's Laws Visualizer ──────────────────────────
+  if (isGravity) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🍎 Newton's Laws of Motion</span>
+          <span style={{ fontSize: 11, color: '#86efac', fontWeight: 800 }}>F = ma · g = 9.8 m/s²</span>
+        </div>
+        <div style={{ height: 140, background: 'linear-gradient(180deg, #082f49 0%, #0c4a6e 60%, #7f5b2a 100%)', borderRadius: 14, border: '2px solid #0369a1', position: 'relative', overflow: 'hidden' }}>
+          {/* Apple tree */}
+          <div style={{ position: 'absolute', left: 24, top: 8 }}>
+            <div style={{ fontSize: 28 }}>🌳</div>
+          </div>
+          {/* Apple falling with acceleration */}
+          <div style={{ position: 'absolute', left: 42, top: 24, fontSize: 22, animation: 'jump 1.5s ease-in infinite' }}>🍎</div>
+          {/* Velocity arrow */}
+          <div style={{ position: 'absolute', left: 70, top: 50, fontSize: 10, color: '#fef08a', fontWeight: 800 }}>⬇ 9.8 m/s²</div>
+          {/* Ground / surface */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 24, backgroundColor: '#78350f', borderTopLeftRadius: 8, borderTopRightRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 9, fontWeight: 800, color: '#fef08a' }}>Ground — Normal Force (N) ⬆ = mg ⬇</span>
+          </div>
+          {/* Three laws legend */}
+          <div style={{ position: 'absolute', right: 12, top: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {[['1st', 'Inertia'], ['2nd', 'F = ma'], ['3rd', 'Action-Reaction']].map(([num, law]) => (
+              <div key={num} style={{ backgroundColor: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '2px 8px', textAlign: 'center' }}>
+                <span style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24' }}>Newton's {num}:</span>
+                <span style={{ fontSize: 8, color: '#fff', marginLeft: 4 }}>{law}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Every object at rest stays at rest unless acted upon by an unbalanced force (Newton's 1st Law)
+        </div>
+      </div>
+    );
+  }
+
+  // ── Digestive System Visualizer ──────────────────────────────────
+  if (isDigestion) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🫃 Human Digestive Pipeline</span>
+          <span style={{ fontSize: 11, color: '#a3e635', fontWeight: 800 }}>Mouth → 8m Small Intestine</span>
+        </div>
+        <div style={{ height: 140, background: 'linear-gradient(135deg, #4a1942 0%, #701a75 60%, #3b0764 100%)', borderRadius: 14, border: '2px solid #a855f7', position: 'relative', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 6, overflow: 'hidden' }}>
+          {[
+            { emoji: '👄', label: 'Mouth', note: 'Teeth + Amylase', color: '#f97316' },
+            { emoji: '🌀', label: 'Oesophagus', note: 'Peristalsis', color: '#a855f7' },
+            { emoji: '🫙', label: 'Stomach', note: 'HCl + Pepsin pH 2', color: '#ef4444' },
+            { emoji: '〰️', label: 'Small Int.', note: '8m · Villi · Lipase', color: '#22c55e' },
+            { emoji: '💩', label: 'Large Int.', note: 'Water absorbed', color: '#a16207' },
+          ].map((organ, i, arr) => (
+            <div key={organ.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
+              <div style={{ fontSize: 22, animation: i % 2 === 0 ? 'float 2s infinite alternate' : 'jump 2s infinite' }}>{organ.emoji}</div>
+              <div style={{ fontSize: 8, fontWeight: 900, color: organ.color, textAlign: 'center' }}>{organ.label}</div>
+              <div style={{ fontSize: 7, color: '#d1d5db', textAlign: 'center', lineHeight: 1.2 }}>{organ.note}</div>
+              {i < arr.length - 1 && <div style={{ position: 'absolute', left: `${22 + i * 19}%`, top: '44%', fontSize: 12, color: '#fbbf24', animation: 'walk 1s infinite' }}>→</div>}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Digestion = Mechanical (teeth, peristalsis) + Chemical (enzymes: amylase, pepsin, lipase)
+        </div>
+      </div>
+    );
+  }
+
+  // ── Magnetism Visualizer ─────────────────────────────────────────
+  if (isMagnet) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🧲 Magnetic Field Lines Visualizer</span>
+          <span style={{ fontSize: 11, color: '#38bdf8', fontWeight: 800 }}>N → S · Flux Density (Tesla)</span>
+        </div>
+        <div style={{ height: 140, background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', borderRadius: 14, border: '2px solid #818cf8', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-around', overflow: 'hidden' }}>
+          {/* North Pole */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+            <div style={{ width: 50, height: 70, background: 'linear-gradient(180deg, #dc2626 0%, #991b1b 100%)', borderRadius: '8px 8px 0 0', border: '2px solid #f87171', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: '#fff', fontSize: 14, fontWeight: 900 }}>N</span>
+            </div>
+            <div style={{ width: 50, height: 70, background: 'linear-gradient(180deg, #1d4ed8 0%, #1e3a8a 100%)', borderRadius: '0 0 8px 8px', border: '2px solid #60a5fa', borderTop: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: '#fff', fontSize: 14, fontWeight: 900 }}>S</span>
+            </div>
+          </div>
+          {/* Field Lines */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
+            {[0,1,2,3,4].map(i => (
+              <div key={i} style={{ width: 90, height: 3, backgroundColor: `rgba(99,102,241,${0.3 + i * 0.15})`, borderRadius: 2, animation: `walk ${1 + i * 0.2}s infinite alternate` }} />
+            ))}
+            <span style={{ fontSize: 9, color: '#818cf8', fontWeight: 700, marginTop: 2 }}>Field Lines N→S</span>
+          </div>
+          {/* Iron filings + compass */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontSize: 32, animation: 'spin 3s linear infinite' }}>🧭</div>
+            <div style={{ fontSize: 9, color: '#fef08a', fontWeight: 800, textAlign: 'center' }}>Compass aligns<br/>with Earth's field</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Opposite poles attract · Like poles repel · Earth is a giant dipole magnet (N–S axis)
+        </div>
+      </div>
+    );
+  }
+
+  // ── Light & Optics Visualizer ────────────────────────────────────
+  if (isLight) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🌈 Prism Dispersion & Spectrum</span>
+          <span style={{ fontSize: 11, color: '#f0abfc', fontWeight: 800 }}>ROYGBIV · 400–700 nm</span>
+        </div>
+        <div style={{ height: 140, background: 'linear-gradient(135deg, #18181b 0%, #27272a 100%)', borderRadius: 14, border: '2px solid #a855f7', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-around', overflow: 'hidden', padding: '0 12px' }}>
+          {/* White light beam */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ width: 10, height: 60, background: 'linear-gradient(180deg, #fff 0%, #f8fafc 100%)', borderRadius: 4, boxShadow: '0 0 20px #fff', animation: 'pulse 1.5s infinite' }} />
+            <span style={{ fontSize: 9, color: '#fff', fontWeight: 800, marginTop: 4 }}>White Light</span>
+          </div>
+          {/* Prism */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ fontSize: 48, animation: 'float 2s infinite alternate' }}>🔷</div>
+            <span style={{ fontSize: 9, color: '#7dd3fc', fontWeight: 800 }}>Glass Prism</span>
+            <span style={{ fontSize: 8, color: '#94a3b8' }}>n = 1.5</span>
+          </div>
+          {/* Spectrum fan */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start' }}>
+            {[
+              ['🔴', 'Red', '700nm'],
+              ['🟠', 'Orange', '620nm'],
+              ['🟡', 'Yellow', '580nm'],
+              ['🟢', 'Green', '530nm'],
+              ['🔵', 'Blue', '470nm'],
+              ['🟣', 'Violet', '400nm'],
+            ].map(([emoji, color, wave]) => (
+              <div key={color} style={{ display: 'flex', alignItems: 'center', gap: 4, animation: 'float 2s infinite alternate' }}>
+                <span style={{ fontSize: 10 }}>{emoji}</span>
+                <span style={{ fontSize: 8, fontWeight: 800, color: '#fff' }}>{color}</span>
+                <span style={{ fontSize: 7, color: '#94a3b8' }}>{wave}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          White light = all 7 visible colours · Prism bends each wavelength differently (refraction)
+        </div>
+      </div>
+    );
+  }
+
+  // ── Friction Visualizer ──────────────────────────────────────────
+  if (isFriction) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>⚙️ Friction Force Comparison</span>
+          <span style={{ fontSize: 11, color: '#fb923c', fontWeight: 800 }}>f = μ × N</span>
+        </div>
+        <div style={{ height: 140, background: 'linear-gradient(135deg, #1c1917 0%, #292524 100%)', borderRadius: 14, border: '2px solid #d97706', position: 'relative', overflow: 'hidden', padding: '12px' }}>
+          {/* Surface 1: Ice (low friction) */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 16 }}>🧊</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: '#7dd3fc', width: 60 }}>Ice (μ=0.01)</span>
+              <div style={{ flex: 1, height: 14, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 7, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ width: '5%', height: '100%', background: 'linear-gradient(90deg, #38bdf8, #0ea5e9)', borderRadius: 7 }} />
+              </div>
+              <span style={{ fontSize: 9, color: '#7dd3fc', fontWeight: 800 }}>⚡ Fast!</span>
+            </div>
+          </div>
+          {/* Surface 2: Wood (medium friction) */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 16 }}>🪵</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: '#fbbf24', width: 60 }}>Wood (μ=0.3)</span>
+              <div style={{ flex: 1, height: 14, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 7, overflow: 'hidden' }}>
+                <div style={{ width: '40%', height: '100%', background: 'linear-gradient(90deg, #fbbf24, #d97706)', borderRadius: 7 }} />
+              </div>
+              <span style={{ fontSize: 9, color: '#fbbf24', fontWeight: 800 }}>🚶 Medium</span>
+            </div>
+          </div>
+          {/* Surface 3: Rubber on Road (high friction) */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 16 }}>🛣️</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: '#f87171', width: 60 }}>Road (μ=0.8)</span>
+              <div style={{ flex: 1, height: 14, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 7, overflow: 'hidden' }}>
+                <div style={{ width: '85%', height: '100%', background: 'linear-gradient(90deg, #ef4444, #b91c1c)', borderRadius: 7 }} />
+              </div>
+              <span style={{ fontSize: 9, color: '#f87171', fontWeight: 800 }}>🛑 Slow</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Friction f = μN · Static friction (prevents motion) · Kinetic friction (opposes sliding motion)
+        </div>
+      </div>
+    );
+  }
+
+  // ── Ecology & Pollution Visualizer ───────────────────────────────
+  if (isEcology) {
+    return (
+      <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🌍 Ecosystem Food Web & Carbon Cycle</span>
+          <span style={{ fontSize: 11, color: '#86efac', fontWeight: 800 }}>Producers → Consumers</span>
+        </div>
+        <div style={{ height: 140, background: 'linear-gradient(135deg, #064e3b 0%, #065f46 50%, #14532d 100%)', borderRadius: 14, border: '2px solid #22c55e', position: 'relative', overflow: 'hidden', padding: '8px 16px' }}>
+          {/* Food chain row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
+            {[
+              { emoji: '🌱', label: 'Producer', note: 'Plants' },
+              { emoji: '→', label: '', note: '' },
+              { emoji: '🐛', label: 'Consumer 1', note: 'Herbivore' },
+              { emoji: '→', label: '', note: '' },
+              { emoji: '🐸', label: 'Consumer 2', note: 'Carnivore' },
+              { emoji: '→', label: '', note: '' },
+              { emoji: '🦅', label: 'Consumer 3', note: 'Apex' },
+            ].map((item, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: item.emoji === '→' ? 18 : 24, color: item.emoji === '→' ? '#86efac' : undefined, animation: item.emoji !== '→' ? 'float 2s infinite alternate' : undefined }}>{item.emoji}</span>
+                {item.label && <span style={{ fontSize: 8, fontWeight: 800, color: '#86efac' }}>{item.label}</span>}
+                {item.note && <span style={{ fontSize: 7, color: '#d1fae5' }}>{item.note}</span>}
+              </div>
+            ))}
+          </div>
+          {/* Pollution indicator */}
+          <div style={{ marginTop: 12, padding: '6px 12px', backgroundColor: 'rgba(239,68,68,0.3)', border: '1.5px solid #ef4444', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>🏭</span>
+            <span style={{ fontSize: 9, fontWeight: 800, color: '#fca5a5' }}>CO₂ Pollution disrupts food webs → Biodiversity loss → Ecosystem collapse</span>
+            <span style={{ fontSize: 16, animation: 'pulse 1s infinite' }}>⚠️</span>
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Every 1°C rise in temperature threatens 10% of species · Reduce, Reuse, Recycle 🌿
+        </div>
+      </div>
+    );
+  }
+
+  // General Topic Visualizer (fallback for AI-generated stories)
+  return (
+    <div style={{ backgroundColor: 'rgba(23,20,13,0.9)', border: '3px solid #ffc531', borderRadius: 20, padding: '16px 20px', maxWidth: 520, margin: '0 auto', boxShadow: '4px 4px 0 #17140d' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>🤖 Science Concept Visualizer</span>
+        <span style={{ fontSize: 11, color: '#86efac', fontWeight: 800 }}>{topic || 'Scientific Principles'}</span>
+      </div>
+      <div style={{ height: 120, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', borderRadius: 14, border: '2px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
         <div style={{ fontSize: 36, animation: 'float 2s infinite alternate' }}>🔬</div>
         <div style={{ textAlign: 'left' }}>
           <div style={{ color: '#fef08a', fontSize: 14, fontWeight: 800 }}>Empirical Science in Action</div>
@@ -2588,6 +2930,14 @@ export default function StoryMode() {
         @keyframes float {
           0% { transform: translateY(0px) rotate(0deg); }
           100% { transform: translateY(-14px) rotate(8deg); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.08); opacity: 0.85; }
         }
         .animate-walk { animation: walk 0.8s ease-in-out infinite; }
         .animate-jump { animation: jump 0.6s ease-in-out infinite; }

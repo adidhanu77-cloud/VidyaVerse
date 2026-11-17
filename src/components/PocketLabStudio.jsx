@@ -1,0 +1,400 @@
+import React, { useState } from 'react';
+import {
+  Camera, Beaker, Compass, BookOpen, Bot, MapPin, Trophy,
+  PlusCircle, Sparkles, Layers, X, ArrowLeft, ChevronRight,
+} from 'lucide-react';
+
+import InteractiveScanner from './InteractiveScanner';
+import VirtualLabs from './VirtualLabs';
+import TreasureHunt from './TreasureHunt';
+import StoryMode from './StoryMode';
+import AiTutor from './AiTutor';
+import CareerNavigator from './CareerNavigator';
+import LeaderboardAndDashboards from './LeaderboardAndDashboards';
+
+/* ─── Tab definitions ───────────────────────────────────────────── */
+const BASE_TABS = [
+  { id: 'scanner',   title: 'Object Scanner',        subtitle: 'Point your camera at any everyday object',           badge: 'AI Vision',   color: '#ff5b57', bg: '#fff0f0', icon: Camera,    emoji: '📷' },
+  { id: 'labs',      title: 'Virtual Labs',           subtitle: 'Zero-glassware PhET simulations for every subject',  badge: 'PhET Sims',   color: '#12b3a4', bg: '#f0fbfa', icon: Beaker,    emoji: '🧪' },
+  { id: 'hunt',      title: 'Treasure Hunt',          subtitle: 'AI quiz paths with XP, streaks & badges',           badge: 'Gemini AI',   color: '#ffc531', bg: '#fffbf0', icon: Compass,   emoji: '🧭' },
+  { id: 'stories',   title: 'STEM Stories',           subtitle: 'Interactive tales — Rocket Raju & more',            badge: 'Story Mode',  color: '#3aa0ff', bg: '#f0f7ff', icon: BookOpen,  emoji: '📖' },
+  { id: 'mentor',    title: 'AI Tutor',               subtitle: 'Dr. APJ Mentor — 6 Indic languages, voice-enabled', badge: '6 Langs',     color: '#6b5be6', bg: '#f4f2ff', icon: Bot,       emoji: '🤖' },
+  { id: 'careers',   title: 'Career Navigator',       subtitle: 'From village curiosity to research roadmaps',       badge: 'Roadmaps',    color: '#2bd980', bg: '#efffed', icon: MapPin,    emoji: '🎯' },
+  { id: 'analytics', title: 'Leaderboards & Gaps',    subtitle: 'School league tables & concept gap analytics',      badge: 'Class Tool',  color: '#ff5b57', bg: '#fff0f0', icon: Trophy,    emoji: '🏆' },
+];
+
+/* ─── Full-page wrapper for each feature ───────────────────────── */
+function FeaturePage({ tab, onBack, currentLang }) {
+  return (
+    <div style={{ minHeight: '100vh', background: tab.bg, fontFamily: "'DM Sans', sans-serif" }}>
+
+      {/* Feature hero banner */}
+      <div style={{
+        background: tab.color, borderBottom: '3px solid #17140d',
+        padding: '0',
+      }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '20px 32px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+          {/* Back button */}
+          <button onClick={onBack}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '10px 18px', border: '2.5px solid #17140d', borderRadius: 999,
+              background: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer',
+              boxShadow: '4px 4px 0 #17140d', flexShrink: 0,
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px,-2px)'; e.currentTarget.style.boxShadow = '6px 6px 0 #17140d'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0 #17140d'; }}>
+            <ArrowLeft size={16} />
+            All Features
+          </button>
+
+          {/* Feature icon */}
+          <div style={{
+            width: 56, height: 56, background: 'rgba(255,255,255,.25)',
+            border: '3px solid rgba(255,255,255,.7)', borderRadius: 16,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 28, flexShrink: 0,
+          }}>
+            {tab.emoji}
+          </div>
+
+          {/* Title + subtitle */}
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 'clamp(20px,3vw,30px)', color: '#fff', margin: 0, lineHeight: 1.1 }}>
+                {tab.title}
+              </h1>
+              <span style={{ background: 'rgba(255,255,255,.25)', color: '#fff', border: '2px solid rgba(255,255,255,.6)', borderRadius: 999, padding: '3px 12px', fontSize: 12, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+                {tab.badge}
+              </span>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,.88)', fontSize: 15, margin: '4px 0 0', fontWeight: 500 }}>
+              {tab.subtitle}
+            </p>
+          </div>
+
+          {/* STEMVerse badge */}
+          <div style={{ background: 'rgba(255,255,255,.18)', border: '2px solid rgba(255,255,255,.5)', borderRadius: 12, padding: '6px 14px', fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+            STEMVerse AI
+          </div>
+        </div>
+      </div>
+
+      {/* Full-width content area */}
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '36px 32px 80px' }}>
+        {tab.id === 'scanner'   && <InteractiveScanner currentLang={currentLang} />}
+        {tab.id === 'labs'      && <VirtualLabs />}
+        {tab.id === 'hunt'      && <TreasureHunt />}
+        {tab.id === 'stories'   && <StoryMode />}
+        {tab.id === 'mentor'    && <AiTutor currentLang={currentLang} />}
+        {tab.id === 'careers'   && <CareerNavigator />}
+        {tab.id === 'analytics' && <LeaderboardAndDashboards />}
+        {tab.isCustom && <CustomTabContent tab={tab} onBack={onBack} />}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Custom tab placeholder ────────────────────────────────────── */
+function CustomTabContent({ tab, onBack }) {
+  return (
+    <div style={{ border: '3px solid #17140d', borderRadius: 20, background: '#fff', boxShadow: '8px 8px 0 #17140d', padding: '40px 36px', maxWidth: 700 }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>✨</div>
+      <h2 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 28, marginBottom: 10 }}>{tab.title}</h2>
+      <p style={{ fontSize: 16, color: '#5a5450', lineHeight: 1.6, marginBottom: 24 }}>{tab.subtitle}</p>
+      <div style={{ background: '#f5efe2', border: '2px solid #d4c9b5', borderRadius: 14, padding: '18px 20px', fontSize: 14, color: '#5a5450', lineHeight: 1.6 }}>
+        This custom module is ready to be connected to any backend API, STEM simulation, AR model, or quiz bank. Contact the STEMVerse team to build it out!
+      </div>
+    </div>
+  );
+}
+
+/* ─── Home: Feature Grid (shown when no tab selected) ──────────── */
+function FeatureGrid({ tabs, onSelect, onAddTab }) {
+  return (
+    <section id="studio" style={{ paddingTop: 36, paddingBottom: 80 }}>
+      <div className="container-1440">
+
+        {/* Hero header */}
+        <div style={{ textAlign: 'center', maxWidth: 900, margin: '0 auto 20px auto' }}>
+          <div className="eyebrow-pill" style={{ backgroundColor: '#6b5be6', color: '#fff', marginBottom: 18 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#ffc531', border: '1.5px solid #17140d' }} />
+            ⚡ POCKET SCIENCE LAB FOR 100M+ RURAL & UNDERSERVED STUDENTS
+          </div>
+
+          <h1 style={{ fontSize: 'clamp(34px, 4.5vw, 62px)', lineHeight: 1.05, marginBottom: 18, letterSpacing: '-0.035em' }}>
+            Turn Every <span className="marker-highlight">Bicycle</span> & Village into a{' '}
+            <span className="marker-highlight teal">Pocket Lab.</span>
+          </h1>
+
+          <p style={{ fontSize: 'clamp(15px,1.2vw,18px)', color: '#444', lineHeight: 1.65, maxWidth: 740, margin: '0 auto 24px auto' }}>
+            No expensive glassware required. Click any feature below to open it in full-screen mode — scan objects, run PhET experiments, hunt for STEM treasures, and more.
+          </p>
+
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {[
+              { text: '🎒 48,000+ Students', bg: '#fff' },
+              { text: '🏫 320+ Rural Schools', bg: '#fff' },
+              { text: '🗣️ 6 Indic Languages', bg: '#fff' },
+              { text: '✓ 100% Free & Offline Ready', bg: '#2bd980' },
+            ].map(p => (
+              <span key={p.text} style={{ background: p.bg, border: '2px solid #17140d', padding: '6px 16px', borderRadius: 9999, fontSize: 13, fontWeight: 700, boxShadow: '2px 2px 0 #17140d' }}>{p.text}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Clean, spacious divider between trust pills and feature modules */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, margin: '64px auto 40px auto', maxWidth: 800 }}>
+          <div style={{ height: 3, flex: 1, backgroundColor: '#17140d', borderRadius: 999 }} />
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              backgroundColor: '#ffffff',
+              border: '2.5px solid #17140d',
+              borderRadius: 9999,
+              padding: '6px 20px',
+              boxShadow: '3px 3px 0 #17140d',
+              fontSize: 12.5,
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              color: '#17140d',
+            }}
+          >
+            <span>🔬</span>
+            <span>Select a Laboratory Module</span>
+            <span style={{ backgroundColor: '#ffc531', padding: '1px 8px', borderRadius: 6, border: '1.5px solid #17140d', fontSize: 11 }}>
+              7 Available
+            </span>
+          </div>
+          <div style={{ height: 3, flex: 1, backgroundColor: '#17140d', borderRadius: 999 }} />
+        </div>
+
+        {/* Feature Cards Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 28, marginBottom: 40 }}>
+          {tabs.map((tab, i) => {
+            const IconComponent = tab.icon;
+            return (
+              <FeatureCard key={tab.id} tab={tab} index={i} onSelect={() => onSelect(tab.id)} />
+            );
+          })}
+
+          {/* Add Custom Tab card */}
+          <button onClick={onAddTab}
+            style={{
+              border: '3px dashed #17140d', borderRadius: 20, background: '#fafaf8',
+              padding: '28px 24px', cursor: 'pointer', textAlign: 'left',
+              boxShadow: '4px 4px 0 #d4c9b5', display: 'flex', flexDirection: 'column',
+              alignItems: 'flex-start', gap: 12, transition: 'all .15s',
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-3px,-3px)'; e.currentTarget.style.boxShadow = '7px 7px 0 #17140d'; e.currentTarget.style.borderStyle = 'solid'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0 #d4c9b5'; e.currentTarget.style.borderStyle = 'dashed'; }}>
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: '#f5efe2', border: '2px solid #17140d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <PlusCircle size={28} color="#ff5b57" />
+            </div>
+            <div>
+              <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 18, marginBottom: 4 }}>+ Add Custom Module</div>
+              <div style={{ fontSize: 13, color: '#7a7068', lineHeight: 1.5 }}>Create your own STEM module tab and connect it to any backend or simulation.</div>
+            </div>
+          </button>
+        </div>
+
+        {/* Bottom tip */}
+        <div style={{ textAlign: 'center', fontSize: 14, color: '#7a7068', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Layers size={16} color="#6b5be6" />
+          Click any card above to open the full feature — each opens as a dedicated full-width page.
+          <ChevronRight size={16} color="#6b5be6" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Individual Feature Card ───────────────────────────────────── */
+function FeatureCard({ tab, index, onSelect }) {
+  const [hovered, setHovered] = useState(false);
+  const IconComponent = tab.icon;
+
+  // Stagger animation delays
+  const delays = [0, 60, 120, 180, 240, 300, 360];
+
+  return (
+    <button
+      onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        border: '3px solid #17140d', borderRadius: 20, background: '#fff',
+        padding: 0, cursor: 'pointer', textAlign: 'left', overflow: 'hidden',
+        boxShadow: hovered ? '10px 10px 0 #17140d' : '6px 6px 0 #17140d',
+        transform: hovered ? 'translate(-3px,-3px)' : 'none',
+        transition: 'all .18s cubic-bezier(0.2,0,0,1)',
+        display: 'flex', flexDirection: 'column',
+        fontFamily: "'DM Sans', sans-serif",
+      }}>
+
+      {/* Colored header band */}
+      <div style={{ background: tab.color, borderBottom: '3px solid #17140d', padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ width: 50, height: 50, background: 'rgba(255,255,255,.25)', border: '2px solid rgba(255,255,255,.65)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <IconComponent size={26} color="#fff" strokeWidth={2.4} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 17, color: '#fff', lineHeight: 1.2, marginBottom: 2 }}>{tab.title}</div>
+          <span style={{ fontSize: 11, fontWeight: 800, background: 'rgba(255,255,255,.25)', color: '#fff', border: '1.5px solid rgba(255,255,255,.5)', borderRadius: 999, padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '.05em' }}>
+            {tab.badge}
+          </span>
+        </div>
+        {/* Arrow indicator */}
+        <div style={{ width: 32, height: 32, background: 'rgba(255,255,255,.2)', border: '2px solid rgba(255,255,255,.5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transform: hovered ? 'scale(1.15)' : 'none', transition: 'transform .15s' }}>
+          <ChevronRight size={18} color="#fff" />
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '18px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <p style={{ fontSize: 14, color: '#4a4642', lineHeight: 1.6, margin: 0 }}>{tab.subtitle}</p>
+
+        {/* Feature highlights (small pills) */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 'auto' }}>
+          {getFeatureHighlights(tab.id).map(h => (
+            <span key={h} style={{ fontSize: 11, fontWeight: 700, background: tab.bg, color: tab.color, border: `1.5px solid ${tab.color}`, borderRadius: 999, padding: '2px 8px' }}>
+              {h}
+            </span>
+          ))}
+        </div>
+
+        {/* Open button */}
+        <div style={{
+          marginTop: 8, padding: '10px 16px', background: hovered ? tab.color : '#f5efe2',
+          border: '2.5px solid #17140d', borderRadius: 12,
+          fontWeight: 800, fontSize: 14, color: hovered ? '#fff' : '#17140d',
+          transition: 'all .18s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          boxShadow: hovered ? '3px 3px 0 #17140d' : '2px 2px 0 #17140d',
+        }}>
+          Open {tab.title} <ChevronRight size={16} />
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function getFeatureHighlights(id) {
+  const map = {
+    scanner:   ['📸 Live Camera', '🤖 AI Identify', '🔬 STEM Explain', '🎙 Voice Readout'],
+    labs:      ['⚡ PhET Sims', '🧪 Chemistry', '🧬 Biology', '📐 Maths'],
+    hunt:      ['🗺 Path Map', '🤖 Gemini Q&A', '🔥 Streaks', '🏆 Badges'],
+    stories:   ['🚀 Rocket Raju', '📖 Interactive', '🌟 Chapters', '🎯 Quiz'],
+    mentor:    ['🗣 Voice Input', '🌐 6 Languages', '💡 Socratic', '🤖 Dr. APJ'],
+    careers:   ['🎯 Roadmaps', '🏡 Village Jobs', '📈 STEM Paths', '💼 Guidance'],
+    analytics: ['🏆 School League', '📊 Concept Gaps', '📡 Real-Time', '👩‍🏫 Teacher View'],
+  };
+  return map[id] || ['✨ Custom Module'];
+}
+
+/* ─── Add Tab Modal ─────────────────────────────────────────────── */
+function AddTabModal({ onClose, onAdd }) {
+  const [title, setTitle] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [badge, setBadge] = useState('New Module');
+  const [color, setColor] = useState('#ffc531');
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!title.trim()) return;
+    onAdd({ id: `custom-${Date.now()}`, title: title.trim(), subtitle: subtitle.trim() || 'Custom STEM Module', badge: badge.trim() || 'Custom', color, bg: '#fafaf8', icon: Sparkles, emoji: '✨', isCustom: true });
+  }
+
+  const inp = { width: '100%', padding: '10px 14px', borderRadius: 10, border: '2px solid #17140d', fontFamily: "'DM Sans', sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(23,20,13,.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: 20 }}>
+      <div style={{ background: '#fff', border: '3px solid #17140d', borderRadius: 20, maxWidth: 480, width: '100%', padding: '28px 26px', boxShadow: '10px 10px 0 #17140d' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h3 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 22 }}>+ Add Custom Module</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          {[{ label: 'Module Title', val: title, set: setTitle, ph: 'e.g. 3D Solar System' }, { label: 'Description', val: subtitle, set: setSubtitle, ph: 'e.g. Planetary orbits & gravity' }, { label: 'Badge Tag', val: badge, set: setBadge, ph: 'e.g. 3D Lab' }].map(f => (
+            <div key={f.label} style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 }}>{f.label}</label>
+              <input value={f.val} onChange={e => f.set(e.target.value)} placeholder={f.ph} style={inp} required={f.label === 'Module Title'} />
+            </div>
+          ))}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 8 }}>Accent Color</label>
+            <div style={{ display: 'flex', gap: 10 }}>
+              {['#ff5b57','#ffc531','#12b3a4','#6b5be6','#3aa0ff','#2bd980'].map(c => (
+                <button type="button" key={c} onClick={() => setColor(c)} style={{ width: 34, height: 34, borderRadius: 9, background: c, border: color === c ? '3px solid #17140d' : '1.5px solid #17140d', cursor: 'pointer', transform: color === c ? 'scale(1.15)' : 'none', boxShadow: color === c ? '2px 2px 0 #17140d' : 'none', transition: 'all .1s' }} />
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button type="button" onClick={onClose} style={{ padding: '9px 18px', border: '2px solid #17140d', borderRadius: 12, background: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>Cancel</button>
+            <button type="submit" style={{ padding: '9px 22px', border: '2.5px solid #17140d', borderRadius: 12, background: '#ff5b57', color: '#fff', fontWeight: 800, cursor: 'pointer', fontSize: 14, boxShadow: '4px 4px 0 #17140d' }}>Create Module</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main PocketLabStudio ──────────────────────────────────────── */
+export default function PocketLabStudio({ currentLang, activeTabId, onSelectTab }) {
+  const [tabs, setTabs] = useState(BASE_TABS);
+  const [currentTab, setCurrentTab] = useState(null); // null = home / grid view
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // If parent sets activeTabId, open that tab
+  React.useEffect(() => {
+    if (activeTabId && activeTabId !== currentTab) {
+      setCurrentTab(activeTabId);
+    }
+  }, [activeTabId]);
+
+  function openTab(id) {
+    setCurrentTab(id);
+    if (onSelectTab) onSelectTab(id);
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goHome() {
+    setCurrentTab(null);
+    if (onSelectTab) onSelectTab(null);
+    // Scroll to studio section
+    setTimeout(() => {
+      const el = document.getElementById('studio');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+  }
+
+  function addCustomTab(tabObj) {
+    setTabs(prev => [...prev, tabObj]);
+    setShowAddModal(false);
+    openTab(tabObj.id);
+  }
+
+  const activeTabObj = tabs.find(t => t.id === currentTab);
+
+  // ── Full-page feature view
+  if (currentTab && activeTabObj) {
+    return (
+      <>
+        <FeaturePage tab={activeTabObj} onBack={goHome} currentLang={currentLang} />
+        {showAddModal && <AddTabModal onClose={() => setShowAddModal(false)} onAdd={addCustomTab} />}
+      </>
+    );
+  }
+
+  // ── Home: feature grid
+  return (
+    <>
+      <FeatureGrid tabs={tabs} onSelect={openTab} onAddTab={() => setShowAddModal(true)} />
+      {showAddModal && <AddTabModal onClose={() => setShowAddModal(false)} onAdd={addCustomTab} />}
+    </>
+  );
+}

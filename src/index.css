@@ -1,0 +1,295 @@
+/* ========================================================
+   STEMVerse AI — Memphis / Postmodern Design System
+   Palette: Cream #f5efe2 | Ink #17140d | Coral #ff5b57 |
+   Mustard #ffc531 | Teal #12b3a4 | Violet #6b5be6 | Sky #3aa0ff
+   ======================================================== */
+
+:root {
+  --bg-cream: #f5efe2;
+  --ink-black: #17140d;
+  --memphis-coral: #ff5b57;
+  --memphis-mustard: #ffc531;
+  --memphis-teal: #12b3a4;
+  --memphis-violet: #6b5be6;
+  --memphis-sky: #3aa0ff;
+  --memphis-lime: #2bd980;
+  --card-white: #ffffff;
+  
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-cream);
+  color: var(--ink-black);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Memphis Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-cream);
+  border-left: 3px solid var(--ink-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--memphis-mustard);
+  border: 3px solid var(--ink-black);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--memphis-coral);
+}
+
+/* Typography Helpers */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink-black);
+}
+
+/* Marker-Highlight Underlines */
+.marker-highlight {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  z-index: 1;
+}
+.marker-highlight::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: 4px;
+  height: 48%;
+  background-color: var(--highlight-color, var(--memphis-mustard));
+  z-index: -1;
+  transform: rotate(-1.5deg);
+  border-radius: 2px;
+}
+.marker-highlight.teal::before {
+  background-color: var(--memphis-teal);
+}
+.marker-highlight.coral::before {
+  background-color: var(--memphis-coral);
+}
+.marker-highlight.sky::before {
+  background-color: var(--memphis-sky);
+}
+.marker-highlight.violet::before {
+  background-color: var(--memphis-violet);
+}
+
+/* Neo-Brutalist Memphis Borders & Hard Shadows */
+.border-memphis {
+  border: 3px solid var(--ink-black);
+}
+.border-memphis-thick {
+  border: 4px solid var(--ink-black);
+}
+
+.shadow-memphis-lg {
+  box-shadow: 8px 8px 0 var(--ink-black);
+}
+.shadow-memphis-md {
+  box-shadow: 5px 5px 0 var(--ink-black);
+}
+.shadow-memphis-sm {
+  box-shadow: 3px 3px 0 var(--ink-black);
+}
+
+/* Interactive Tactile Buttons */
+.btn-candy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  border: 3px solid var(--ink-black);
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.15s cubic-bezier(0.2, 0, 0, 1);
+  text-decoration: none;
+  user-select: none;
+}
+.btn-candy.primary {
+  background-color: var(--memphis-coral);
+  color: #ffffff;
+  box-shadow: 8px 8px 0 var(--ink-black);
+}
+.btn-candy.primary:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--ink-black);
+}
+.btn-candy.primary:active {
+  transform: translate(6px, 6px);
+  box-shadow: 1px 1px 0 var(--ink-black);
+}
+
+.btn-candy.secondary {
+  background-color: #ffffff;
+  color: var(--ink-black);
+  box-shadow: 8px 8px 0 var(--ink-black);
+}
+.btn-candy.secondary:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 var(--ink-black);
+  background-color: #fffaf0;
+}
+.btn-candy.secondary:active {
+  transform: translate(6px, 6px);
+  box-shadow: 1px 1px 0 var(--ink-black);
+}
+
+.btn-candy.teal {
+  background-color: var(--memphis-teal);
+  color: #ffffff;
+  box-shadow: 5px 5px 0 var(--ink-black);
+}
+.btn-candy.teal:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0 var(--ink-black);
+}
+
+.btn-candy.mustard {
+  background-color: var(--memphis-mustard);
+  color: var(--ink-black);
+  box-shadow: 5px 5px 0 var(--ink-black);
+}
+.btn-candy.mustard:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0 var(--ink-black);
+}
+
+.btn-candy.violet {
+  background-color: var(--memphis-violet);
+  color: #ffffff;
+  box-shadow: 5px 5px 0 var(--ink-black);
+}
+.btn-candy.violet:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0 var(--ink-black);
+}
+
+/* Eyebrow Pills */
+.eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 3px solid var(--ink-black);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 4px 4px 0 var(--ink-black);
+}
+
+/* Animated Memphis Confetti Keyframes (NO JS) */
+@keyframes confetti-drift {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(15deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes confetti-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes confetti-bob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-16px); }
+}
+
+@keyframes confetti-sway {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+@keyframes confetti-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.anim-drift { animation: confetti-drift 7s ease-in-out infinite; }
+.anim-spin-slow { animation: confetti-spin 24s linear infinite; }
+.anim-bob { animation: confetti-bob 5s ease-in-out infinite; }
+.anim-sway { animation: confetti-sway 6s ease-in-out infinite; }
+.anim-pulse { animation: confetti-pulse 4s ease-in-out infinite; }
+
+/* Grid and Layout Containers */
+.container-1440 {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Tilted Mockup Card */
+.tilted-card {
+  transform: rotate(-2deg);
+  transition: transform 0.3s ease;
+}
+.tilted-card:hover {
+  transform: rotate(0deg) scale(1.01);
+}
+
+/* Cards & Modules */
+.memphis-card {
+  background-color: var(--card-white);
+  border: 3px solid var(--ink-black);
+  border-radius: 20px;
+  box-shadow: 8px 8px 0 var(--ink-black);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.memphis-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 10px 10px 0 var(--ink-black);
+}
+
+/* Corner accent decoration */
+.corner-accent {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  right: -30px;
+  bottom: -30px;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+/* Full-bleed Black Banner */
+.full-bleed-banner {
+  background-color: var(--ink-black);
+  color: #ffffff;
+  border-top: 3px solid var(--ink-black);
+  border-bottom: 3px solid var(--ink-black);
+}
+
+/* Responsive Studio Grid */
+@media (max-width: 960px) {
+  .studio-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+

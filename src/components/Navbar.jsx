@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Microscope, Globe, Sparkles, Layers, ChevronDown } from 'lucide-react';
+import { Microscope, Globe, Sparkles, Layers, ChevronDown, User, LogIn } from 'lucide-react';
 import { realtime } from '../services/realtime';
 import UserProfilePanel from './UserProfilePanel';
+import AuthModal from './AuthModal';
 
 export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSection, onGoHome, activeTab }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [profile, setProfile] = useState({ name: '', avatar: null });
   const [progress, setProgress] = useState(null);
 
@@ -14,6 +16,19 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
     realtime.connect();
     const unsub = realtime.on('STATUS_CHANGE', ({ connected }) => setIsWsConnected(connected));
     return unsub;
+  }, []);
+
+  // Listen for real-time auth updates across components
+  useEffect(() => {
+    function handleAuthUpdate(e) {
+      if (e.detail) {
+        setProfile(e.detail);
+      } else {
+        setProfile({ name: '', avatar: null });
+      }
+    }
+    window.addEventListener('vidyaverse_auth_update', handleAuthUpdate);
+    return () => window.removeEventListener('vidyaverse_auth_update', handleAuthUpdate);
   }, []);
 
   // Load profile from localStorage on mount + listen for updates
@@ -163,6 +178,41 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
               Try Scanner
             </button>
 
+            {/* ── User Status or Log In CTA ── */}
+            {profile?.name ? (
+              <button
+                onClick={() => setShowProfile(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: '#ffffff', border: '2.5px solid #17140d', borderRadius: 999,
+                  padding: '7px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                  boxShadow: '3px 3px 0 #17140d', color: '#17140d'
+                }}
+                title="View Profile & Career Roadmap"
+              >
+                <span>👤 {profile.name}</span>
+                {profile.provider === 'google' && (
+                  <span style={{ fontSize: 10, background: '#e8f0fe', color: '#1a73e8', padding: '1px 6px', borderRadius: 999, border: '1px solid #1a73e8' }}>
+                    Gmail ✅
+                  </span>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="btn-candy"
+                style={{
+                  fontSize: 13, padding: '8px 16px',
+                  background: '#ffc531', color: '#17140d',
+                  boxShadow: '3px 3px 0 #17140d', fontWeight: 800,
+                  display: 'flex', alignItems: 'center', gap: 6
+                }}
+              >
+                <LogIn size={15} />
+                <span>Log In / Register</span>
+              </button>
+            )}
+
             {/* ── User Avatar Button ── */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => setShowProfile(true)}
@@ -195,6 +245,15 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
 
       {/* Profile Panel */}
       <UserProfilePanel isOpen={showProfile} onClose={() => setShowProfile(false)} />
+
+      {/* Auth Modal for Login & Registration */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={(prof) => {
+          if (prof) setProfile(prof);
+        }}
+      />
     </>
   );
 }

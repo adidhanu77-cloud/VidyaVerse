@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { API_BASE as API } from '../services/api';
+import AuthModal from './AuthModal';
+import { logoutUser } from '../services/authService';
 
 const GRADE_OPTIONS = ['Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'];
 const LANG_OPTIONS = [
@@ -26,18 +28,31 @@ const BADGE_NAME = { first_quest:'First Quest', streak_3:'Hot Streak', week_warr
 
 export default function UserProfilePanel({ isOpen, onClose }) {
   const [userId, setUserId] = useState('');
-  const [profile, setProfile] = useState({ name: '', username: '', avatar: null, bio: '', school: '', grade: '', language: 'en' });
+  const [profile, setProfile] = useState({ name: '', username: '', avatar: null, bio: '', school: '', grade: '', language: 'en', email: '', phone: '', provider: '' });
   const [progress, setProgress] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const [toast, setToast] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const fileRef = useRef();
 
   useEffect(() => {
     let uid = localStorage.getItem('vidyaverse_userId') || localStorage.getItem('stemverse_userId');
     if (!uid) { uid = 'user_' + Date.now(); localStorage.setItem('vidyaverse_userId', uid); }
     setUserId(uid);
+  }, []);
+
+  // Listen to real-time auth changes across components
+  useEffect(() => {
+    function handleAuthUpdate(e) {
+      if (e.detail) {
+        setProfile(e.detail);
+        if (e.detail.userId) setUserId(e.detail.userId);
+      }
+    }
+    window.addEventListener('vidyaverse_auth_update', handleAuthUpdate);
+    return () => window.removeEventListener('vidyaverse_auth_update', handleAuthUpdate);
   }, []);
 
   useEffect(() => {
@@ -117,9 +132,52 @@ export default function UserProfilePanel({ isOpen, onClose }) {
             </div>
             <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarFile} />
             <div style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 20 }}>{profile.name || 'Set Your Name'}</div>
-            {profile.username && <div style={{ fontSize: 13, color: '#7a7068' }}>@{profile.username}</div>}
+            {profile.email && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <span style={{ fontSize: 12.5, color: '#444', fontWeight: 600 }}>✉️ {profile.email}</span>
+                {profile.provider === 'google' && (
+                  <span style={{ background: '#e8f0fe', color: '#1a73e8', border: '1.5px solid #1a73e8', padding: '1px 8px', borderRadius: 999, fontSize: 10.5, fontWeight: 800 }}>
+                    Gmail Verified ✅
+                  </span>
+                )}
+              </div>
+            )}
+            {profile.phone && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                <span style={{ fontSize: 12.5, color: '#444', fontWeight: 600 }}>📱 {profile.phone}</span>
+                <span style={{ background: '#e6f4ea', color: '#137333', border: '1.5px solid #137333', padding: '1px 8px', borderRadius: 999, fontSize: 10.5, fontWeight: 800 }}>
+                  Phone Verified
+                </span>
+              </div>
+            )}
+            {profile.username && <div style={{ fontSize: 13, color: '#7a7068', marginTop: 2 }}>@{profile.username}</div>}
             {profile.school && <div style={{ fontSize: 12, color: '#5a5450', marginTop: 2 }}>🏫 {profile.school} · {profile.grade}</div>}
-            {!editing && <button onClick={startEdit} style={{ marginTop: 10, padding: '7px 20px', border: '2.5px solid #17140d', borderRadius: 999, background: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', boxShadow: '3px 3px 0 #17140d' }}>✏️ Edit Profile</button>}
+            
+            <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {!editing && (
+                <button onClick={startEdit} style={{ padding: '6px 14px', border: '2px solid #17140d', borderRadius: 999, background: '#fff', fontWeight: 800, fontSize: 12, cursor: 'pointer', boxShadow: '2px 2px 0 #17140d' }}>
+                  ✏️ Edit Details
+                </button>
+              )}
+              <button
+                onClick={() => setShowAuthModal(true)}
+                style={{ padding: '6px 14px', border: '2px solid #17140d', borderRadius: 999, background: '#ffc531', fontWeight: 800, fontSize: 12, cursor: 'pointer', boxShadow: '2px 2px 0 #17140d' }}
+              >
+                {profile.email || profile.phone ? '🔄 Switch Account' : '🔑 Log In / Register'}
+              </button>
+              {(profile.email || profile.name) && (
+                <button
+                  onClick={async () => {
+                    await logoutUser();
+                    setProfile({ name: '', username: '', avatar: null, bio: '', school: '', grade: '', language: 'en', email: '', phone: '', provider: '' });
+                    showToast('Logged out 👋');
+                  }}
+                  style={{ padding: '6px 12px', border: '2px solid #ff5b57', borderRadius: 999, background: '#fff0f0', color: '#ff5b57', fontWeight: 800, fontSize: 12, cursor: 'pointer' }}
+                >
+                  🚪 Sign Out
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Edit Form */}
@@ -219,6 +277,19 @@ export default function UserProfilePanel({ isOpen, onClose }) {
           </div>
         </div>
       </div>
+
+      {/* Auth Modal for Login / Registration */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={(newProf) => {
+          if (newProf) {
+            setProfile(newProf);
+            if (newProf.userId) setUserId(newProf.userId);
+            showToast(`Welcome, ${newProf.name}! 🎉`);
+          }
+        }}
+      />
     </>
   );
 }

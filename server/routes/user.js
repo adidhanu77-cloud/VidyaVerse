@@ -10,11 +10,14 @@ function getOrCreateProfile(userId) {
       userId,
       name: '',
       username: '',
+      email: '',
+      phone: '',
       avatar: null,
       bio: '',
       school: '',
       grade: '',
       language: 'en',
+      provider: 'direct',
       joinedAt: new Date().toISOString(),
       isProfileComplete: false,
     };
@@ -32,18 +35,59 @@ router.get('/profile/:userId', (req, res) => {
 
 // CREATE / UPDATE full profile
 router.post('/profile', (req, res) => {
-  const { userId, name, username, avatar, bio, school, grade, language } = req.body;
+  const { userId, name, username, email, phone, avatar, bio, school, grade, language, provider } = req.body;
   if (!userId) return res.status(400).json({ status: 'error', message: 'userId required' });
   const profile = getOrCreateProfile(userId);
   if (name !== undefined) profile.name = name;
   if (username !== undefined) profile.username = username;
+  if (email !== undefined) profile.email = email;
+  if (phone !== undefined) profile.phone = phone;
   if (avatar !== undefined) profile.avatar = avatar;
   if (bio !== undefined) profile.bio = bio;
   if (school !== undefined) profile.school = school;
   if (grade !== undefined) profile.grade = grade;
   if (language !== undefined) profile.language = language;
-  profile.isProfileComplete = !!(profile.name && profile.username);
+  if (provider !== undefined) profile.provider = provider;
+  profile.isProfileComplete = !!(profile.name && (profile.email || profile.phone || profile.username));
   res.json({ status: 'success', profile });
+});
+
+// REGISTER user
+router.post('/register', (req, res) => {
+  const { userId, name, email, phone, grade, school, provider = 'direct' } = req.body;
+  const uid = userId || ('user_' + Date.now());
+  const profile = getOrCreateProfile(uid);
+  profile.name = name || (email ? email.split('@')[0] : 'Student');
+  profile.email = email || '';
+  profile.phone = phone || '';
+  profile.grade = grade || 'Class 9';
+  profile.school = school || '';
+  profile.provider = provider;
+  profile.isProfileComplete = true;
+  res.json({ status: 'success', message: 'User registered successfully', profile });
+});
+
+// LOGIN user
+router.post('/login', (req, res) => {
+  const { email, phone, userId } = req.body;
+  let found = null;
+  if (userId && profiles[userId]) found = profiles[userId];
+  else if (email) {
+    found = Object.values(profiles).find(p => p.email && p.email.toLowerCase() === email.toLowerCase());
+  } else if (phone) {
+    found = Object.values(profiles).find(p => p.phone && p.phone === phone);
+  }
+
+  if (found) {
+    res.json({ status: 'success', profile: found });
+  } else {
+    // Auto-create session profile
+    const uid = userId || ('user_' + Date.now());
+    const profile = getOrCreateProfile(uid);
+    if (email) profile.email = email;
+    if (phone) profile.phone = phone;
+    res.json({ status: 'success', profile });
+  }
 });
 
 // PATCH avatar only

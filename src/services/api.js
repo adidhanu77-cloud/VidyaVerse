@@ -1,4 +1,222 @@
-import { CURATED_STORIES, getTopicCartoonVideo } from '../data/curatedStories';
+﻿import { CURATED_STORIES, getTopicCartoonVideo } from '../data/curatedStories';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+// â”€â”€ Browser-side Gemini client (works on Vercel, no backend needed) â”€â”€
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const browserGenAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
+
+// â”€â”€ Verify a YouTube video ID is accessible via oEmbed (CORS-safe) â”€â”€
+async function verifyYouTubeId(videoId) {
+  if (!videoId || videoId.length < 8) return false;
+  try {
+    const url = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+    const res = await fetch(url, { method: 'GET', signal: AbortSignal.timeout(4000) });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// â”€â”€ Build YouTube search URL for a topic (always works as a fallback) â”€â”€
+function youtubeSearchUrl(topic, subject) {
+  const q = encodeURIComponent(`${topic} ${subject} educational cartoon animation for kids`);
+  return `https://www.youtube.com/results?search_query=${q}`;
+}
+
+// â”€â”€ Call Gemini in the browser and get a full story + real video ID â”€â”€
+async function generateStoryWithBrowserGemini({ subject, topic, grade, isFirstPerson, characterName }) {
+  if (!browserGenAI) throw new Error('No Gemini API key configured for browser');
+
+  const hero = characterName || (isFirstPerson ? 'You (The Young Scientist)' : 'Aria the Explorer');
+
+  // We ask Gemini to suggest a REAL YouTube video ID it knows exists
+  const prompt = `You are a world-class educational storyteller AND a YouTube expert who knows real video IDs from top educational channels like Dr. Binocs (Peekaboo Kidz), TED-Ed, Crash Course Kids, Kurzgesagt, National Geographic Kids, SciShow Kids, and similar.
+
+Create a complete interactive animated educational adventure story for Indian school students.
+
+Subject: ${subject}
+Topic: ${topic}
+Class: ${grade}
+Mode: ${isFirstPerson ? 'BECOME THE CHARACTER â€” 1st person RPG, student IS the protagonist' : '3rd person cartoon adventure'}
+${characterName ? `Hero Name: ${characterName}` : ''}
+
+CRITICAL: You MUST include a real, existing YouTube video ID (youtube_video_id field) for an educational animated video about "${topic}" from a reputable educational channel. The video must actually exist on YouTube. Use your knowledge of real popular educational YouTube videos. If unsure, use a Dr. Binocs or TED-Ed video that covers this topic or a closely related concept.
+
+Return ONLY valid JSON (no markdown fences, no comments):
+{
+  "id": "ai_${Date.now()}",
+  "title": "Exciting Pixar-style story title about ${topic}",
+  "subtitle": "One catchy subtitle line",
+  "subject": "${subject}",
+  "topic": "${topic}",
+  "grade": "${grade}",
+  "cover_gradient": "linear-gradient(135deg, #color1 0%, #color2 50%, #color3 100%)",
+  "badge": "AI Adventure",
+  "accent_color": "#hexcolor",
+  "is_first_person": ${Boolean(isFirstPerson)},
+  "youtube_video_id": "REAL_YOUTUBE_VIDEO_ID_HERE",
+  "video_title": "Title of the YouTube video you chose",
+  "video_channel": "Name of the YouTube channel",
+  "video_description": "One sentence about what the video teaches",
+  "youtube_search_query": "${topic} ${subject} educational animation cartoon for class ${grade.replace('Class ', '')}",
+  "simulation_target": {
+    "type": "phet",
+    "id": "sim_id",
+    "name": "Relevant PhET simulation name",
+    "url": "https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_all.html",
+    "learning_hook": "How the simulation connects to the story"
+  },
+  "characters": [
+    { "name": "${hero}", "role": "${isFirstPerson ? 'You (Protagonist)' : 'Lead Adventurer'}", "avatar": "emoji", "personality": "description" },
+    { "name": "Mentor Name", "role": "Guide", "avatar": "emoji", "personality": "description" },
+    { "name": "Sidekick Name", "role": "Helper", "avatar": "emoji", "personality": "description" }
+  ],
+  "learning_objectives": [
+    "Specific objective 1 about ${topic}",
+    "Specific objective 2 about ${topic}",
+    "Specific objective 3 about ${topic}"
+  ],
+  "scenes": [
+    {
+      "scene_number": 1,
+      "title": "Scene 1 title",
+      "background_type": "forest|laboratory|human_body|space_station|classroom|ocean_world|future_city",
+      "character_speaking": "${hero}",
+      "character_action": "explore|walk|talk|think|experiment|celebrate",
+      "narration": "2-3 sentence Disney-style atmospheric narration specific to ${topic}.",
+      "dialogue": "Exciting character dialogue specifically about ${topic} with facts.",
+      "decision_point": {
+        "has_decision": true,
+        "prompt": "Specific science question about ${topic}?",
+        "options": [
+          { "id": "A", "text": "Correct answer about ${topic}", "is_correct": true, "feedback": "Encouraging explanation with ${topic} facts" },
+          { "id": "B", "text": "Common misconception", "is_correct": false, "feedback": "Gentle correction about ${topic}" },
+          { "id": "C", "text": "Plausible wrong answer", "is_correct": false, "feedback": "Why this is wrong about ${topic}" }
+        ]
+      }
+    },
+    {
+      "scene_number": 2,
+      "title": "Scene 2 title",
+      "background_type": "forest|laboratory|human_body|space_station|classroom|ocean_world|future_city",
+      "character_speaking": "Mentor Name",
+      "character_action": "experiment",
+      "narration": "Deeper dive into ${topic} mechanisms with village India elements.",
+      "dialogue": "Mentor explaining key ${topic} principle with an analogy.",
+      "decision_point": {
+        "has_decision": true,
+        "prompt": "Second checkpoint â€” a tougher question about ${topic}?",
+        "options": [
+          { "id": "A", "text": "Option A", "is_correct": true, "feedback": "Feedback" },
+          { "id": "B", "text": "Option B", "is_correct": false, "feedback": "Feedback" },
+          { "id": "C", "text": "Option C", "is_correct": false, "feedback": "Feedback" }
+        ]
+      }
+    },
+    {
+      "scene_number": 3,
+      "title": "The Triumph â€” Saving the Day with ${topic}",
+      "background_type": "future_city",
+      "character_speaking": "${hero}",
+      "character_action": "celebrate",
+      "narration": "Climax resolution using knowledge of ${topic} to solve the story problem.",
+      "dialogue": "Celebrating â€” now launching the digital simulation!",
+      "decision_point": {
+        "has_decision": true,
+        "prompt": "Final quiz: Real-world application of ${topic}?",
+        "options": [
+          { "id": "A", "text": "Correct application", "is_correct": true, "feedback": "Brilliant!" },
+          { "id": "B", "text": "Wrong application", "is_correct": false, "feedback": "Not quite" },
+          { "id": "C", "text": "Another wrong option", "is_correct": false, "feedback": "Incorrect" }
+        ]
+      }
+    }
+  ],
+  "mini_challenge": {
+    "title": "${topic} Concept Lab",
+    "instruction": "Match the ${topic} inputs and outputs!",
+    "inputs": ["Key input 1", "Key input 2"],
+    "outputs": ["Expected output 1", "Expected output 2"]
+  },
+  "quiz": [
+    {
+      "question": "Core concept question about ${topic}?",
+      "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+      "correct_index": 0,
+      "explanation": "Clear explanation about ${topic}."
+    },
+    {
+      "question": "Application question about ${topic}?",
+      "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+      "correct_index": 1,
+      "explanation": "Explanation."
+    },
+    {
+      "question": "Deeper intuition question about ${topic}?",
+      "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+      "correct_index": 2,
+      "explanation": "Deeper explanation."
+    }
+  ]
+}`;
+
+  const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
+  for (const modelName of modelsToTry) {
+    try {
+      const model = browserGenAI.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim();
+      const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+
+      if (!parsed.title || !Array.isArray(parsed.scenes) || parsed.scenes.length < 2) continue;
+
+      // Verify the YouTube video ID Gemini picked
+      let videoId = parsed.youtube_video_id;
+      let videoOk = videoId ? await verifyYouTubeId(videoId) : false;
+
+      if (!videoOk) {
+        // Try to find a matching video from the curated catalog
+        const catalogMatch = CURATED_STORIES.find(s =>
+          (s.topic || '').toLowerCase().includes(topic.toLowerCase().split(' ')[0]) ||
+          (s.subject || '').toLowerCase() === subject.toLowerCase()
+        );
+        if (catalogMatch) {
+          const catalogId = catalogMatch.video_url?.split('/embed/')?.[1]?.split('?')?.[0];
+          if (catalogId) { videoId = catalogId; videoOk = true; }
+        }
+      }
+
+      // Build final video fields
+      parsed.video_url = videoOk
+        ? `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0`
+        : null; // null = will show YouTube search fallback in UI
+      parsed.video_id = videoOk ? videoId : null;
+      parsed.video_search_url = youtubeSearchUrl(topic, subject);
+      parsed.video_verified = videoOk;
+      if (!parsed.video_title) parsed.video_title = `${topic} Educational Animation`;
+      if (!parsed.video_channel) parsed.video_channel = 'Educational YouTube';
+      if (!parsed.video_description) parsed.video_description = `Animated cartoon explaining ${topic} for ${grade} students.`;
+
+      // Build ai_video_storyboard from scenes if not present
+      if (!parsed.ai_video_storyboard || !parsed.ai_video_storyboard.length) {
+        parsed.ai_video_storyboard = parsed.scenes.map((s, idx) => ({
+          scene: idx + 1,
+          title: s.title || `Scene ${idx + 1}`,
+          camera_direction: `Dynamic animated Pixar-style shot. ${s.character_speaking || hero} in a ${s.background_type || 'laboratory'} setting.`,
+          visual_prompt: `Disney/Pixar 3D animation. Expressive cartoon character exploring ${topic} with vivid colours and village India backdrop.`,
+          dialogue: s.dialogue || '',
+          duration_sec: 12 + idx * 2
+        }));
+      }
+
+      return { status: 'success', source: 'gemini_browser', model: modelName, story: parsed };
+    } catch (err) {
+      console.warn(`[StoryVerse] Browser Gemini model ${modelName} error:`, err.message);
+    }
+  }
+  throw new Error('All Gemini models failed');
+}
 
 export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
 
@@ -231,9 +449,25 @@ export const api = {
   },
 
   async generateAIStory(params) {
+    const { subject = 'Biology', topic = 'Photosynthesis', grade = 'Class 7', isFirstPerson = false, characterName = '' } = params;
+
+    // â”€â”€ 1. Try browser-side Gemini first (works on Vercel, fully real-time) â”€â”€
+    if (browserGenAI) {
+      try {
+        const result = await generateStoryWithBrowserGemini({ subject, topic, grade, isFirstPerson, characterName });
+        if (result && result.story) {
+          console.log(`[StoryVerse] âœ… Browser Gemini generated story for "${topic}" using model: ${result.model}`);
+          return result;
+        }
+      } catch (err) {
+        console.warn('[StoryVerse] Browser Gemini failed, trying backend:', err.message);
+      }
+    }
+
+    // â”€â”€ 2. Fallback to backend Express server (local dev) â”€â”€
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
       const res = await fetch(`${API_BASE}/stories/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -243,154 +477,82 @@ export const api = {
       clearTimeout(timeoutId);
       if (res.ok) {
         const data = await res.json();
-        if (data && data.story) return data;
+        if (data && data.story) {
+          // Fix video: verify the backend-provided video URL works
+          if (data.story.video_url) {
+            const vid = data.story.video_url.split('/embed/')?.[1]?.split('?')?.[0];
+            const ok = vid ? await verifyYouTubeId(vid) : false;
+            if (!ok) {
+              data.story.video_url = null;
+              data.story.video_verified = false;
+            } else {
+              data.story.video_verified = true;
+            }
+          }
+          data.story.video_search_url = youtubeSearchUrl(topic, subject);
+          return data;
+        }
       }
     } catch (err) {
-      console.warn('[StoryVerse] generateAIStory backend unavailable, using client procedural generator:', err.message);
+      console.warn('[StoryVerse] Backend unavailable, using procedural generator:', err.message);
     }
 
-    // Client-side instant generator fallback for Vercel
-    const { subject = 'Biology', topic = 'Photosynthesis', grade = 'Class 7', isFirstPerson = false, characterName = '' } = params;
+    // â”€â”€ 3. Final offline procedural fallback â”€â”€
     const hero = characterName || (isFirstPerson ? 'You (The Young Scientist)' : 'Aria the Explorer');
-    const videoData = getTopicCartoonVideo(topic, subject);
+    // Try catalog first for best video match
+    const catalogMatch = CURATED_STORIES.find(s =>
+      topic && (
+        (s.topic || '').toLowerCase().includes(topic.toLowerCase().split(' ')[0]) ||
+        (s.id || '').includes(topic.toLowerCase().replace(/\s+/g, '_').slice(0, 8))
+      )
+    );
+    const catalogVideoId = catalogMatch?.video_url?.split('/embed/')?.[1]?.split('?')?.[0];
 
     const generated = {
       id: `ai_${Date.now()}`,
       title: `${topic}: The Great Discovery Quest`,
       subtitle: `An epic cartoon adventure exploring ${topic} in ${subject} for ${grade}!`,
-      subject,
-      topic,
-      grade,
+      subject, topic, grade,
       cover_gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%)',
       badge: 'AI Generated Adventure',
       accent_color: '#8b5cf6',
       is_first_person: Boolean(isFirstPerson),
-      video_url: videoData.video_url,
-      video_title: videoData.video_title,
-      video_duration: videoData.video_duration,
-      video_channel: videoData.video_channel,
-      video_description: videoData.video_description,
+      video_url: catalogVideoId ? `https://www.youtube.com/embed/${catalogVideoId}?rel=0&modestbranding=1` : null,
+      video_id: catalogVideoId || null,
+      video_verified: Boolean(catalogVideoId),
+      video_search_url: youtubeSearchUrl(topic, subject),
+      video_title: catalogMatch ? catalogMatch.video_title : `${topic} Educational Animation`,
+      video_channel: catalogMatch ? catalogMatch.video_channel : 'Educational YouTube',
+      video_description: `Animated cartoon explaining ${topic} for ${grade} students.`,
       ai_video_storyboard: [
-        {
-          scene: 1,
-          title: `The Mystery of ${topic}`,
-          camera_direction: `Establishing wide crane shot of the village science lab.`,
-          visual_prompt: `Pixar 3D animation. Cartoon student ${hero} discovering a holographic model of ${topic}.`,
-          dialogue: `Look at the telemetry gauges! The foundational laws of ${topic} are unfolding right before our eyes!`,
-          duration_sec: 12
-        },
-        {
-          scene: 2,
-          title: `Natural Verification in the Field`,
-          camera_direction: `Dynamic tracking shot moving through a lush rural environment.`,
-          visual_prompt: `Animated microscopic particles interacting with sunlight, water, and mechanical systems.`,
-          dialogue: `In nature, energy and matter are never lost—only transformed!`,
-          duration_sec: 15
-        },
-        {
-          scene: 3,
-          title: `Breakthrough & Digital Lab`,
-          camera_direction: `Low-angle heroic rising shot with celebratory confetti.`,
-          visual_prompt: `The cartoon cast celebrating victory as clean energy illuminates the school.`,
-          dialogue: `We solved the challenge! Time to test our discoveries inside the digital simulator!`,
-          duration_sec: 14
-        }
+        { scene: 1, title: `The Mystery of ${topic}`, camera_direction: `Establishing wide crane shot of the village science lab.`, visual_prompt: `Pixar 3D animation. ${hero} discovering ${topic}.`, dialogue: `Look! The laws of ${topic} are unfolding right before our eyes!`, duration_sec: 12 },
+        { scene: 2, title: `Experimenting with ${topic}`, camera_direction: `Dynamic tracking shot through a lush rural environment.`, visual_prompt: `Animated particles demonstrating ${topic} with vivid colours.`, dialogue: `In nature, energy and matter are never lost â€” only transformed!`, duration_sec: 15 },
+        { scene: 3, title: `Breakthrough!`, camera_direction: `Heroic low-angle rising shot with celebratory confetti.`, visual_prompt: `Cartoon cast celebrating victory using ${topic} to power the village school.`, dialogue: `We solved the challenge! Launch the simulation now!`, duration_sec: 14 }
       ],
-      simulation_target: {
-        type: 'phet',
-        id: 'forces_motion',
-        name: `PhET ${topic} Interactive Lab`,
-        url: 'https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_all.html',
-        learning_hook: `Test and verify the physical laws of ${topic} directly inside this digital laboratory!`
-      },
+      simulation_target: { type: 'phet', id: 'forces_motion', name: `PhET ${topic} Interactive Lab`, url: 'https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_all.html', learning_hook: `Test the physical laws of ${topic} directly!` },
       characters: [
-        { name: hero, role: isFirstPerson ? 'You (Main Protagonist)' : 'Lead Adventurer', avatar: '🧑‍🔬', personality: 'Curious and determined' },
-        { name: 'Dr. Vidya', role: 'Chief Scientist', avatar: '🤖', personality: 'Knowledgeable and supportive AI guide' }
+        { name: hero, role: isFirstPerson ? 'You (Main Protagonist)' : 'Lead Adventurer', avatar: 'ðŸ§‘â€ðŸ”¬', personality: 'Curious and determined' },
+        { name: 'Dr. Vidya', role: 'Chief Scientist', avatar: 'ðŸ¤–', personality: 'Knowledgeable and supportive AI guide' }
       ],
       learning_objectives: [
-        `Understand the fundamental physical mechanisms of ${topic}`,
+        `Understand the fundamental mechanisms of ${topic}`,
         `Connect textbook science to everyday village machines and natural phenomena`,
         `Apply scientific problem-solving logic at interactive checkpoints`
       ],
       scenes: [
-        {
-          scene_number: 1,
-          title: `The Awakening of ${topic}`,
-          background_type: 'laboratory',
-          character_speaking: hero,
-          character_action: 'explore',
-          narration: `Inside the VidyaVerse mobile laboratory, telemetry readings for ${topic} suddenly burst into action!`,
-          dialogue: `Look closely! If we understand how ${topic} operates in nature, we can unlock solutions for our village!`,
-          decision_point: {
-            has_decision: true,
-            prompt: `To investigate ${topic} scientifically, what is the best first step?`,
-            options: [
-              { id: 'A', text: 'Careful observation, formulating a hypothesis, and gathering testable data', is_correct: true, feedback: 'Spot on! Real science starts with keen observation and testable hypotheses!' },
-              { id: 'B', text: 'Guessing without testing', is_correct: false, feedback: 'Incorrect. Science relies on systematic evidence and testing.' },
-              { id: 'C', text: 'Ignoring anomalies', is_correct: false, feedback: 'Incorrect. Anomalies often lead to humanity’s greatest discoveries!' }
-            ]
-          }
-        },
-        {
-          scene_number: 2,
-          title: `Field Experiment & Energy Exchange`,
-          background_type: 'forest',
-          character_speaking: 'Dr. Vidya',
-          character_action: 'experiment',
-          narration: `Out in the field, natural elements interact with mechanical systems, demonstrating ${topic} in real life!`,
-          dialogue: `Notice how matter and energy interact! Universal conservation laws govern every process in nature!`,
-          decision_point: {
-            has_decision: true,
-            prompt: `When applying ${topic} in real life, what happens to the total energy in an isolated system?`,
-            options: [
-              { id: 'A', text: 'Total energy is conserved: it cannot be created or destroyed, only transformed', is_correct: true, feedback: 'Brilliant! The Law of Conservation of Energy holds true across the Universe!' },
-              { id: 'B', text: 'Energy vanishes forever', is_correct: false, feedback: 'Incorrect. Energy may turn into dissipated heat, but the total sum remains constant.' },
-              { id: 'C', text: 'Energy doubles without any input', is_correct: false, feedback: 'Incorrect. Perpetual motion machines violating conservation of energy cannot exist.' }
-            ]
-          }
-        },
-        {
-          scene_number: 3,
-          title: `The Triumph of Scientific Mastery`,
-          background_type: 'future_city',
-          character_speaking: hero,
-          character_action: 'celebrate',
-          narration: `The experiment succeeds! Applying principles of ${topic} allows the team to power up the village school!`,
-          dialogue: `We solved it! Now let us launch the interactive PhET simulation to verify our findings!`,
-          decision_point: {
-            has_decision: true,
-            prompt: `Why is hands-on experimentation superior to rote memorization?`,
-            options: [
-              { id: 'A', text: 'It develops conceptual intuition, analytical thinking, and real-world problem-solving', is_correct: true, feedback: 'Hurrah! Experimentation builds deep, permanent neural connections!' },
-              { id: 'B', text: 'It takes less time to memorize without thinking', is_correct: false, feedback: 'Rote memorization fades quickly and fails when applied to novel problems.' },
-              { id: 'C', text: 'There is no difference', is_correct: false, feedback: 'Experiential learning dramatically boosts retention and real-world innovation.' }
-            ]
-          }
-        }
+        { scene_number: 1, title: `The Awakening of ${topic}`, background_type: 'laboratory', character_speaking: hero, character_action: 'explore', narration: `Inside the VidyaVerse mobile laboratory, readings for ${topic} suddenly burst into action!`, dialogue: `If we understand how ${topic} operates in nature, we can unlock solutions for our village!`, decision_point: { has_decision: true, prompt: `To investigate ${topic} scientifically, what is the best first step?`, options: [ { id: 'A', text: 'Careful observation, hypothesis, and gathering data', is_correct: true, feedback: 'Spot on! Real science starts with observation and testable hypotheses!' }, { id: 'B', text: 'Guessing without testing', is_correct: false, feedback: 'Science relies on systematic evidence.' }, { id: 'C', text: 'Ignoring anomalies', is_correct: false, feedback: 'Anomalies often lead to great discoveries!' } ] } },
+        { scene_number: 2, title: `Field Experiment`, background_type: 'forest', character_speaking: 'Dr. Vidya', character_action: 'experiment', narration: `Out in the field, natural elements demonstrate ${topic} in real life!`, dialogue: `Universal conservation laws govern every process in nature!`, decision_point: { has_decision: true, prompt: `What happens to energy in an isolated system studying ${topic}?`, options: [ { id: 'A', text: 'Energy is conserved â€” only transformed', is_correct: true, feedback: 'Brilliant! The Law of Conservation of Energy holds!' }, { id: 'B', text: 'Energy vanishes', is_correct: false, feedback: 'Energy turns into heat but never disappears.' }, { id: 'C', text: 'Energy doubles', is_correct: false, feedback: 'Perpetual motion machines cannot exist.' } ] } },
+        { scene_number: 3, title: `The Triumph`, background_type: 'future_city', character_speaking: hero, character_action: 'celebrate', narration: `Applying ${topic} principles, the team powers up the village school!`, dialogue: `Let's launch the interactive simulation to verify our findings!`, decision_point: { has_decision: true, prompt: `How is ${topic} applied in real life?`, options: [ { id: 'A', text: 'Through real-world machines and natural processes', is_correct: true, feedback: 'Exactly right!' }, { id: 'B', text: 'Only in textbooks', is_correct: false, feedback: 'Science is everywhere!' }, { id: 'C', text: 'Only in labs', is_correct: false, feedback: 'Nature is the greatest lab.' } ] } }
       ],
+      mini_challenge: { title: `${topic} Concept Connector`, instruction: `Connect ${topic} principles to real-world applications!`, inputs: [`Observation of ${topic}`, 'Hypothesis Testing'], outputs: ['Empirical Proof', 'Simulation Access'] },
       quiz: [
-        {
-          question: `What is the primary scientific principle underlying ${topic}?`,
-          options: ['A) Universal conservation laws and cause-and-effect relationships', 'B) Random magic', 'C) Unverifiable speculation', 'D) Rote rules'],
-          correct_index: 0,
-          explanation: `${topic} is governed by empirical, verifiable physical and natural laws.`
-        },
-        {
-          question: `How can rural students best observe ${topic} at home?`,
-          options: ['A) By examining everyday objects like bicycles, pressure cookers, and plants', 'B) Only in expensive university research labs', 'C) It cannot be observed at home', 'D) Only on television'],
-          correct_index: 0,
-          explanation: 'Everyday household and village objects are living laboratories demonstrating STEM principles.'
-        },
-        {
-          question: `What is the next step after completing an interactive story lesson?`,
-          options: ['A) Run interactive PhET simulations to test boundary conditions', 'B) Forget the topic', 'C) Skip practicing', 'D) Close the browser'],
-          correct_index: 0,
-          explanation: 'Simulations allow students to manipulate parameters and verify theory interactively.'
-        }
+        { question: `What is the primary principle underlying ${topic}?`, options: ['A) Conservation laws and cause-and-effect', 'B) Random chance', 'C) Magic', 'D) Memorization'], correct_index: 0, explanation: `${topic} is governed by empirical, verifiable natural laws.` },
+        { question: `How can students best observe ${topic}?`, options: ['A) Through everyday village objects and experiments', 'B) Only in university labs', 'C) Only on TV', 'D) It cannot be observed'], correct_index: 0, explanation: 'Household objects are living laboratories!' },
+        { question: `After the story lesson, what is the best next step?`, options: ['A) Run interactive PhET simulations', 'B) Forget the topic', 'C) Skip practice', 'D) Close the browser'], correct_index: 0, explanation: 'Simulations let you test boundary conditions and verify theory.' }
       ]
     };
 
-    return { status: 'success', source: 'client_generator', story: generated };
+    return { status: 'success', source: 'offline_procedural', story: generated };
   },
 
   async getStoryAnalytics(userId = 'guest_user') {

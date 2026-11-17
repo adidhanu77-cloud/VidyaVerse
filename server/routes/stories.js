@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { broadcastEvent } from '../realtime/broadcast.js';
 import 'dotenv/config';

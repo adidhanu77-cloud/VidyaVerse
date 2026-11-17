@@ -910,124 +910,102 @@ function MultiActorStage({ story, currentScene, isSpeaking, isFirstPerson, speak
 
 /* ─── Embedded Cartoon Animated Video Cinema Player ─────────────── */
 function CartoonVideoPlayer({ story, onOpenCheckpoint, onLaunchSimulation, onStartQuiz }) {
-  const videoUrl = story.video_url || 'https://www.youtube-nocookie.com/embed/sQK3Yr4Sc_k';
+  // video_verified: set by real-time Gemini generation (true = verified, false/undefined = unverified)
+  // video_url: null means no verified embed available → show YouTube search fallback
+  const hasVerifiedVideo = story.video_url && story.video_verified !== false;
+  const showSearchFallback = !hasVerifiedVideo;
+  const searchUrl = story.video_search_url || `https://www.youtube.com/results?search_query=${encodeURIComponent((story.topic || '') + ' educational cartoon animation')}`;
+  const watchUrl = story.video_url ? story.video_url.replace('/embed/', '/watch?v=').split('?')[0] : searchUrl;
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', gap: 20,
-      animation: 'fadeIn 0.3s ease'
-    }}>
-      {/* Video Marquee Header */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        flexWrap: 'wrap', gap: 12,
-        backgroundColor: '#17140d', padding: '12px 20px', borderRadius: 16,
-        color: '#ffffff'
-      }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, animation: 'fadeIn 0.3s ease' }}>
+      {/* Video Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, backgroundColor: '#17140d', padding: '12px 20px', borderRadius: 16, color: '#ffffff' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{
-            backgroundColor: '#ff5b57', color: '#fff',
-            padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 900,
-            border: '1.5px solid #fff'
-          }}>
+          <span style={{ backgroundColor: '#ff5b57', color: '#fff', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 900, border: '1.5px solid #fff' }}>
             🎬 CARTOON ANIMATION CINEMA
           </span>
           <span style={{ fontSize: 13, fontWeight: 800, color: '#fef08a' }}>
             {story.video_title || `${story.topic} Cartoon Science Adventure`}
           </span>
         </div>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {story.video_channel && (
-            <span style={{
-              backgroundColor: 'rgba(255,255,255,0.15)',
-              padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 700
-            }}>
+            <span style={{ backgroundColor: 'rgba(255,255,255,0.15)', padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 700 }}>
               📺 {story.video_channel}
             </span>
           )}
           {story.video_duration && (
-            <span style={{
-              backgroundColor: '#ffc531', color: '#17140d',
-              padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 800
-            }}>
+            <span style={{ backgroundColor: '#ffc531', color: '#17140d', padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 800 }}>
               ⏱️ {story.video_duration}
+            </span>
+          )}
+          {showSearchFallback && (
+            <span style={{ backgroundColor: '#7c3aed', color: '#fff', padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 800 }}>
+              🔍 AI-Matched Topic
             </span>
           )}
         </div>
       </div>
 
-      {/* 16:9 Cinema Screen Container */}
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        paddingTop: '56.25%', // 16:9 Aspect Ratio
-        backgroundColor: '#09090b',
-        borderRadius: 20,
-        border: '3.5px solid #17140d',
-        boxShadow: '8px 8px 0 #17140d',
-        overflow: 'hidden'
-      }}>
-        <iframe
-          src={`${videoUrl}?rel=0&modestbranding=1&enablejsapi=1`}
-          title={story.video_title || "Cartoon Animated Educational Story"}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            borderRadius: 16
-          }}
-        />
+      {/* 16:9 Cinema Screen */}
+      <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', backgroundColor: '#09090b', borderRadius: 20, border: '3.5px solid #17140d', boxShadow: '8px 8px 0 #17140d', overflow: 'hidden' }}>
+        {!showSearchFallback ? (
+          <iframe
+            src={`${story.video_url}${story.video_url.includes('?') ? '&' : '?'}rel=0&modestbranding=1&enablejsapi=1`}
+            title={story.video_title || 'Cartoon Animated Educational Story'}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none', borderRadius: 16 }}
+          />
+        ) : (
+          /* YouTube Search Fallback — when Gemini's video ID couldn't be verified */
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4c1d95 100%)', gap: 20, padding: 32 }}>
+            <div style={{ fontSize: 64, animation: 'float 2s infinite alternate' }}>🎥</div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ color: '#fef08a', fontSize: 20, fontWeight: 900, marginBottom: 8 }}>
+                Your Story is Ready! 🚀
+              </div>
+              <div style={{ color: '#c4b5fd', fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
+                📖 Topic: <span style={{ color: '#fff' }}>{story.topic}</span>
+              </div>
+              <div style={{ color: '#a5b4fc', fontSize: 13, maxWidth: 480 }}>
+                Gemini AI generated your complete interactive story with scenes, dialogues, and quizzes.
+                Watch a real YouTube educational video for this exact topic:
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <a href={searchUrl} target="_blank" rel="noopener noreferrer"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: '#ff0000', color: '#fff', padding: '12px 24px', borderRadius: 12, fontSize: 15, fontWeight: 900, textDecoration: 'none', border: '2.5px solid #fff', boxShadow: '4px 4px 0 rgba(0,0,0,0.5)' }}>
+                <span>▶ Watch on YouTube</span>
+                <ExternalLink size={16} />
+              </a>
+              {story.youtube_search_query && (
+                <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(story.youtube_search_query)}`} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.15)', color: '#fff', padding: '12px 24px', borderRadius: 12, fontSize: 13, fontWeight: 800, textDecoration: 'none', border: '2px solid rgba(255,255,255,0.4)' }}>
+                  🔍 Search: {story.youtube_search_query?.slice(0, 40)}
+                </a>
+              )}
+            </div>
+            <div style={{ fontSize: 11, color: '#7c3aed', backgroundColor: 'rgba(255,255,255,0.1)', padding: '6px 14px', borderRadius: 8, fontWeight: 700 }}>
+              💡 Tip: Scroll down to start your interactive story adventure — scenes, decisions & quiz are all ready!
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Concept Description Bar & External Watcher Option */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 12,
-        backgroundColor: '#efffed',
-        border: '2px solid #12b3a4',
-        borderRadius: 14,
-        padding: '12px 18px',
-        fontSize: 13,
-        color: '#096b62'
-      }}>
+      {/* Description Bar & Watch Link */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, backgroundColor: '#efffed', border: '2px solid #12b3a4', borderRadius: 14, padding: '12px 18px', fontSize: 13, color: '#096b62' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
           <Sparkles size={18} style={{ flexShrink: 0 }} />
-          <span><strong>What You Learn In This Video:</strong> {story.video_description || story.subtitle}</span>
+          <span><strong>What You Learn:</strong> {story.video_description || story.subtitle}</span>
         </div>
-
-        {story.video_url && (
-          <a
-            href={story.video_url.replace('/embed/', '/watch?v=')}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              backgroundColor: '#ffffff',
-              color: '#096b62',
-              border: '1.5px solid #12b3a4',
-              borderRadius: 8,
-              padding: '6px 12px',
-              fontSize: 12,
-              fontWeight: 800,
-              textDecoration: 'none',
-              boxShadow: '2px 2px 0 #096b62'
-            }}
-          >
-            <span>Open in YouTube Fullscreen</span>
-            <ExternalLink size={13} />
-          </a>
-        )}
+        <a href={watchUrl} target="_blank" rel="noopener noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: '#ffffff', color: '#096b62', border: '1.5px solid #12b3a4', borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 800, textDecoration: 'none', boxShadow: '2px 2px 0 #096b62' }}>
+          <span>{showSearchFallback ? 'Search YouTube' : 'Open in YouTube'}</span>
+          <ExternalLink size={13} />
+        </a>
       </div>
 
       {/* Interactive Checkpoint Toolbar */}
@@ -1556,15 +1534,16 @@ export default function StoryMode() {
     });
   };
 
-  // ── Generate AI Story via Gemini API / Client Generator ────────────
+  // ── Generate AI Story via Browser Gemini (real-time, topic-specific) ─
   const handleGenerateStory = async (e) => {
     e.preventDefault();
+    if (!genTopic.trim()) return;
     setIsGenerating(true);
 
     try {
       const res = await api.generateAIStory({
         subject: genSubject,
-        topic: genTopic,
+        topic: genTopic.trim(),
         grade: genGrade,
         isFirstPerson: isFirstPersonMode,
         characterName: genCharacterName
@@ -2703,15 +2682,20 @@ export default function StoryMode() {
 
           <button
             onClick={handleGenerateStory}
-            disabled={isGenerating}
+            disabled={isGenerating || !genTopic.trim()}
             className="btn-candy primary"
             style={{
               padding: '14px 32px', fontSize: 16, gap: 10,
-              opacity: isGenerating ? 0.6 : 1, cursor: isGenerating ? 'wait' : 'pointer'
+              opacity: (isGenerating || !genTopic.trim()) ? 0.6 : 1,
+              cursor: isGenerating ? 'wait' : !genTopic.trim() ? 'not-allowed' : 'pointer'
             }}
           >
             <Sparkles size={18} />
-            <span>{isGenerating ? 'Gemini is Crafting Cartoon Adventure & Video...' : 'Generate Cartoon Adventure Now'}</span>
+            <span>
+              {isGenerating
+                ? '🤖 Gemini is generating your exact story + finding real video...'
+                : `🎬 Generate "${genTopic || 'your topic'}" Adventure Now`}
+            </span>
           </button>
         </div>
       )}

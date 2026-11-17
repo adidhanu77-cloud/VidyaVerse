@@ -56,6 +56,8 @@ export async function broadcastAndSaveUser(profileData) {
     username: profileData.username || (profileData.email ? profileData.email.split('@')[0] : 'student_' + userId.slice(-4)),
     email: profileData.email || '',
     phone: profileData.phone || '',
+    parentPhone: profileData.parentPhone || '',
+    parentName: profileData.parentName || '',
     avatar: profileData.avatar || null,
     grade: profileData.grade || 'Class 9',
     school: profileData.school || '',

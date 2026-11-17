@@ -13,6 +13,7 @@ import tutorRoutes from './routes/tutor.js';
 import careersRoutes from './routes/careers.js';
 import analyticsRoutes from './routes/analytics.js';
 import userRoutes from './routes/user.js';
+import notificationsRoutes from './routes/notifications.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,7 @@ app.use('/api/stories', storiesRoutes);
 app.use('/api/tutor', tutorRoutes);
 app.use('/api/careers', careersRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Mount separate user backend / personal dashboard architecture
 app.use('/api/user', userRoutes);

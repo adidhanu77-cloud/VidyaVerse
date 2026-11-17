@@ -12,6 +12,8 @@ function getOrCreateProfile(userId) {
       username: '',
       email: '',
       phone: '',
+      parentPhone: '',
+      parentName: '',
       avatar: null,
       bio: '',
       school: '',
@@ -35,13 +37,15 @@ router.get('/profile/:userId', (req, res) => {
 
 // CREATE / UPDATE full profile
 router.post('/profile', (req, res) => {
-  const { userId, name, username, email, phone, avatar, bio, school, grade, language, provider } = req.body;
+  const { userId, name, username, email, phone, parentPhone, parentName, avatar, bio, school, grade, language, provider } = req.body;
   if (!userId) return res.status(400).json({ status: 'error', message: 'userId required' });
   const profile = getOrCreateProfile(userId);
   if (name !== undefined) profile.name = name;
   if (username !== undefined) profile.username = username;
   if (email !== undefined) profile.email = email;
   if (phone !== undefined) profile.phone = phone;
+  if (parentPhone !== undefined) profile.parentPhone = parentPhone;
+  if (parentName !== undefined) profile.parentName = parentName;
   if (avatar !== undefined) profile.avatar = avatar;
   if (bio !== undefined) profile.bio = bio;
   if (school !== undefined) profile.school = school;

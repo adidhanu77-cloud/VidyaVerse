@@ -150,6 +150,11 @@ export default function UserProfilePanel({ isOpen, onClose }) {
                 </span>
               </div>
             )}
+            {profile.parentPhone && (
+              <div style={{ fontSize: 12, color: '#444', fontWeight: 600, marginTop: 3 }}>
+                👨‍👩‍👦 Parent WhatsApp: <strong>{profile.parentPhone}</strong>
+              </div>
+            )}
             {profile.username && <div style={{ fontSize: 13, color: '#7a7068', marginTop: 2 }}>@{profile.username}</div>}
             {profile.school && <div style={{ fontSize: 12, color: '#5a5450', marginTop: 2 }}>🏫 {profile.school} · {profile.grade}</div>}
             
@@ -184,7 +189,7 @@ export default function UserProfilePanel({ isOpen, onClose }) {
           {editing && (
             <div style={{ background: '#fff', border: '2.5px solid #17140d', borderRadius: 18, padding: 16, boxShadow: '5px 5px 0 #17140d' }}>
               <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 12 }}>✏️ Edit Profile</div>
-              {[{ key:'name', label:'Full Name', ph:'e.g. Raju Kumar' }, { key:'username', label:'Username', ph:'e.g. raju_science' }, { key:'school', label:'School', ph:'Govt High School...' }].map(f => (
+              {[{ key:'name', label:'Full Name', ph:'e.g. Raju Kumar' }, { key:'username', label:'Username', ph:'e.g. raju_science' }, { key:'school', label:'School', ph:'Govt High School...' }, { key:'parentName', label:'Parent Name', ph:'e.g. Ramesh Kumar' }, { key:'parentPhone', label:'Parent WhatsApp / Phone', ph:'e.g. +91 98765 43210' }].map(f => (
                 <div key={f.key} style={{ marginBottom: 10 }}>
                   <label style={{ fontSize: 11, fontWeight: 800, color: '#7a7068', textTransform: 'uppercase', display: 'block', marginBottom: 3 }}>{f.label}</label>
                   <input value={form[f.key] || ''} onChange={e => setForm(x => ({ ...x, [f.key]: e.target.value }))} placeholder={f.ph} style={inp} />

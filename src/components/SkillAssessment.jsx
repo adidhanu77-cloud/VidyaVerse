@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   ClipboardCheck, Clock, CheckCircle2, XCircle, AlertCircle,
   Flag, ArrowRight, ArrowLeft, RefreshCw, Trophy, Sparkles,
-  ChevronDown, BookOpen, Compass, Award, ShieldCheck, HelpCircle
+  ChevronDown, BookOpen, Compass, Award, ShieldCheck, HelpCircle,
+  MessageSquare, Send, Smartphone, Share2, ExternalLink, Eye
 } from 'lucide-react';
 import { getQuestionsForGrade } from '../data/assessmentQuestions';
 import {
@@ -11,6 +12,7 @@ import {
   getLatestAssessment,
   checkWeeklyStatus
 } from '../services/assessmentEngine';
+import { api } from '../services/api';
 
 const GRADE_LIST = [
   'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'
@@ -20,6 +22,15 @@ export default function SkillAssessment({ onNavigate }) {
   // 1. Student profile & grade detection
   const [selectedGrade, setSelectedGrade] = useState('Class 9');
   const [profileName, setProfileName] = useState('');
+  const [parentPhone, setParentPhone] = useState('');
+  const [parentName, setParentName] = useState('');
+
+  // Twilio Parent Notification states
+  const [notifyWhatsApp, setNotifyWhatsApp] = useState(true);
+  const [notifySms, setNotifySms] = useState(true);
+  const [parentSendStatus, setParentSendStatus] = useState('idle'); // 'idle' | 'sending' | 'sent' | 'error'
+  const [parentReportResult, setParentReportResult] = useState(null);
+  const [showParentPreview, setShowParentPreview] = useState(false);
 
   // 2. Exam lifecycle states: 'ready' | 'active' | 'review'
   const [examState, setExamState] = useState('ready');
@@ -49,6 +60,8 @@ export default function SkillAssessment({ onNavigate }) {
         const parsed = JSON.parse(storedProfile);
         if (parsed.grade) setSelectedGrade(parsed.grade);
         if (parsed.name) setProfileName(parsed.name);
+        if (parsed.parentPhone) setParentPhone(parsed.parentPhone);
+        if (parsed.parentName) setParentName(parsed.parentName);
       }
     } catch {}
 
@@ -124,6 +137,50 @@ export default function SkillAssessment({ onNavigate }) {
     }
   }
 
+  async function dispatchParentNotification(targetResult = assessmentResult, phoneToUse = parentPhone) {
+    if (!phoneToUse || phoneToUse.replace(/\D/g, '').length < 10) {
+      setParentSendStatus('error');
+      return;
+    }
+    setParentSendStatus('sending');
+    try {
+      const prog = JSON.parse(localStorage.getItem('vidyaverse_progress') || '{}');
+      const payload = {
+        studentName: profileName || 'Your Child',
+        parentName: parentName || 'Parent',
+        parentPhone: phoneToUse,
+        grade: selectedGrade,
+        assessmentScore: targetResult?.totalCorrect ?? 0,
+        totalQuestions: 40,
+        percentage: targetResult?.percentage ?? 0,
+        masteryTier: targetResult?.masteryTier ?? 'Proficient',
+        sectionBreakdown: targetResult?.sectionBreakdown ?? {},
+        streak: prog.streak || 1,
+        badges: prog.badges || [],
+        totalXP: prog.totalXP || 250,
+        channels: [
+          notifyWhatsApp ? 'whatsapp' : null,
+          notifySms ? 'sms' : null
+        ].filter(Boolean)
+      };
+
+      const res = await api.sendParentReport(payload);
+      setParentReportResult(res?.data || res);
+      setParentSendStatus('sent');
+
+      // Update parent phone in profile for future weekly assessments
+      try {
+        const storedProfile = JSON.parse(localStorage.getItem('vidyaverse_profile') || '{}');
+        storedProfile.parentPhone = phoneToUse;
+        if (parentName) storedProfile.parentName = parentName;
+        localStorage.setItem('vidyaverse_profile', JSON.stringify(storedProfile));
+      } catch {}
+    } catch (err) {
+      console.warn('Error sending parent notification:', err);
+      setParentSendStatus('error');
+    }
+  }
+
   async function handleSubmitExam() {
     if (timerRef.current) clearInterval(timerRef.current);
     setShowSubmitModal(false);
@@ -138,6 +195,11 @@ export default function SkillAssessment({ onNavigate }) {
 
     setAssessmentResult(computed);
     await saveAssessmentLocally(computed);
+
+    // If parent phone number is already configured, auto-dispatch notification in background
+    if (parentPhone && parentPhone.replace(/\D/g, '').length >= 10) {
+      dispatchParentNotification(computed, parentPhone);
+    }
 
     const updatedStatus = checkWeeklyStatus();
     setWeeklyStatus(updatedStatus);
@@ -659,6 +721,229 @@ export default function SkillAssessment({ onNavigate }) {
             <span>Open Career Workflow</span>
             <ArrowRight size={18} />
           </button>
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            TWILIO PARENT NOTIFICATION CARD (WHATSAPP & SMS)
+            ══════════════════════════════════════════════════════════════════ */}
+        <div style={{
+          background: '#ffffff', border: '3.5px solid #17140d', borderRadius: 20,
+          boxShadow: '6px 6px 0 #17140d', padding: '28px 32px', marginBottom: 36,
+          position: 'relative'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <span style={{ fontSize: 24 }}>📲</span>
+                <span style={{
+                  background: '#25D366', color: '#ffffff', border: '1.5px solid #17140d',
+                  borderRadius: 999, padding: '3px 12px', fontSize: 11.5, fontWeight: 800, textTransform: 'uppercase'
+                }}>
+                  Twilio WhatsApp & SMS Notifications
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#666' }}>
+                  Real-Time Parent Tracking
+                </span>
+              </div>
+              <h3 style={{ fontSize: 'clamp(18px, 2.2vw, 24px)', fontWeight: 800, color: '#17140d', margin: '0 0 6px' }}>
+                Send Assessment Marks & Analytics to Parents
+              </h3>
+              <p style={{ fontSize: 14, color: '#555', margin: 0, lineHeight: 1.5 }}>
+                Keep parents informed with an automatic report of your <strong>{res.totalCorrect}/40 ({res.percentage}%) score</strong>, subject-wise performance in Physics, Chemistry, Math & Biology, active learning streak, and earned badges.
+              </p>
+            </div>
+          </div>
+
+          {/* Delivery Status Toast */}
+          {parentSendStatus === 'sent' && (
+            <div style={{
+              background: '#e8fbf2', border: '2px solid #2bd980', borderRadius: 12,
+              padding: '12px 16px', marginBottom: 18, color: '#17140d', fontWeight: 700, fontSize: 13.5,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CheckCircle2 size={18} color="#2bd980" />
+                <span>
+                  Report dispatched successfully to <strong>{parentPhone}</strong> via Twilio WhatsApp & SMS!
+                </span>
+              </div>
+              {parentReportResult?.directWhatsAppUrl && (
+                <a
+                  href={parentReportResult.directWhatsAppUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '6px 12px', borderRadius: 8, background: '#25D366', color: '#fff',
+                    textDecoration: 'none', fontWeight: 800, fontSize: 12, border: '1.5px solid #17140d'
+                  }}
+                >
+                  <Share2 size={14} /> Open in WhatsApp Web / App
+                </a>
+              )}
+            </div>
+          )}
+
+          {parentSendStatus === 'error' && (
+            <div style={{
+              background: '#fff0f0', border: '2px solid #ff5b57', borderRadius: 12,
+              padding: '10px 14px', marginBottom: 16, color: '#ff5b57', fontWeight: 700, fontSize: 13,
+              display: 'flex', alignItems: 'center', gap: 8
+            }}>
+              <AlertCircle size={16} />
+              <span>Please enter a valid 10-digit mobile number for your parent.</span>
+            </div>
+          )}
+
+          {/* Input Controls Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 16 }}>
+            <div>
+              <label style={{ fontSize: 11.5, fontWeight: 800, color: '#666', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+                Parent WhatsApp / Mobile Number:
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Smartphone size={16} color="#888" style={{ position: 'absolute', left: 12, top: 12 }} />
+                <input
+                  type="tel"
+                  placeholder="e.g. +91 9876543210"
+                  value={parentPhone}
+                  onChange={e => setParentPhone(e.target.value)}
+                  style={{
+                    width: '100%', padding: '10px 12px 10px 38px', borderRadius: 10,
+                    border: '2px solid #17140d', fontSize: 13.5, fontWeight: 700, boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11.5, fontWeight: 800, color: '#666', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+                Parent Name (Optional):
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Ramesh Sharma"
+                value={parentName}
+                onChange={e => setParentName(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 12px', borderRadius: 10,
+                  border: '2px solid #17140d', fontSize: 13.5, fontWeight: 700, boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Delivery Channel Toggles */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 18, flexWrap: 'wrap' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+              <input
+                type="checkbox"
+                checked={notifyWhatsApp}
+                onChange={e => setNotifyWhatsApp(e.target.checked)}
+                style={{ width: 16, height: 16, accentColor: '#25D366' }}
+              />
+              <span>💬 WhatsApp (Full Performance Scorecard)</span>
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 13, fontWeight: 700 }}>
+              <input
+                type="checkbox"
+                checked={notifySms}
+                onChange={e => setNotifySms(e.target.checked)}
+                style={{ width: 16, height: 16, accentColor: '#ff5b57' }}
+              />
+              <span>📱 SMS Text Message (Instant Summary)</span>
+            </label>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+            <button
+              onClick={() => dispatchParentNotification(res, parentPhone)}
+              disabled={parentSendStatus === 'sending'}
+              style={{
+                background: '#25D366', color: '#ffffff', border: '2.5px solid #17140d',
+                borderRadius: 12, padding: '12px 22px', fontWeight: 800, fontSize: 14,
+                cursor: parentSendStatus === 'sending' ? 'not-allowed' : 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '3px 3px 0 #17140d',
+                transition: 'all 0.15s'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px,-2px)'; e.currentTarget.style.boxShadow = '5px 5px 0 #17140d'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '3px 3px 0 #17140d'; }}
+            >
+              <Send size={16} />
+              <span>{parentSendStatus === 'sending' ? 'Dispatching...' : '🚀 Send Report to Parent via Twilio'}</span>
+            </button>
+
+            {parentPhone && (
+              <a
+                href={`https://wa.me/${parentPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                  `🎓 *VidyaVerse Student Performance Report*\n\n` +
+                  `Dear Parent, ${profileName || 'Your Child'} (${selectedGrade}) has completed this week's Skill Assessment:\n\n` +
+                  `📊 *Score:* ${res.totalCorrect}/40 (${res.percentage}% - ${res.masteryTier})\n` +
+                  `• ⚛️ Physics: ${res.sectionBreakdown?.Physics?.score || 0}/10\n` +
+                  `• 🧪 Chemistry: ${res.sectionBreakdown?.Chemistry?.score || 0}/10\n` +
+                  `• 📐 Mathematics: ${res.sectionBreakdown?.Mathematics?.score || 0}/10\n` +
+                  `• 🧬 Biology: ${res.sectionBreakdown?.Biology?.score || 0}/10\n\n` +
+                  `🎯 *Predicted Career Fit:* Generated live in Career Navigator\n` +
+                  `🔥 *Consistency:* Active Learning Streak & Badges Logged\n\n` +
+                  `📱 Check progress live on VidyaVerse!`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: '#ffffff', color: '#17140d', border: '2px solid #17140d',
+                  borderRadius: 12, padding: '11px 18px', fontWeight: 800, fontSize: 13,
+                  textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6,
+                  boxShadow: '2px 2px 0 #17140d'
+                }}
+              >
+                <Share2 size={15} color="#25D366" />
+                <span>Send Directly via WhatsApp ➔</span>
+              </a>
+            )}
+
+            <button
+              onClick={() => setShowParentPreview(!showParentPreview)}
+              style={{
+                background: '#f5efe2', color: '#17140d', border: '2px solid #17140d',
+                borderRadius: 12, padding: '11px 16px', fontWeight: 800, fontSize: 13,
+                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6
+              }}
+            >
+              <Eye size={15} />
+              <span>{showParentPreview ? 'Hide Message Preview' : '👁️ Preview Message'}</span>
+            </button>
+          </div>
+
+          {/* Expandable Preview Card */}
+          {showParentPreview && (
+            <div style={{
+              marginTop: 18, background: '#f5efe2', border: '2px solid #17140d',
+              borderRadius: 14, padding: '16px 20px', fontFamily: 'monospace', fontSize: 12.5,
+              whiteSpace: 'pre-wrap', lineHeight: 1.6, color: '#17140d'
+            }}>
+              <strong>📱 WhatsApp Message Preview to Parent ({parentPhone || 'Parent Phone'}):</strong>
+              <div style={{ height: 1, background: '#17140d', margin: '8px 0 12px' }} />
+              {`🎓 *VidyaVerse - Weekly Student Performance Report* 🚀\n` +
+`📅 Date: ${new Date().toLocaleDateString()}\n\n` +
+`Dear ${parentName || 'Parent'},\n` +
+`Here is the verified weekly learning & STEM skill assessment report for *${profileName || 'Your Child'}* (${selectedGrade}):\n\n` +
+`📊 *WEEKLY 40-QUESTION TEST RESULTS:*\n` +
+`• Overall Score: *${res.totalCorrect} / 40 (${res.percentage}%)*\n` +
+`• Performance Tier: *${res.masteryTier}*\n` +
+`• ⚛️ Physics: *${res.sectionBreakdown?.Physics?.score || 0} / 10*\n` +
+`• 🧪 Chemistry: *${res.sectionBreakdown?.Chemistry?.score || 0} / 10*\n` +
+`• 📐 Mathematics: *${res.sectionBreakdown?.Mathematics?.score || 0} / 10*\n` +
+`• 🧬 Biology: *${res.sectionBreakdown?.Biology?.score || 0} / 10*\n\n` +
+`🎯 *PREDICTED CAREER PATHWAY:*\n` +
+`• Calculated live in Career Navigator from physics, chemistry & math test scores.\n\n` +
+`🔥 *STUDY CONSISTENCY & BADGES:*\n` +
+`• Daily Learning Streak: *Active & Logged* 🔥\n` +
+`• STEM Badges Earned: *Updated on student dashboard* 🏆\n\n` +
+`💡 *MENTOR RECOMMENDATION:* Encourage ${profileName || 'your child'} to spend 15 mins reviewing missed concepts in our AI Socratic Classroom.`}
+            </div>
+          )}
         </div>
 
         {/* Action Controls: Retake & Review Filter */}

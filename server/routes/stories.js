@@ -18,6 +18,37 @@ const flagshipStories = [
     cover_gradient: 'linear-gradient(135deg, #10b981 0%, #047857 50%, #064e3b 100%)',
     badge: 'Cellular Adventure',
     accent_color: '#10b981',
+    video_url: 'https://www.youtube-nocookie.com/embed/sQK3Yr4Sc_k',
+    video_title: 'Photosynthesis for Kids: Dr. Binocs Cartoon Adventure',
+    video_duration: '4:32',
+    video_channel: 'The Dr. Binocs Show',
+    video_description: 'Watch Dr. Binocs and animated plant characters explain how leaves absorb sunlight photons, drink water from roots, open stomata for CO2, and produce glucose and oxygen!',
+    ai_video_storyboard: [
+      {
+        scene: 1,
+        title: 'Morning Sunbeams Over Devarayanadurga Forest',
+        camera_direction: 'Wide aerial crane shot descending into a vibrant Banyan leaf canopy. Golden morning sunbeams piercing through the mist.',
+        visual_prompt: 'Pixar 3D animation style. A cheerful young cartoon leaf character named Leo looking worried as dark shadows fall across the canopy. Vibrant greens, bioluminescent cellular glows.',
+        dialogue: "Professor! My thylakoid disks are running out of power! The ancient banyan tree needs photon energy!",
+        duration_sec: 12
+      },
+      {
+        scene: 2,
+        title: 'Inside the Nano-Chloroplast Kitchen',
+        camera_direction: 'Macro zoom entering through a stomata pore into a bustling microscopic biochemical kitchen.',
+        visual_prompt: 'High-tech organic kitchen inside a plant cell. Microscopic chloroplast chefs wearing chef hats catching light photons like glowing fireflies. Green neon lighting, water drops rushing through xylem pipes.',
+        dialogue: "Water is flowing up from the roots, and CO2 is entering through our stomata valves! Time to cook sugar!",
+        duration_sec: 15
+      },
+      {
+        scene: 3,
+        title: 'The Great Molecular Splash of Oxygen',
+        camera_direction: 'Dynamic slow-motion orbit around water molecules splitting into glowing hydrogen and oxygen bubbles.',
+        visual_prompt: 'Bright flash of sunlight photon hitting a water molecule, bursting into shimmering bubble spheres of O2 that float triumphantly out of the leaf into the village air.',
+        dialogue: "ZAP! Water bonds broken! Delicious glucose rings formed and fresh oxygen released into the sky!",
+        duration_sec: 14
+      }
+    ],
     simulation_target: {
       type: 'phet',
       id: 'membrane_channels',
@@ -131,6 +162,37 @@ const flagshipStories = [
     cover_gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
     badge: 'Electric Adventure',
     accent_color: '#f59e0b',
+    video_url: 'https://www.youtube-nocookie.com/embed/HOFp8bHTN30',
+    video_title: 'Electricity & Circuits for Kids: Dr. Binocs Cartoon',
+    video_duration: '4:08',
+    video_channel: 'The Dr. Binocs Show',
+    video_description: 'An exciting cartoon animation detailing how electric current flows through closed circuits, what happens inside switches, and how batteries push electrons to light up appliances!',
+    ai_video_storyboard: [
+      {
+        scene: 1,
+        title: 'Emergency at the Village Health Clinic',
+        camera_direction: 'Fast-paced zoom across a dark rural village into the clinic. Thunderstorm flashing outside.',
+        visual_prompt: 'Pixar 3D style. A cute glowing electric spark character named Eddy wearing running sneakers, standing next to a battery commander Captain Volt.',
+        dialogue: "Attention team! The village clinic cooler needs power! Let us complete the circuit loop!",
+        duration_sec: 12
+      },
+      {
+        scene: 2,
+        title: 'The Copper Wire Superhighway',
+        camera_direction: 'Inside-the-wire microscopic tracking shot following a swarm of smiling blue electrons.',
+        visual_prompt: 'High-speed luminous neon tunnel inside a glowing copper wire. Eddy and fellow electrons leaping through lattices of copper atoms, meeting a stone bridge resistor.',
+        dialogue: "Georg Ohm says: raise the voltage push or widen the wire to let more of us sprint through!",
+        duration_sec: 14
+      },
+      {
+        scene: 3,
+        title: 'Tungsten Ignition & Life-Saving Light',
+        camera_direction: 'Extreme close up of a glowing filament bulb expanding into a warm village clinic glow.',
+        visual_prompt: 'Electrons colliding with tungsten metal atoms causing brilliant fiery-orange luminescence. The medical vaccine refrigerator hums to life, and doctors celebrate.',
+        dialogue: "We are glowing! Thermal photons unleashed and vaccines preserved!",
+        duration_sec: 15
+      }
+    ],
     simulation_target: {
       type: 'phet',
       id: 'circuit_dc',
@@ -244,6 +306,37 @@ const flagshipStories = [
     cover_gradient: 'linear-gradient(135deg, #6366f1 0%, #4338ca 50%, #312e81 100%)',
     badge: 'Atomic Adventure',
     accent_color: '#6366f1',
+    video_url: 'https://www.youtube-nocookie.com/embed/CPTtX4GuR7E',
+    video_title: 'What Is An Atom & How Do They Bond? Dr. Binocs Cartoon',
+    video_duration: '4:15',
+    video_channel: 'The Dr. Binocs Show',
+    video_description: 'An educational cartoon explaining atomic structure, protons, neutrons, electrons, and how chemical bonds form between atoms seeking a stable octet of electrons!',
+    ai_video_storyboard: [
+      {
+        scene: 1,
+        title: 'The Lonely Electron Orbit',
+        camera_direction: 'Orbital rotation around a glowing nucleus of 11 protons and 12 neutrons.',
+        visual_prompt: 'Pixar 3D style. A bouncy metallic atom character named Sammy with planetary rings. A lone blue electron orbits alone on the outermost ring, looking for a home.',
+        dialogue: "I have 11 positive protons, but that lonely outer electron wants a home! Who will take it?",
+        duration_sec: 12
+      },
+      {
+        scene: 2,
+        title: 'Meeting Chloe Chlorine in the Reaction Chamber',
+        camera_direction: 'Split screen tracking both atoms approaching each other across an electrified laboratory vapor.',
+        visual_prompt: 'A vibrant green halogen character Chloe with 7 bright yellow electrons spinning around her, with exactly one vacant slot in her valence shell.',
+        dialogue: "I have 7 outer electrons and need just ONE more to achieve the legendary octet! Hand it over!",
+        duration_sec: 14
+      },
+      {
+        scene: 3,
+        title: 'The Grand Electron Leap & Crystal Formation',
+        camera_direction: 'High-speed camera following the electron leap, followed by an explosion of sparkling cubic salt crystals.',
+        visual_prompt: 'Golden particle beam as the electron transfers from Sammy to Chloe. Electrostatic lightning snaps them together into a sparkling cubic lattice of edible table salt (NaCl).',
+        dialogue: "Opposites attract! We are locked in an unbreakable ionic bond! Table salt is born!",
+        duration_sec: 16
+      }
+    ],
     simulation_target: {
       type: 'phet',
       id: 'build_an_atom',
@@ -376,9 +469,114 @@ function getStudentProgress(userId) {
   return userStoryProgress[userId];
 }
 
+// ── Topic-to-Cartoon Educational Video Resolver ─────────────────────
+function getTopicCartoonVideo(topic, subject) {
+  const t = (topic || '').toLowerCase();
+  
+  if (t.includes('photo') || t.includes('plant') || t.includes('leaf') || t.includes('cell')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/sQK3Yr4Sc_k',
+      video_title: 'Photosynthesis for Kids: Dr. Binocs Cartoon Adventure',
+      video_duration: '4:32',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Watch Dr. Binocs and animated plant characters explain how leaves absorb sunlight photons, drink water from roots, open stomata for CO2, and produce glucose and oxygen!'
+    };
+  }
+  if (t.includes('electri') || t.includes('circuit') || t.includes('ohm') || t.includes('current') || t.includes('voltage')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/HOFp8bHTN30',
+      video_title: 'What is Electricity & Circuits: Dr. Binocs Cartoon',
+      video_duration: '4:08',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Animated cartoon explaining electric circuits, electrons, switches, batteries, and conductors.'
+    };
+  }
+  if (t.includes('atom') || t.includes('bond') || t.includes('molecule') || t.includes('electron') || t.includes('chem')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/CPTtX4GuR7E',
+      video_title: 'What Is An Atom & How Do They Bond? Dr. Binocs Cartoon',
+      video_duration: '4:15',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Animated cartoon showing atomic structure, electron shells, protons, neutrons, and chemical bonding.'
+    };
+  }
+  if (t.includes('gravity') || t.includes('gravitat') || t.includes('force') || t.includes('motion') || t.includes('newton')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/EwY6p-r_hyU',
+      video_title: 'What is Gravity & Forces: Dr. Binocs Animated Cartoon',
+      video_duration: '4:20',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Fun animated cartoon adventure explaining gravitational pull, mass, acceleration, and Sir Isaac Newton.'
+    };
+  }
+  if (t.includes('digest') || t.includes('stomach') || t.includes('body') || t.includes('heart') || t.includes('blood') || t.includes('organ')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/VwrsL-lCZYo',
+      video_title: 'Human Digestive System: Dr. Binocs Animated Cartoon',
+      video_duration: '4:45',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Travel inside the human body with cartoon animation to see how food is digested, broken down, and absorbed.'
+    };
+  }
+  if (t.includes('space') || t.includes('solar') || t.includes('planet') || t.includes('moon') || t.includes('sun') || t.includes('orbit')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/libKVRa01L8',
+      video_title: 'Solar System & Planets: Dr. Binocs Cartoon Adventure',
+      video_duration: '4:12',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Zoom through our solar system to meet Mercury, Venus, Earth, Mars, Jupiter, and Saturn in cartoon format!'
+    };
+  }
+  if (t.includes('water') || t.includes('rain') || t.includes('cloud') || t.includes('evaporat')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/ncORPosDrjI',
+      video_title: 'Water Cycle for Kids: Dr. Binocs Animated Cartoon',
+      video_duration: '3:50',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Cartoon animation showing evaporation, condensation, precipitation, and the village water cycle!'
+    };
+  }
+  if (t.includes('sound') || t.includes('wave') || t.includes('vibrat')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/gdGYv1V5308',
+      video_title: 'What is Sound & Sound Waves? Dr. Binocs Cartoon',
+      video_duration: '4:02',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Learn how physical vibrations create sound waves traveling through air, liquids, and solids.'
+    };
+  }
+  if (t.includes('light') || t.includes('reflect') || t.includes('shadow') || t.includes('optics')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/d7yTlp4gB9E',
+      video_title: 'Reflection & Refraction of Light: Dr. Binocs Cartoon',
+      video_duration: '4:18',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Discover the secrets of light rays, mirrors, lenses, and rainbow prisms with cartoon animation.'
+    };
+  }
+  if (t.includes('magnet') || t.includes('pole')) {
+    return {
+      video_url: 'https://www.youtube-nocookie.com/embed/yXCeuSiTOug',
+      video_title: 'Magnets & Magnetic Fields: Dr. Binocs Cartoon',
+      video_duration: '3:58',
+      video_channel: 'The Dr. Binocs Show',
+      video_description: 'Explore North and South poles, magnetic attraction, and compasses in cartoon format.'
+    };
+  }
+  return {
+    video_url: 'https://www.youtube-nocookie.com/embed/sQK3Yr4Sc_k',
+    video_title: `${topic} Cartoon Science Lesson: Dr. Binocs Show`,
+    video_duration: '4:15',
+    video_channel: 'The Dr. Binocs Show',
+    video_description: `An engaging cartoon animated lesson explaining scientific mechanisms and principles of ${topic}.`
+  };
+}
+
 // ── Fallback AI Story Generator ─────────────────────────────────────
 function buildFallbackAIStory(subject, topic, grade, isFirstPerson, characterName) {
   const char = characterName || (isFirstPerson ? 'You (The Young Scientist)' : 'Aria the Explorer');
+  const videoData = getTopicCartoonVideo(topic, subject);
+
   return {
     id: `ai_story_${Date.now()}`,
     title: `${topic}: The Great Discovery Quest`,
@@ -390,6 +588,37 @@ function buildFallbackAIStory(subject, topic, grade, isFirstPerson, characterNam
     badge: 'AI Generated Adventure',
     accent_color: '#8b5cf6',
     is_first_person: Boolean(isFirstPerson),
+    video_url: videoData.video_url,
+    video_title: videoData.video_title,
+    video_duration: videoData.video_duration,
+    video_channel: videoData.video_channel,
+    video_description: videoData.video_description,
+    ai_video_storyboard: [
+      {
+        scene: 1,
+        title: `The Awakening of ${topic}`,
+        camera_direction: `Cinematic wide establishing shot of a futuristic village laboratory. Warm volumetric golden hour sunlight.`,
+        visual_prompt: `Pixar 3D animation style. A vibrant cartoon student character named ${char} examining an glowing hologram of ${topic}. Bright expressive eyes, dynamic lighting.`,
+        dialogue: `Look at the telemetry gauges! The foundational laws of ${topic} are unfolding right before our eyes!`,
+        duration_sec: 12
+      },
+      {
+        scene: 2,
+        title: `Experimenting with the Natural Laws of ${topic}`,
+        camera_direction: `Dynamic tracking shot moving through a lush rural landscape with moving gears and natural phenomena.`,
+        visual_prompt: `Microscopic zoom showing atoms, molecules, or energy waves interacting in real time. Colorful neon particles and visual cause-and-effect science cues.`,
+        dialogue: `Watch how energy and matter transform! In nature, fundamental conservation laws mean nothing is lost!`,
+        duration_sec: 15
+      },
+      {
+        scene: 3,
+        title: `The Triumph of Discovery`,
+        camera_direction: `Heroic low angle crane shot rising into the sky with celebratory confetti and glowing science apparatus.`,
+        visual_prompt: `The cartoon cast smiling triumphantly together as the newly powered invention illuminates the village school. Vibrant, inspiring Pixar cinematic finish.`,
+        dialogue: `We solved the challenge! Now let’s jump straight into the digital simulation to test our discoveries!`,
+        duration_sec: 14
+      }
+    ],
     simulation_target: {
       type: 'phet',
       id: 'forces_motion',
@@ -664,6 +893,24 @@ Return ONLY a valid JSON object with this EXACT structure (NO markdown code fenc
       const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       const parsed = JSON.parse(cleaned);
       if (parsed.title && Array.isArray(parsed.scenes) && parsed.scenes.length >= 2) {
+        if (!parsed.video_url) {
+          const v = getTopicCartoonVideo(topic, subject);
+          parsed.video_url = v.video_url;
+          parsed.video_title = v.video_title;
+          parsed.video_duration = v.video_duration;
+          parsed.video_channel = v.video_channel;
+          parsed.video_description = v.video_description;
+        }
+        if (!parsed.ai_video_storyboard || !parsed.ai_video_storyboard.length) {
+          parsed.ai_video_storyboard = parsed.scenes.map((s, idx) => ({
+            scene: idx + 1,
+            title: s.title || `Scene ${idx + 1}`,
+            camera_direction: `Dynamic animated camera move highlighting ${s.character_speaking || 'the protagonist'}. Pixar 3D animated styling with volumetric lighting.`,
+            visual_prompt: `Disney/Pixar 3D animation. ${s.character_speaking || 'Hero'} in an animated ${s.background_type || 'laboratory'} environment. Expressive eye movement, gestures, vibrant palette.`,
+            dialogue: s.dialogue || '',
+            duration_sec: 12 + idx * 2
+          }));
+        }
         return res.json({ status: 'success', source: 'gemini_ai', model: modelName, story: parsed });
       }
     } catch (err) {

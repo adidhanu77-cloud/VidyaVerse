@@ -3,7 +3,8 @@ import {
   BookOpen, Sparkles, Play, Pause, RotateCcw, Volume2, VolumeX,
   ChevronRight, Award, Compass, ArrowLeft, Wand2, BarChart3, Database,
   CheckCircle2, AlertCircle, HelpCircle, User, Zap, Film, Beaker,
-  Maximize2, Eye, Flame, Star
+  Maximize2, Eye, Flame, Star, Video, Clapperboard, Copy, Check,
+  ExternalLink, Layers, MonitorPlay
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import {
@@ -19,7 +20,7 @@ import {
   LineElement,
   Filler
 } from 'chart.js';
-import { Bar, Doughnut, Line as LineChart } from 'react-chartjs-2';
+import { Bar, Doughnut } from 'react-chartjs-2';
 import { api } from '../services/api';
 
 // Register Chart.js elements
@@ -82,88 +83,790 @@ const SCENE_THEMES = {
   },
 };
 
-/* ─── Animated Character Puppet Component ──────────────────────── */
-function AnimatedCharacter({ character, action, isSpeaking, isFirstPerson }) {
-  const getActionClass = () => {
-    switch (action) {
-      case 'walk': return 'animate-walk';
-      case 'celebrate': return 'animate-jump';
-      case 'think': return 'animate-think';
-      case 'experiment': return 'animate-work';
-      default: return 'animate-idle';
-    }
-  };
+/* ─── Dynamic Animated Science Concept Visualizer ───────────────── */
+function AnimatedScienceVisualizer({ storyId, topic, sceneNumber }) {
+  const isPhotosynthesis = (storyId === 'leo_leaf' || (topic || '').toLowerCase().includes('photo') || (topic || '').toLowerCase().includes('plant'));
+  const isElectricity = (storyId === 'eddy_electron' || (topic || '').toLowerCase().includes('electri') || (topic || '').toLowerCase().includes('circuit'));
+  const isAtoms = (storyId === 'atomia_quest' || (topic || '').toLowerCase().includes('atom') || (topic || '').toLowerCase().includes('bond'));
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 10 }}>
-      {/* Speech bubble thought indicator */}
-      {isSpeaking && (
-        <div style={{
-          position: 'absolute', top: -38,
-          background: '#ffffff', border: '2.5px solid #17140d',
-          borderRadius: '999px', padding: '4px 12px',
-          fontSize: '11px', fontWeight: 800, color: '#17140d',
-          boxShadow: '3px 3px 0 #17140d', whiteSpace: 'nowrap',
-          animation: 'bounce 1s infinite alternate'
-        }}>
-          💬 Speaking...
+  if (isPhotosynthesis) {
+    return (
+      <div style={{
+        backgroundColor: 'rgba(23, 20, 13, 0.88)',
+        border: '3px solid #ffc531',
+        borderRadius: 20,
+        padding: '16px 20px',
+        maxWidth: 520,
+        margin: '0 auto',
+        boxShadow: '4px 4px 0 #17140d',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            🔬 Cellular Cross-Section Animation
+          </span>
+          <span style={{ fontSize: 11, color: '#86efac', fontWeight: 700 }}>
+            {sceneNumber === 1 ? '☀️ Trapping Photons' : sceneNumber === 2 ? '💧 Root Water + CO2' : '🫧 Releasing Pure O2'}
+          </span>
         </div>
-      )}
 
-      {/* Main Avatar Circle */}
-      <div
-        className={getActionClass()}
-        style={{
-          width: 96, height: 96,
-          borderRadius: '50%',
-          backgroundColor: '#ffc531',
-          border: '4px solid #17140d',
-          boxShadow: '6px 6px 0 #17140d',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '48px',
-          transition: 'transform 0.3s ease',
-          transform: isSpeaking ? 'scale(1.08)' : 'scale(1)',
+        {/* Animated Leaf Factory Schematic */}
+        <div style={{
+          height: 140,
+          background: 'radial-gradient(circle, #065f46 0%, #064e3b 70%, #022c22 100%)',
+          borderRadius: 14,
+          border: '2px solid rgba(255,255,255,0.2)',
           position: 'relative',
-        }}
-      >
-        {character?.avatar || '🧑‍🔬'}
-
-        {/* Emotion icon indicator */}
-        <span style={{
-          position: 'absolute', bottom: -4, right: -4,
-          backgroundColor: '#ffffff', border: '2px solid #17140d',
-          borderRadius: '50%', width: 28, height: 28,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          overflow: 'hidden'
         }}>
-          {action === 'celebrate' ? '🎉' : action === 'think' ? '💡' : action === 'experiment' ? '⚗️' : '✨'}
+          {/* Animated Sunbeams streaming in */}
+          <div style={{ position: 'absolute', top: 6, left: 14, display: 'flex', gap: 6, animation: 'pulse 1.5s infinite' }}>
+            <span style={{ fontSize: 24 }}>☀️</span>
+            <span style={{ color: '#fef08a', fontSize: 11, fontWeight: 800, alignSelf: 'center' }}>Light Photons (hν) ➔</span>
+          </div>
+
+          {/* Microscopic Chloroplast Thylakoid Organelle */}
+          <div style={{
+            width: 74, height: 74,
+            borderRadius: '50%',
+            backgroundColor: '#10b981',
+            border: '3px solid #34d399',
+            boxShadow: '0 0 20px #10b981',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            animation: 'float 2s ease-in-out infinite alternate',
+            position: 'relative'
+          }}>
+            <span style={{ fontSize: 22 }}>🌿</span>
+            <span style={{ fontSize: 9, fontWeight: 900, color: '#064e3b', textTransform: 'uppercase' }}>Chloroplast</span>
+            {/* Stacking thylakoid disks */}
+            <div style={{ position: 'absolute', width: 26, height: 4, backgroundColor: '#047857', borderRadius: 2, bottom: 10 }} />
+          </div>
+
+          {/* Stomata Breathing Gate */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            backgroundColor: 'rgba(255,255,255,0.1)', padding: '6px 10px', borderRadius: 10,
+            border: '1.5px dashed #34d399'
+          }}>
+            <span style={{ fontSize: 16 }}>🚪</span>
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#fef08a' }}>Stomata Pore</span>
+            <span style={{ fontSize: 9, color: '#cbd5e1' }}>In: 6 CO₂</span>
+          </div>
+
+          {/* Outputs floating out */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, animation: 'jump 2s infinite' }}>
+            <span style={{ backgroundColor: '#0284c7', color: '#fff', fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 6 }}>
+              💧 H₂O Water
+            </span>
+            <span style={{ backgroundColor: '#22c55e', color: '#000', fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 6 }}>
+              🫧 6 O₂ Released!
+            </span>
+            <span style={{ backgroundColor: '#eab308', color: '#000', fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 6 }}>
+              🍯 Glucose C₆H₁₂O₆
+            </span>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8, fontStyle: 'italic' }}>
+          Equation: 6CO₂ + 6H₂O + Sunlight ➔ C₆H₁₂O₆ (Glucose) + 6O₂ (Oxygen)
+        </div>
+      </div>
+    );
+  }
+
+  if (isElectricity) {
+    return (
+      <div style={{
+        backgroundColor: 'rgba(23, 20, 13, 0.88)',
+        border: '3px solid #ffc531',
+        borderRadius: 20,
+        padding: '16px 20px',
+        maxWidth: 520,
+        margin: '0 auto',
+        boxShadow: '4px 4px 0 #17140d',
+        position: 'relative'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            ⚡ Closed Electric Circuit Loop (Ohm's Law)
+          </span>
+          <span style={{ fontSize: 11, color: '#fef08a', fontWeight: 800 }}>
+            V = I × R (12V = 3A × 4Ω)
+          </span>
+        </div>
+
+        {/* Animated Circuit Board Wire */}
+        <div style={{
+          height: 140,
+          backgroundColor: '#09090b',
+          borderRadius: 14,
+          border: '2px solid #f59e0b',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 24px',
+          overflow: 'hidden'
+        }}>
+          {/* Wire loop background track */}
+          <div style={{
+            position: 'absolute', inset: '16px 20px',
+            border: '3px solid #3b82f6',
+            borderRadius: 12,
+            pointerEvents: 'none'
+          }} />
+
+          {/* Battery Component */}
+          <div style={{
+            backgroundColor: '#dc2626', color: '#fff',
+            border: '2px solid #fff', borderRadius: 8,
+            padding: '8px 12px', textAlign: 'center', zIndex: 2
+          }}>
+            <div style={{ fontSize: 16 }}>🔋</div>
+            <div style={{ fontSize: 11, fontWeight: 900 }}>12V</div>
+            <div style={{ fontSize: 9, opacity: 0.8 }}>Battery</div>
+          </div>
+
+          {/* Moving Electron Particles on wire */}
+          <div style={{
+            display: 'flex', gap: 14, alignItems: 'center', zIndex: 2,
+            animation: 'walk 1s linear infinite'
+          }}>
+            {['⚡', '⚡', '⚡'].map((e, idx) => (
+              <span key={idx} style={{
+                fontSize: 18, color: '#60a5fa',
+                filter: 'drop-shadow(0 0 6px #3b82f6)'
+              }}>
+                {e}
+              </span>
+            ))}
+          </div>
+
+          {/* Ceramic Resistor */}
+          <div style={{
+            backgroundColor: '#78350f', color: '#fef08a',
+            border: '2px solid #d97706', borderRadius: 6,
+            padding: '6px 10px', textAlign: 'center', zIndex: 2
+          }}>
+            <div style={{ fontSize: 14 }}>🧱</div>
+            <div style={{ fontSize: 10, fontWeight: 900 }}>4Ω Load</div>
+            <div style={{ fontSize: 9 }}>Resistor</div>
+          </div>
+
+          {/* Glowing Tungsten Filament Bulb */}
+          <div style={{
+            backgroundColor: '#fef08a', color: '#17140d',
+            border: '2.5px solid #d97706', borderRadius: '50%',
+            width: 58, height: 58, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 24px #facc15', zIndex: 2,
+            animation: 'pulse 1s infinite alternate'
+          }}>
+            <span style={{ fontSize: 20 }}>💡</span>
+            <span style={{ fontSize: 9, fontWeight: 900 }}>36W</span>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Current I = 12V / 4Ω = <strong>3.0 Amperes</strong> safe electron charge drift!
+        </div>
+      </div>
+    );
+  }
+
+  if (isAtoms) {
+    return (
+      <div style={{
+        backgroundColor: 'rgba(23, 20, 13, 0.88)',
+        border: '3px solid #ffc531',
+        borderRadius: 20,
+        padding: '16px 20px',
+        maxWidth: 520,
+        margin: '0 auto',
+        boxShadow: '4px 4px 0 #17140d'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>
+            ⚛️ Bohr Model & Ionic Electron Transfer
+          </span>
+          <span style={{ fontSize: 11, color: '#c084fc', fontWeight: 800 }}>
+            Octet Rule: (2, 8, 8)
+          </span>
+        </div>
+
+        <div style={{
+          height: 140,
+          backgroundColor: '#030712',
+          borderRadius: 14,
+          border: '2px solid #818cf8',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Sodium Cation (Na+) */}
+          <div style={{ textAlign: 'center', zIndex: 2 }}>
+            <div style={{
+              width: 54, height: 54, borderRadius: '50%',
+              backgroundColor: '#6366f1', border: '2.5px solid #a5b4fc',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 14px #6366f1', margin: '0 auto 4px'
+            }}>
+              <span style={{ color: '#fff', fontSize: 13, fontWeight: 900 }}>Na⁺</span>
+            </div>
+            <span style={{ fontSize: 10, color: '#cbd5e1', fontWeight: 700 }}>Sodium (2, 8)</span>
+          </div>
+
+          {/* Animated Electron Transfer Leap */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+            <span style={{ fontSize: 10, color: '#fef08a', fontWeight: 800 }}>e⁻ Leap</span>
+            <div style={{
+              fontSize: 22, color: '#38bdf8',
+              animation: 'walk 0.8s infinite',
+              filter: 'drop-shadow(0 0 8px #38bdf8)'
+            }}>
+              ➔ ⚡ ➔
+            </div>
+            <span style={{ fontSize: 9, color: '#86efac', fontWeight: 800 }}>Ionic Bond</span>
+          </div>
+
+          {/* Chlorine Anion (Cl-) */}
+          <div style={{ textAlign: 'center', zIndex: 2 }}>
+            <div style={{
+              width: 54, height: 54, borderRadius: '50%',
+              backgroundColor: '#10b981', border: '2.5px solid #6ee7b7',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 14px #10b981', margin: '0 auto 4px'
+            }}>
+              <span style={{ color: '#fff', fontSize: 13, fontWeight: 900 }}>Cl⁻</span>
+            </div>
+            <span style={{ fontSize: 10, color: '#cbd5e1', fontWeight: 700 }}>Chloride (2, 8, 8)</span>
+          </div>
+
+          {/* Resulting Crystal */}
+          <div style={{
+            backgroundColor: 'rgba(255,255,255,0.15)',
+            border: '1.5px solid #fff', borderRadius: 8,
+            padding: '6px 10px', textAlign: 'center', zIndex: 2
+          }}>
+            <span style={{ fontSize: 18 }}>🧂</span>
+            <div style={{ fontSize: 10, fontWeight: 900, color: '#fff' }}>NaCl Salt</div>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 8 }}>
+          Opposites attract! Na⁺ metal donates 1e⁻ to Cl⁻ halogen to form table salt.
+        </div>
+      </div>
+    );
+  }
+
+  // General Topic Visualizer
+  return (
+    <div style={{
+      backgroundColor: 'rgba(23, 20, 13, 0.88)',
+      border: '3px solid #ffc531',
+      borderRadius: 20,
+      padding: '16px 20px',
+      maxWidth: 520,
+      margin: '0 auto',
+      boxShadow: '4px 4px 0 #17140d'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ fontSize: 11, fontWeight: 800, color: '#ffc531', textTransform: 'uppercase' }}>
+          🤖 Interactive Science Simulator
+        </span>
+        <span style={{ fontSize: 11, color: '#86efac', fontWeight: 800 }}>
+          {topic || 'Scientific Principles'}
         </span>
       </div>
 
-      {/* Character Name Tag */}
       <div style={{
-        marginTop: 8,
-        backgroundColor: '#17140d',
-        color: '#ffffff',
-        padding: '3px 12px',
-        borderRadius: '999px',
-        fontSize: '12px',
-        fontWeight: 800,
-        fontFamily: "'Bricolage Grotesque', sans-serif",
-        boxShadow: '2px 2px 0 rgba(0,0,0,0.2)',
+        height: 120,
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+        borderRadius: 14,
+        border: '2px solid rgba(255,255,255,0.2)',
         display: 'flex',
         alignItems: 'center',
-        gap: 4
+        justifyContent: 'center',
+        gap: 24
       }}>
-        {isFirstPerson ? '🌟 YOU' : character?.name || 'Hero'}
+        <div style={{ fontSize: 36, animation: 'float 2s infinite alternate' }}>🔬</div>
+        <div style={{ textAlign: 'left' }}>
+          <div style={{ color: '#fef08a', fontSize: 14, fontWeight: 800 }}>Empirical Science in Action</div>
+          <div style={{ color: '#cbd5e1', fontSize: 11 }}>Cause, effect, energy transfer & physical verification</div>
+        </div>
+        <div style={{ fontSize: 36, animation: 'jump 1.5s infinite' }}>✨</div>
       </div>
     </div>
   );
 }
 
+/* ─── Animated Multi-Actor Stage Component ──────────────────────── */
+function MultiActorStage({ story, currentScene, isSpeaking, isFirstPerson, speakText, stopVoice }) {
+  const characters = story.characters || [];
+  const primarySpeakerName = currentScene?.character_speaking;
+  const primaryChar = characters.find(c => c.name === primarySpeakerName) || {
+    name: primarySpeakerName,
+    avatar: '🧑‍🔬',
+    role: 'Hero'
+  };
+
+  // Find a mentor/partner character to also be on stage
+  const mentorChar = characters.find(c => c.name !== primarySpeakerName) || {
+    name: 'Dr. Vidya',
+    avatar: '🔬',
+    role: 'Mentor'
+  };
+
+  const thirdChar = characters.find(c => c.name !== primarySpeakerName && c.name !== mentorChar.name);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, position: 'relative', zIndex: 10 }}>
+      {/* Cartoon Cast Interaction Row */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-around',
+        alignItems: 'flex-end',
+        padding: '10px 20px',
+        position: 'relative'
+      }}>
+        {/* Character 1: Active Speaker */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+          {isSpeaking && (
+            <div style={{
+              position: 'absolute', top: -40,
+              background: '#ffffff', border: '2.5px solid #17140d',
+              borderRadius: 9999, padding: '4px 14px',
+              fontSize: 11, fontWeight: 800, color: '#17140d',
+              boxShadow: '3px 3px 0 #17140d', whiteSpace: 'nowrap',
+              animation: 'jump 0.8s infinite'
+            }}>
+              💬 Speaking!
+            </div>
+          )}
+
+          <div
+            className="animate-walk"
+            style={{
+              width: 88, height: 88,
+              borderRadius: '50%',
+              backgroundColor: '#ffc531',
+              border: '4px solid #17140d',
+              boxShadow: '6px 6px 0 #17140d',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 44,
+              transform: isSpeaking ? 'scale(1.12)' : 'scale(1)',
+              transition: 'transform 0.3s'
+            }}
+          >
+            {primaryChar.avatar || '🧑‍🔬'}
+          </div>
+
+          <div style={{
+            marginTop: 8,
+            backgroundColor: '#17140d', color: '#ffc531',
+            padding: '3px 12px', borderRadius: 9999,
+            fontSize: 11, fontWeight: 800,
+            boxShadow: '2px 2px 0 rgba(0,0,0,0.2)'
+          }}>
+            {isFirstPerson ? '🌟 YOU' : primaryChar.name}
+          </div>
+        </div>
+
+        {/* Center: Dynamic Animated Science Concept Visualizer */}
+        <AnimatedScienceVisualizer
+          storyId={story.id}
+          topic={story.topic}
+          sceneNumber={currentScene?.scene_number || 1}
+        />
+
+        {/* Character 2: Mentor / Companion */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+          <div
+            className="animate-idle"
+            style={{
+              width: 76, height: 76,
+              borderRadius: '50%',
+              backgroundColor: '#ffffff',
+              border: '3.5px solid #17140d',
+              boxShadow: '4px 4px 0 #17140d',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 38
+            }}
+          >
+            {mentorChar.avatar || '🔬'}
+          </div>
+
+          <div style={{
+            marginTop: 8,
+            backgroundColor: '#ffffff', color: '#17140d',
+            padding: '3px 12px', borderRadius: 9999,
+            fontSize: 11, fontWeight: 800, border: '1.5px solid #17140d',
+            boxShadow: '2px 2px 0 rgba(0,0,0,0.2)'
+          }}>
+            {mentorChar.name}
+          </div>
+        </div>
+
+        {/* Character 3: Floating Messenger / Spark (if available) */}
+        {thirdChar && (
+          <div style={{
+            position: 'absolute', top: -10, right: '22%',
+            display: 'flex', alignItems: 'center', gap: 6,
+            backgroundColor: 'rgba(23, 20, 13, 0.75)',
+            padding: '4px 10px', borderRadius: 9999,
+            border: '1.5px solid #ffc531',
+            animation: 'float 3s infinite ease-in-out'
+          }}>
+            <span style={{ fontSize: 18 }}>{thirdChar.avatar}</span>
+            <span style={{ fontSize: 10, color: '#fff', fontWeight: 800 }}>{thirdChar.name}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Subtitle Dialogue Box */}
+      <div style={{
+        backgroundColor: 'rgba(23, 20, 13, 0.94)',
+        border: '3px solid #ffc531',
+        borderRadius: 20,
+        padding: '20px 24px',
+        color: '#ffffff',
+        boxShadow: '6px 6px 0 #17140d',
+        backdropFilter: 'blur(6px)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <span style={{ fontSize: 12, color: '#ffc531', fontWeight: 800, textTransform: 'uppercase' }}>
+            🎙️ {primaryChar.name} explains:
+          </span>
+          <span style={{ fontSize: 11, color: '#94a3b8' }}>
+            Scene {currentScene?.scene_number} of {story.scenes?.length}
+          </span>
+        </div>
+
+        <p style={{
+          fontSize: 'clamp(16px, 1.8vw, 19px)',
+          fontWeight: 700, lineHeight: 1.45,
+          color: '#fef08a', margin: '0 0 10px 0',
+          fontFamily: "'Bricolage Grotesque', sans-serif"
+        }}>
+          "{currentScene?.dialogue}"
+        </p>
+
+        <p style={{ fontSize: 13.5, color: '#e2e8f0', margin: 0, fontStyle: 'italic', lineHeight: 1.4 }}>
+          📖 {currentScene?.narration}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Embedded Cartoon Animated Video Cinema Player ─────────────── */
+function CartoonVideoPlayer({ story, onOpenCheckpoint, onLaunchSimulation, onStartQuiz }) {
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  // Default video URL fallback
+  const videoUrl = story.video_url || 'https://www.youtube-nocookie.com/embed/sQK3Yr4Sc_k';
+
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 20,
+      animation: 'fadeIn 0.3s ease'
+    }}>
+      {/* Video Marquee Header */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        flexWrap: 'wrap', gap: 12,
+        backgroundColor: '#17140d', padding: '12px 20px', borderRadius: 16,
+        color: '#ffffff'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{
+            backgroundColor: '#ff5b57', color: '#fff',
+            padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 900,
+            border: '1.5px solid #fff'
+          }}>
+            🎬 CARTOON ANIMATION CINEMA
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#fef08a' }}>
+            {story.video_title || `${story.topic} Cartoon Science Adventure`}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {story.video_channel && (
+            <span style={{
+              backgroundColor: 'rgba(255,255,255,0.15)',
+              padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 700
+            }}>
+              📺 {story.video_channel}
+            </span>
+          )}
+          {story.video_duration && (
+            <span style={{
+              backgroundColor: '#ffc531', color: '#17140d',
+              padding: '3px 10px', borderRadius: 9999, fontSize: 11, fontWeight: 800
+            }}>
+              ⏱️ {story.video_duration}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* 16:9 Cinema Screen Container */}
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        paddingTop: '56.25%', // 16:9 Aspect Ratio
+        backgroundColor: '#09090b',
+        borderRadius: 20,
+        border: '3.5px solid #17140d',
+        boxShadow: '8px 8px 0 #17140d',
+        overflow: 'hidden'
+      }}>
+        <iframe
+          src={`${videoUrl}?autoplay=1&rel=0&modestbranding=1`}
+          title={story.video_title || "Cartoon Animated Educational Story"}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            border: 'none',
+            borderRadius: 16
+          }}
+        />
+      </div>
+
+      {/* Concept Description Bar */}
+      {story.video_description && (
+        <div style={{
+          backgroundColor: '#efffed',
+          border: '2px solid #12b3a4',
+          borderRadius: 14,
+          padding: '12px 18px',
+          fontSize: 13,
+          color: '#096b62',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10
+        }}>
+          <Sparkles size={18} style={{ flexShrink: 0 }} />
+          <span><strong>What You Learn In This Video:</strong> {story.video_description}</span>
+        </div>
+      )}
+
+      {/* Interactive Checkpoint Toolbar */}
+      <div style={{
+        backgroundColor: '#ffffff',
+        border: '3px solid #17140d',
+        borderRadius: 18,
+        padding: '18px 22px',
+        boxShadow: '5px 5px 0 #17140d'
+      }}>
+        <div style={{
+          fontSize: 12, fontWeight: 800, textTransform: 'uppercase',
+          letterSpacing: '0.05em', color: '#17140d', marginBottom: 12,
+          display: 'flex', alignItems: 'center', gap: 6
+        }}>
+          <span>🚨</span>
+          <span>Interactive Checkpoints (Pause Video & Solve):</span>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+          {story.scenes?.map((scene, idx) => (
+            <button
+              key={idx}
+              onClick={() => onOpenCheckpoint(idx)}
+              className="btn-candy"
+              style={{
+                backgroundColor: '#f5efe2', color: '#17140d',
+                padding: '8px 14px', fontSize: 12.5, gap: 6,
+                boxShadow: '2px 2px 0 #17140d'
+              }}
+            >
+              <span>🎯</span>
+              <span>Checkpoint {idx + 1}: {scene.title?.slice(0, 24)}...</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Quick Launch Next Phase */}
+        <div style={{
+          display: 'flex', gap: 12, flexWrap: 'wrap',
+          borderTop: '2px dashed #e2e8f0', paddingTop: 14
+        }}>
+          {story.simulation_target && (
+            <button
+              onClick={onLaunchSimulation}
+              className="btn-candy primary"
+              style={{ padding: '10px 18px', fontSize: 13.5, gap: 8 }}
+            >
+              <Beaker size={16} /> Launch PhET Digital Simulation
+            </button>
+          )}
+
+          <button
+            onClick={onStartQuiz}
+            className="btn-candy"
+            style={{
+              backgroundColor: '#2bd980', color: '#17140d',
+              padding: '10px 18px', fontSize: 13.5, gap: 8,
+              boxShadow: '3px 3px 0 #17140d'
+            }}
+          >
+            <Award size={16} /> Take 3-Question Mastery Quiz
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── AI Video Storyboard & Prompts Studio ───────────────────────── */
+function AIVideoStudio({ story }) {
+  const [copiedIdx, setCopiedIdx] = useState(null);
+  const storyboard = story.ai_video_storyboard || [];
+
+  const handleCopyPrompt = (text, idx) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 2500);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{
+        backgroundColor: '#17140d', color: '#ffffff',
+        padding: '20px 24px', borderRadius: 20,
+        boxShadow: '6px 6px 0 #ffc531',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        flexWrap: 'wrap', gap: 14
+      }}>
+        <div>
+          <span style={{
+            backgroundColor: '#8b5cf6', color: '#fff',
+            padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 900
+          }}>
+            🤖 AI VIDEO GENERATOR ENGINE (VEO / SORA / RUNWAY)
+          </span>
+          <h3 style={{ fontSize: 20, fontWeight: 800, margin: '6px 0 2px', color: '#fef08a' }}>
+            Director Storyboard for "{story.title}"
+          </h3>
+          <p style={{ fontSize: 13, color: '#cbd5e1', margin: 0 }}>
+            Use these scene-by-scene prompts to generate 3D cartoon video clips in Gemini Veo, OpenAI Sora, Runway Gen-3, or Pika.
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            const allPrompts = storyboard.map(s => `Scene ${s.scene}: ${s.title}\nCamera: ${s.camera_direction}\nVisual: ${s.visual_prompt}\nDialogue: "${s.dialogue}"\n`).join('\n---\n');
+            navigator.clipboard.writeText(allPrompts);
+            alert("All AI Video Storyboard prompts copied to clipboard!");
+          }}
+          className="btn-candy"
+          style={{ backgroundColor: '#ffc531', color: '#17140d', fontSize: 12, padding: '8px 16px', gap: 6 }}
+        >
+          <Copy size={14} /> Copy Full Script (JSON/Text)
+        </button>
+      </div>
+
+      {/* Storyboard Scene Cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {storyboard.map((sc, idx) => (
+          <div
+            key={idx}
+            className="memphis-card"
+            style={{
+              backgroundColor: '#ffffff',
+              padding: '20px 24px',
+              display: 'flex', flexDirection: 'column', gap: 12
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  backgroundColor: '#ff5b57', color: '#fff',
+                  width: 28, height: 28, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 13, fontWeight: 900
+                }}>
+                  {sc.scene || idx + 1}
+                </span>
+                <h4 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>
+                  {sc.title}
+                </h4>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 11, backgroundColor: '#f1f5f9', padding: '3px 8px', borderRadius: 6, fontWeight: 700 }}>
+                  ⏱️ {sc.duration_sec || 12}s Clip
+                </span>
+                <button
+                  onClick={() => handleCopyPrompt(sc.visual_prompt, idx)}
+                  style={{
+                    backgroundColor: copiedIdx === idx ? '#2bd980' : '#17140d',
+                    color: copiedIdx === idx ? '#17140d' : '#ffffff',
+                    border: '1.5px solid #17140d', borderRadius: 8,
+                    padding: '4px 10px', fontSize: 11, fontWeight: 800,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4
+                  }}
+                >
+                  {copiedIdx === idx ? <Check size={12} /> : <Copy size={12} />}
+                  <span>{copiedIdx === idx ? 'Copied!' : 'Copy Prompt'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Camera Direction */}
+            <div style={{ backgroundColor: '#f8fafc', padding: '10px 14px', borderRadius: 10, border: '1.5px dashed #cbd5e1' }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>
+                🎥 Camera Tracking & Angle:
+              </span>
+              <p style={{ fontSize: 13, color: '#0f172a', margin: '4px 0 0', fontWeight: 600 }}>
+                {sc.camera_direction}
+              </p>
+            </div>
+
+            {/* Visual Prompt for Veo / Sora */}
+            <div style={{ backgroundColor: '#fef3c7', padding: '10px 14px', borderRadius: 10, border: '1.5px solid #f59e0b' }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#b45309', textTransform: 'uppercase' }}>
+                🎨 3D Cartoon Visual Prompt:
+              </span>
+              <p style={{ fontSize: 13, color: '#78350f', margin: '4px 0 0', lineHeight: 1.5 }}>
+                {sc.visual_prompt}
+              </p>
+            </div>
+
+            {/* Spoken Dialogue in Video */}
+            <div style={{ fontSize: 13, color: '#334155' }}>
+              <strong>🗣️ Audio / Dialogue:</strong> <em>"{sc.dialogue}"</em>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   MAIN STORYMODE COMPONENT
+   ═════════════════════════════════════════════════════════════════════ */
 export default function StoryMode() {
   // Navigation views: 'catalog' | 'player' | 'generator' | 'analytics' | 'supabase_sql'
   const [activeView, setActiveView] = useState('catalog');
+
+  // Player presentation modes: 'video' | 'stage' | 'ai_storyboard'
+  const [cinemaMode, setCinemaMode] = useState('video');
 
   // Stories Catalog
   const [stories, setStories] = useState([]);
@@ -251,22 +954,25 @@ export default function StoryMode() {
     }
   };
 
-  // Trigger narration whenever current scene or phase updates
+  // Trigger narration ONLY when in 'stage' cinema mode to not conflict with video
   useEffect(() => {
-    if (activeView === 'player' && selectedStory && playerPhase === 'scene') {
+    if (activeView === 'player' && cinemaMode === 'stage' && selectedStory && playerPhase === 'scene') {
       const scene = selectedStory.scenes[currentSceneIdx];
       if (scene) {
         const fullText = `${scene.narration} ${scene.character_speaking} says: ${scene.dialogue}`;
         speakText(fullText, 0.95, isFirstPersonMode ? 1.05 : 1.0);
       }
+    } else if (cinemaMode === 'video') {
+      stopVoice();
     }
     return () => stopVoice();
-  }, [activeView, selectedStory, currentSceneIdx, playerPhase, isVoiceMuted]);
+  }, [activeView, cinemaMode, selectedStory, currentSceneIdx, playerPhase, isVoiceMuted]);
 
   // ── Start Story Adventure ──────────────────────────────────────────
-  const startStory = (story, firstPerson = false) => {
+  const startStory = (story, firstPerson = false, initialMode = 'video') => {
     setSelectedStory(story);
     setIsFirstPersonMode(firstPerson);
+    setCinemaMode(initialMode);
     setCurrentSceneIdx(0);
     setPlayerPhase('scene');
     setSelectedOption(null);
@@ -318,136 +1024,147 @@ export default function StoryMode() {
 
     if (isCorrect) {
       setQuizScore(prev => prev + 1);
-      confetti({ particleCount: 40, spread: 70, origin: { y: 0.6 } });
+      confetti({ particleCount: 20, spread: 50, origin: { y: 0.6 } });
     }
-
-    setTimeout(() => {
-      if (quizIdx + 1 < selectedStory.quiz.length) {
-        setQuizIdx(prev => prev + 1);
-        setSelectedQuizAnswer(null);
-        setShowQuizExplanation(false);
-      } else {
-        // Quiz Complete!
-        setPlayerPhase('celebration');
-        confetti({ particleCount: 100, spread: 100, origin: { y: 0.5 } });
-        // Save progress to backend
-        api.saveStoryProgress({
-          userId,
-          storyId: selectedStory.id,
-          storyTitle: selectedStory.title,
-          completed: true,
-          quizScore: Math.round(((quizScore + (isCorrect ? 1 : 0)) / selectedStory.quiz.length) * 100),
-          timeSpentSeconds: 240,
-          decisionsCount: selectedStory.scenes.length
-        });
-        loadAnalytics();
-      }
-    }, 2000);
   };
 
-  // ── AI Story Generator Handler ─────────────────────────────────────
+  const handleNextQuizQuestion = () => {
+    setSelectedQuizAnswer(null);
+    setShowQuizExplanation(false);
+    if (quizIdx + 1 < selectedStory.quiz.length) {
+      setQuizIdx(prev => prev + 1);
+    } else {
+      setPlayerPhase('celebration');
+      confetti({ particleCount: 80, spread: 100, origin: { y: 0.5 } });
+      saveProgressToServer();
+    }
+  };
+
+  const saveProgressToServer = async () => {
+    const finalScore = Math.round(((quizScore + 1) / selectedStory.quiz.length) * 100);
+    await api.saveStoryProgress({
+      userId,
+      storyId: selectedStory.id,
+      completed: true,
+      quizScore: finalScore,
+      timeSpentSeconds: 300,
+      simulationCompleted: true,
+      subject: selectedStory.subject
+    });
+    loadAnalytics();
+  };
+
+  // ── Generate AI Story via Gemini API ───────────────────────────────
   const handleGenerateStory = async (e) => {
     e.preventDefault();
-    if (!genTopic.trim()) return;
-
     setIsGenerating(true);
+
     try {
       const res = await api.generateAIStory({
         subject: genSubject,
-        topic: genTopic.trim(),
+        topic: genTopic,
         grade: genGrade,
         isFirstPerson: isFirstPersonMode,
-        characterName: genCharacterName.trim()
+        characterName: genCharacterName
       });
 
       if (res && res.story) {
         setStories(prev => [res.story, ...prev]);
         setSelectedStory(res.story);
-        setIsGenerating(false);
-        startStory(res.story, isFirstPersonMode);
+        startStory(res.story, isFirstPersonMode, 'video');
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to generate story:', err);
+    } finally {
       setIsGenerating(false);
     }
   };
 
-  // ══════════════════════════════════════════════════════════════════
-  // RENDER VIEWS
-  // ══════════════════════════════════════════════════════════════════
-
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif", color: '#17140d' }}>
-      
-      {/* ── Navigation Strip ────────────────────────────────────── */}
+    <div style={{ maxWidth: 1240, margin: '0 auto', padding: '0 16px 60px' }}>
+
+      {/* ── Top Navigation Sub-Bar ───────────────────────────────────── */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 12, marginBottom: 28,
-        backgroundColor: '#ffffff', border: '3px solid #17140d',
-        borderRadius: 20, padding: '14px 22px', boxShadow: '5px 5px 0 #17140d'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 12,
+        marginBottom: 28,
+        paddingBottom: 16,
+        borderBottom: '2.5px solid #17140d'
       }}>
-        {/* Brand pill */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
-            width: 44, height: 44, borderRadius: 12,
-            backgroundColor: '#ff5b57', border: '2.5px solid #17140d',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, boxShadow: '2px 2px 0 #17140d'
+            backgroundColor: '#ff5b57',
+            color: '#ffffff',
+            padding: '8px 12px',
+            borderRadius: 12,
+            border: '2.5px solid #17140d',
+            boxShadow: '3px 3px 0 #17140d',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
           }}>
-            🎬
+            <Film size={20} />
+            <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 16 }}>
+              StoryVerse Animated Cinema
+            </span>
           </div>
-          <div>
-            <h2 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: 20, fontWeight: 800, margin: 0, lineHeight: 1.1 }}>
-              StoryVerse <span style={{ color: '#ff5b57' }}>Learning Mode</span>
-            </h2>
-            <p style={{ margin: 0, fontSize: 12, color: '#555', fontWeight: 600 }}>
-              Disney/Pixar Cartoon Adventures • Voice Narration • Decisions • PhET Simulations
-            </p>
-          </div>
+
+          <span style={{
+            backgroundColor: '#ffc531',
+            color: '#17140d',
+            padding: '4px 10px',
+            borderRadius: 9999,
+            fontSize: 11.5,
+            fontWeight: 800,
+            border: '1.5px solid #17140d'
+          }}>
+            🎬 CARTOON VIDEOS & PIXAR ADVENTURES
+          </span>
         </div>
 
-        {/* Action Tabs */}
+        {/* View Switchers */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button
-            onClick={() => { stopVoice(); setActiveView('catalog'); }}
-            className={`btn-candy ${activeView === 'catalog' ? 'primary' : 'secondary'}`}
-            style={{ fontSize: 13, padding: '8px 16px' }}
-          >
-            <Film size={15} /> Story Adventures ({stories.length})
-          </button>
-
-          <button
-            onClick={() => { stopVoice(); setActiveView('generator'); }}
-            className={`btn-candy ${activeView === 'generator' ? 'teal' : 'secondary'}`}
-            style={{ fontSize: 13, padding: '8px 16px' }}
-          >
-            <Wand2 size={15} /> AI Story Creator
-          </button>
-
-          <button
-            onClick={() => { stopVoice(); setActiveView('analytics'); }}
-            className={`btn-candy ${activeView === 'analytics' ? 'violet' : 'secondary'}`}
-            style={{ fontSize: 13, padding: '8px 16px' }}
-          >
-            <BarChart3 size={15} /> Learning Stats
-          </button>
-
-          <button
-            onClick={() => setActiveView('supabase_sql')}
-            className={`btn-candy ${activeView === 'supabase_sql' ? 'primary' : 'secondary'}`}
-            style={{ fontSize: 13, padding: '8px 16px' }}
-          >
-            <Database size={15} /> Supabase Schema
-          </button>
+          {[
+            { id: 'catalog', label: 'Adventures Catalog', icon: BookOpen },
+            { id: 'generator', label: 'AI Story Studio', icon: Wand2 },
+            { id: 'analytics', label: 'Learning Stats', icon: BarChart3 },
+            { id: 'supabase_sql', label: 'Database Schema', icon: Database },
+          ].map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeView === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  stopVoice();
+                  setActiveView(tab.id);
+                }}
+                className="btn-candy"
+                style={{
+                  backgroundColor: isActive ? '#ffc531' : '#ffffff',
+                  color: '#17140d',
+                  fontSize: 13,
+                  padding: '8px 14px',
+                  boxShadow: isActive ? '3px 3px 0 #17140d' : '2px 2px 0 #17140d'
+                }}
+              >
+                <Icon size={14} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════
-          VIEW 1: STORY CATALOG & NETFLIX KIDS CAROUSEL
+          VIEW 1: CATALOG VIEW (NETFLIX KIDS CARTOON GALLERY)
          ══════════════════════════════════════════════════════════════ */}
       {activeView === 'catalog' && (
         <div>
-          {/* Spotlight Banner (Featured Pixar Adventure) */}
+          {/* Spotlight Banner (Featured Cartoon Video & Adventure) */}
           {selectedStory && (
             <div style={{
               background: selectedStory.cover_gradient,
@@ -460,19 +1177,25 @@ export default function StoryMode() {
               position: 'relative',
               overflow: 'hidden'
             }}>
-              {/* Floating cartoon props */}
               <div style={{ position: 'absolute', top: -10, right: 20, fontSize: 120, opacity: 0.15, userSelect: 'none' }}>
                 🚀
               </div>
 
               <div style={{ maxWidth: 760, position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
                   <span style={{
                     backgroundColor: '#ffc531', color: '#17140d',
                     padding: '4px 12px', borderRadius: 9999,
                     fontSize: 12, fontWeight: 800, border: '2px solid #17140d'
                   }}>
-                    🌟 FEATURED ADVENTURE
+                    🌟 FEATURED CARTOON VIDEO & LAB
+                  </span>
+                  <span style={{
+                    backgroundColor: '#2bd980', color: '#17140d',
+                    padding: '4px 12px', borderRadius: 9999,
+                    fontSize: 12, fontWeight: 800, border: '2px solid #17140d'
+                  }}>
+                    🎬 Animated Cartoon Video Included
                   </span>
                   <span style={{
                     backgroundColor: 'rgba(255,255,255,0.25)', color: '#ffffff',
@@ -496,7 +1219,7 @@ export default function StoryMode() {
                   {selectedStory.subtitle}
                 </p>
 
-                {/* Character preview row */}
+                {/* Cast preview row */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     Cast:
@@ -515,10 +1238,10 @@ export default function StoryMode() {
                   ))}
                 </div>
 
-                {/* Dual Play Buttons */}
+                {/* Action Play Buttons */}
                 <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
                   <button
-                    onClick={() => startStory(selectedStory, false)}
+                    onClick={() => startStory(selectedStory, false, 'video')}
                     className="btn-candy"
                     style={{
                       backgroundColor: '#ffc531', color: '#17140d',
@@ -526,19 +1249,31 @@ export default function StoryMode() {
                       boxShadow: '4px 4px 0 #17140d'
                     }}
                   >
-                    <Play size={20} fill="#17140d" /> Watch & Play Story
+                    <Video size={20} /> Watch Cartoon Video & Learn
                   </button>
 
                   <button
-                    onClick={() => startStory(selectedStory, true)}
+                    onClick={() => startStory(selectedStory, false, 'stage')}
                     className="btn-candy"
                     style={{
                       backgroundColor: '#ffffff', color: '#17140d',
-                      padding: '14px 24px', fontSize: 15, gap: 10,
+                      padding: '14px 22px', fontSize: 15, gap: 10,
                       boxShadow: '4px 4px 0 #17140d'
                     }}
                   >
-                    <User size={18} /> "Become the Character" Mode (RPG)
+                    <Play size={18} fill="#17140d" /> Multi-Actor Stage
+                  </button>
+
+                  <button
+                    onClick={() => startStory(selectedStory, true, 'stage')}
+                    className="btn-candy"
+                    style={{
+                      backgroundColor: '#efffed', color: '#096b62',
+                      padding: '14px 20px', fontSize: 14.5, gap: 8,
+                      boxShadow: '4px 4px 0 #17140d'
+                    }}
+                  >
+                    <User size={18} /> "Become the Character" (RPG)
                   </button>
                 </div>
               </div>
@@ -548,7 +1283,7 @@ export default function StoryMode() {
           {/* Catalog Grid */}
           <div style={{ marginBottom: 20 }}>
             <h3 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: 24, fontWeight: 800, marginBottom: 16 }}>
-              Explore Cartoon Adventures ({stories.length})
+              Explore Cartoon Adventures & Videos ({stories.length})
             </h3>
 
             <div style={{
@@ -586,8 +1321,12 @@ export default function StoryMode() {
                       }}>
                         {story.grade}
                       </span>
-                      <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.9 }}>
-                        {story.scenes?.length || 3} Interactive Scenes
+                      <span style={{
+                        fontSize: 11, fontWeight: 800,
+                        backgroundColor: '#2bd980', color: '#17140d',
+                        padding: '2px 8px', borderRadius: 6, border: '1.5px solid #17140d'
+                      }}>
+                        🎬 Cartoon Video
                       </span>
                     </div>
 
@@ -628,19 +1367,19 @@ export default function StoryMode() {
                     {/* Launch buttons */}
                     <div style={{ display: 'flex', gap: 8, paddingTop: 6 }}>
                       <button
-                        onClick={(e) => { e.stopPropagation(); startStory(story, false); }}
+                        onClick={(e) => { e.stopPropagation(); startStory(story, false, 'video'); }}
                         className="btn-candy primary"
-                        style={{ flex: 1, padding: '10px 0', fontSize: 13 }}
+                        style={{ flex: 1, padding: '10px 0', fontSize: 13, gap: 6 }}
                       >
-                        <Play size={14} /> Play
+                        <Video size={14} /> Play Video
                       </button>
                       <button
-                        onClick={(e) => { e.stopPropagation(); startStory(story, true); }}
+                        onClick={(e) => { e.stopPropagation(); startStory(story, false, 'stage'); }}
                         className="btn-candy secondary"
                         style={{ padding: '10px 14px', fontSize: 13 }}
-                        title="Play in First Person Roleplay"
+                        title="Interactive Cartoon Stage"
                       >
-                        <User size={14} /> RPG
+                        <Play size={14} />
                       </button>
                     </div>
                   </div>
@@ -684,7 +1423,7 @@ export default function StoryMode() {
 
               <div>
                 <span style={{ fontSize: 11, color: '#ffc531', fontWeight: 800, textTransform: 'uppercase' }}>
-                  {isFirstPersonMode ? '🎮 BECOME THE CHARACTER MODE' : '🎬 CARTOON ADVENTURE'}
+                  {isFirstPersonMode ? '🎮 BECOME THE CHARACTER MODE' : '🎬 CARTOON STORY CINEMA'}
                 </span>
                 <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#f5efe2' }}>
                   {selectedStory.title}
@@ -692,512 +1431,640 @@ export default function StoryMode() {
               </div>
             </div>
 
-            {/* Audio & Narration Controls */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Cinema Presentation Mode Selector */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, backgroundColor: 'rgba(255,255,255,0.1)', padding: '4px', borderRadius: 12 }}>
               <button
-                onClick={() => {
-                  if (isVoicePlaying) {
-                    stopVoice();
-                  } else {
-                    const scene = selectedStory.scenes[currentSceneIdx];
-                    speakText(`${scene.narration} ${scene.character_speaking} says: ${scene.dialogue}`);
-                  }
-                }}
-                className="btn-candy"
+                onClick={() => { stopVoice(); setCinemaMode('video'); }}
                 style={{
-                  backgroundColor: isVoicePlaying ? '#ff5b57' : '#ffc531',
-                  color: '#17140d', padding: '6px 14px', fontSize: 12, gap: 6
+                  backgroundColor: cinemaMode === 'video' ? '#ff5b57' : 'transparent',
+                  color: '#ffffff', border: 'none', borderRadius: 8,
+                  padding: '6px 12px', fontSize: 12, fontWeight: 800,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6
                 }}
               >
-                {isVoicePlaying ? <Pause size={14} /> : <Play size={14} />}
-                <span>{isVoicePlaying ? 'Pause Voice' : 'Play Voice'}</span>
+                <Video size={14} />
+                <span>Cartoon Video</span>
               </button>
 
               <button
-                onClick={() => {
-                  stopVoice();
-                  const scene = selectedStory.scenes[currentSceneIdx];
-                  speakText(`${scene.narration} ${scene.character_speaking} says: ${scene.dialogue}`);
-                }}
+                onClick={() => setCinemaMode('stage')}
                 style={{
-                  backgroundColor: 'transparent', border: '2px solid #ffc531',
-                  color: '#ffc531', borderRadius: 9999, padding: '6px 12px',
-                  cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4
+                  backgroundColor: cinemaMode === 'stage' ? '#ffc531' : 'transparent',
+                  color: cinemaMode === 'stage' ? '#17140d' : '#ffffff',
+                  border: 'none', borderRadius: 8,
+                  padding: '6px 12px', fontSize: 12, fontWeight: 800,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6
                 }}
-                title="Replay Scene Narration"
               >
-                <RotateCcw size={14} /> Replay
+                <Layers size={14} />
+                <span>Multi-Actor Stage</span>
               </button>
 
               <button
-                onClick={() => {
-                  setIsVoiceMuted(!isVoiceMuted);
-                  if (!isVoiceMuted) stopVoice();
-                }}
+                onClick={() => { stopVoice(); setCinemaMode('ai_storyboard'); }}
                 style={{
-                  backgroundColor: 'transparent', border: '2px solid rgba(255,255,255,0.4)',
-                  color: isVoiceMuted ? '#ff5b57' : '#ffffff', borderRadius: 9999, padding: '6px 10px',
-                  cursor: 'pointer', fontSize: 12
+                  backgroundColor: cinemaMode === 'ai_storyboard' ? '#8b5cf6' : 'transparent',
+                  color: '#ffffff', border: 'none', borderRadius: 8,
+                  padding: '6px 12px', fontSize: 12, fontWeight: 800,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6
                 }}
-                title={isVoiceMuted ? 'Unmute Narration' : 'Mute Narration'}
               >
-                {isVoiceMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                <Clapperboard size={14} />
+                <span>AI Video Prompts</span>
               </button>
             </div>
+
+            {/* Audio & Narration Controls (Active for Stage Mode) */}
+            {cinemaMode === 'stage' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  onClick={() => {
+                    if (isVoicePlaying) {
+                      stopVoice();
+                    } else {
+                      const scene = selectedStory.scenes[currentSceneIdx];
+                      speakText(`${scene.narration} ${scene.character_speaking} says: ${scene.dialogue}`);
+                    }
+                  }}
+                  className="btn-candy"
+                  style={{
+                    backgroundColor: isVoicePlaying ? '#ff5b57' : '#ffc531',
+                    color: '#17140d', padding: '6px 12px', fontSize: 12, gap: 6
+                  }}
+                >
+                  {isVoicePlaying ? <Pause size={14} /> : <Play size={14} />}
+                  <span>{isVoicePlaying ? 'Pause Voice' : 'Play Voice'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsVoiceMuted(!isVoiceMuted);
+                    if (!isVoiceMuted) stopVoice();
+                  }}
+                  style={{
+                    backgroundColor: 'transparent', border: '2px solid rgba(255,255,255,0.4)',
+                    color: isVoiceMuted ? '#ff5b57' : '#ffffff', borderRadius: 9999, padding: '6px 10px',
+                    cursor: 'pointer', fontSize: 12
+                  }}
+                  title={isVoiceMuted ? 'Unmute Narration' : 'Mute Narration'}
+                >
+                  {isVoiceMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Scene Progress Indicator */}
-          <div style={{
-            backgroundColor: '#e8e2d8', height: 8, width: '100%',
-            position: 'relative'
-          }}>
-            <div style={{
-              height: '100%',
-              width: `${((currentSceneIdx + 1) / selectedStory.scenes.length) * 100}%`,
-              backgroundColor: '#ff5b57',
-              transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-            }} />
-          </div>
+          {/* Cinema View Switcher Container */}
+          <div style={{ padding: '24px 28px', backgroundColor: '#fdfbf7' }}>
 
-          {/* ── STAGE 1: ANIMATED SCENE DISPLAY ─────────────────────── */}
-          {(playerPhase === 'scene' || playerPhase === 'decision') && (
-            <div>
-              {/* Animated Cartoon Stage Viewport */}
-              {(() => {
-                const currentScene = selectedStory.scenes[currentSceneIdx];
-                const theme = SCENE_THEMES[currentScene.background_type] || SCENE_THEMES.forest;
-                const speaker = selectedStory.characters?.find(c => c.name === currentScene.character_speaking) || {
-                  name: currentScene.character_speaking,
-                  avatar: '🧑‍🔬'
-                };
+            {/* ── MODE 1: CARTOON ANIMATED VIDEO ──────────────────────── */}
+            {cinemaMode === 'video' && (
+              <CartoonVideoPlayer
+                story={selectedStory}
+                onOpenCheckpoint={(sceneIdx) => {
+                  setCurrentSceneIdx(sceneIdx);
+                  setPlayerPhase('decision');
+                  setCinemaMode('stage');
+                }}
+                onLaunchSimulation={() => setPlayerPhase('simulation')}
+                onStartQuiz={() => setPlayerPhase('quiz')}
+              />
+            )}
 
-                return (
+            {/* ── MODE 2: MULTI-ACTOR ANIMATED STAGE ───────────────────── */}
+            {cinemaMode === 'stage' && (
+              <div>
+                {/* Scene Progress Indicator */}
+                <div style={{
+                  backgroundColor: '#e8e2d8', height: 8, width: '100%',
+                  borderRadius: 4, overflow: 'hidden', marginBottom: 20
+                }}>
                   <div style={{
-                    background: theme.gradient,
-                    minHeight: 460,
-                    position: 'relative',
-                    padding: '36px 32px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    borderBottom: '3px solid #17140d',
-                    overflow: 'hidden'
-                  }}>
-                    {/* Animated Environment Floaters (Sunbeams/Bubbles/Stars) */}
-                    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-                      {theme.decorations.map((item, idx) => (
-                        <span
-                          key={idx}
-                          style={{
-                            position: 'absolute',
-                            fontSize: idx % 2 === 0 ? '36px' : '24px',
-                            top: `${15 + (idx * 16)}%`,
-                            left: `${8 + (idx * 18)}%`,
-                            opacity: 0.25,
-                            animation: `float ${3 + idx}s ease-in-out infinite alternate`,
-                            userSelect: 'none'
-                          }}
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
+                    height: '100%',
+                    width: `${((currentSceneIdx + 1) / selectedStory.scenes.length) * 100}%`,
+                    backgroundColor: '#ff5b57',
+                    transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }} />
+                </div>
 
-                    {/* Scene Tag */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
-                      <span style={{
-                        backgroundColor: 'rgba(23, 20, 13, 0.85)', color: '#ffc531',
-                        border: '2px solid #ffc531', borderRadius: 9999,
-                        padding: '4px 14px', fontSize: 12, fontWeight: 800,
-                        textTransform: 'uppercase', letterSpacing: '0.05em'
-                      }}>
-                        🎬 SCENE {currentScene.scene_number}: {currentScene.title}
-                      </span>
+                {(playerPhase === 'scene' || playerPhase === 'decision') && (
+                  <div>
+                    {(() => {
+                      const currentScene = selectedStory.scenes[currentSceneIdx];
+                      const theme = SCENE_THEMES[currentScene?.background_type] || SCENE_THEMES.forest;
 
-                      <span style={{
-                        backgroundColor: '#ffffff', color: '#17140d',
-                        border: '2px solid #17140d', borderRadius: 9999,
-                        padding: '4px 12px', fontSize: 12, fontWeight: 800
-                      }}>
-                        📍 Environment: {theme.name}
-                      </span>
-                    </div>
-
-                    {/* Center Animated Character & Action */}
-                    <div style={{
-                      display: 'flex', justifyContent: 'center', alignItems: 'center',
-                      gap: 32, my: 20, zIndex: 10
-                    }}>
-                      <AnimatedCharacter
-                        character={speaker}
-                        action={currentScene.character_action}
-                        isSpeaking={isVoicePlaying}
-                        isFirstPerson={isFirstPersonMode && currentScene.character_speaking === selectedStory.characters[0]?.name}
-                      />
-                    </div>
-
-                    {/* Disney/Pixar Dialogue Subtitle Box */}
-                    <div style={{
-                      backgroundColor: 'rgba(23, 20, 13, 0.92)',
-                      border: '3px solid #ffc531',
-                      borderRadius: 20,
-                      padding: '22px 26px',
-                      color: '#ffffff',
-                      boxShadow: '6px 6px 0 #17140d',
-                      zIndex: 10,
-                      backdropFilter: 'blur(6px)'
-                    }}>
-                      <div style={{ fontSize: 13, color: '#ffc531', fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 }}>
-                        🎙️ {speaker.name} says:
-                      </div>
-
-                      <p style={{
-                        fontSize: 18, fontWeight: 700, lineHeight: 1.5,
-                        color: '#fef08a', margin: '0 0 10px 0',
-                        fontFamily: "'Bricolage Grotesque', sans-serif"
-                      }}>
-                        "{currentScene.dialogue}"
-                      </p>
-
-                      <p style={{ fontSize: 14, color: '#e2e8f0', margin: 0, fontStyle: 'italic', lineHeight: 1.4 }}>
-                        📖 {currentScene.narration}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Bottom Interactive Control & Checkpoint Area */}
-              <div style={{ padding: '28px 32px', backgroundColor: '#f5efe2' }}>
-                {/* Decision Checkpoint Modal when phase === 'decision' */}
-                {playerPhase === 'decision' ? (
-                  <div style={{
-                    backgroundColor: '#ffffff',
-                    border: '3px solid #17140d',
-                    borderRadius: 20,
-                    padding: '24px 26px',
-                    boxShadow: '6px 6px 0 #17140d',
-                    animation: 'fadeIn 0.3s ease'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                      <span style={{ fontSize: 28 }}>🚨</span>
-                      <div>
-                        <span style={{
-                          backgroundColor: '#ff5b57', color: '#fff',
-                          padding: '2px 8px', borderRadius: 6,
-                          fontSize: 11, fontWeight: 800, border: '1.5px solid #17140d'
+                      return (
+                        <div style={{
+                          background: theme.gradient,
+                          minHeight: 460,
+                          position: 'relative',
+                          padding: '32px 28px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          borderRadius: 20,
+                          border: '3px solid #17140d',
+                          boxShadow: '6px 6px 0 #17140d',
+                          overflow: 'hidden'
                         }}>
-                          INTERACTIVE DECISION CHECKPOINT
-                        </span>
-                        <h4 style={{ fontSize: 18, fontWeight: 800, margin: '4px 0 0' }}>
-                          {selectedStory.scenes[currentSceneIdx]?.decision_point?.prompt}
-                        </h4>
-                      </div>
-                    </div>
+                          {/* Animated Environment Floaters */}
+                          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+                            {theme.decorations.map((item, idx) => (
+                              <span
+                                key={idx}
+                                style={{
+                                  position: 'absolute',
+                                  fontSize: idx % 2 === 0 ? '36px' : '24px',
+                                  top: `${15 + (idx * 16)}%`,
+                                  left: `${8 + (idx * 18)}%`,
+                                  opacity: 0.25,
+                                  animation: `float ${3 + idx}s ease-in-out infinite alternate`,
+                                  userSelect: 'none'
+                                }}
+                              >
+                                {item}
+                              </span>
+                            ))}
+                          </div>
 
-                    {/* Options A, B, C */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
-                      {selectedStory.scenes[currentSceneIdx]?.decision_point?.options?.map((opt) => {
-                        const isSelected = selectedOption === opt.id;
-                        let bg = '#f5efe2';
-                        let borderCol = '#17140d';
+                          {/* Scene Tag */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10, marginBottom: 14 }}>
+                            <span style={{
+                              backgroundColor: 'rgba(23, 20, 13, 0.85)', color: '#ffc531',
+                              border: '2px solid #ffc531', borderRadius: 9999,
+                              padding: '4px 14px', fontSize: 12, fontWeight: 800,
+                              textTransform: 'uppercase'
+                            }}>
+                              🎬 SCENE {currentScene?.scene_number}: {currentScene?.title}
+                            </span>
 
-                        if (isSelected && decisionFeedback) {
-                          bg = decisionFeedback.is_correct ? '#d1fae5' : '#fee2e2';
-                          borderCol = decisionFeedback.is_correct ? '#059669' : '#dc2626';
-                        }
+                            <span style={{
+                              backgroundColor: '#ffffff', color: '#17140d',
+                              border: '2px solid #17140d', borderRadius: 9999,
+                              padding: '4px 12px', fontSize: 12, fontWeight: 800
+                            }}>
+                              📍 Environment: {theme.name}
+                            </span>
+                          </div>
 
-                        return (
-                          <button
-                            key={opt.id}
-                            onClick={() => handleSelectOption(opt)}
-                            style={{
+                          {/* Multi-Actor Stage Viewport */}
+                          <MultiActorStage
+                            story={selectedStory}
+                            currentScene={currentScene}
+                            isSpeaking={isVoicePlaying}
+                            isFirstPerson={isFirstPersonMode}
+                            speakText={speakText}
+                            stopVoice={stopVoice}
+                          />
+                        </div>
+                      );
+                    })()}
+
+                    {/* Bottom Interactive Decision Checkpoint Area */}
+                    <div style={{ marginTop: 24 }}>
+                      {playerPhase === 'decision' ? (
+                        <div style={{
+                          backgroundColor: '#ffffff',
+                          border: '3px solid #17140d',
+                          borderRadius: 20,
+                          padding: '24px 26px',
+                          boxShadow: '6px 6px 0 #17140d',
+                          animation: 'fadeIn 0.3s ease'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                            <span style={{ fontSize: 28 }}>🚨</span>
+                            <div>
+                              <span style={{
+                                backgroundColor: '#ff5b57', color: '#fff',
+                                padding: '2px 8px', borderRadius: 6,
+                                fontSize: 11, fontWeight: 800, border: '1.5px solid #17140d'
+                              }}>
+                                INTERACTIVE DECISION CHECKPOINT
+                              </span>
+                              <h4 style={{ fontSize: 18, fontWeight: 800, margin: '4px 0 0' }}>
+                                {selectedStory.scenes[currentSceneIdx]?.decision_point?.prompt}
+                              </h4>
+                            </div>
+                          </div>
+
+                          {/* Options A, B, C */}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
+                            {selectedStory.scenes[currentSceneIdx]?.decision_point?.options?.map((opt) => {
+                              const isSelected = selectedOption === opt.id;
+                              let bg = '#f5efe2';
+                              let borderCol = '#17140d';
+
+                              if (isSelected && decisionFeedback) {
+                                bg = decisionFeedback.is_correct ? '#d1fae5' : '#fee2e2';
+                                borderCol = decisionFeedback.is_correct ? '#059669' : '#dc2626';
+                              }
+
+                              return (
+                                <button
+                                  key={opt.id}
+                                  onClick={() => handleSelectOption(opt)}
+                                  style={{
+                                    padding: '14px 18px',
+                                    borderRadius: 14,
+                                    border: `2.5px solid ${borderCol}`,
+                                    backgroundColor: bg,
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    fontSize: 14,
+                                    fontWeight: 700,
+                                    color: '#17140d',
+                                    boxShadow: '2px 2px 0 #17140d',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 12,
+                                    transition: 'transform 0.1s'
+                                  }}
+                                >
+                                  <span style={{
+                                    width: 28, height: 28, borderRadius: '50%',
+                                    backgroundColor: '#17140d', color: '#ffffff',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 12, fontWeight: 800, flexShrink: 0
+                                  }}>
+                                    {opt.id}
+                                  </span>
+                                  <span>{opt.text}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* Instant Explanatory Feedback */}
+                          {decisionFeedback && (
+                            <div style={{
                               padding: '14px 18px',
-                              borderRadius: 14,
-                              border: `2.5px solid ${borderCol}`,
-                              backgroundColor: bg,
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                              fontWeight: 700,
-                              fontSize: 14,
-                              color: '#17140d',
-                              boxShadow: '3px 3px 0 #17140d',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              transition: 'all 0.15s'
+                              borderRadius: 12,
+                              backgroundColor: decisionFeedback.is_correct ? '#ecfdf5' : '#fef2f2',
+                              border: `2px solid ${decisionFeedback.is_correct ? '#10b981' : '#ef4444'}`,
+                              marginBottom: 16
+                            }}>
+                              <div style={{
+                                fontWeight: 800,
+                                fontSize: 14,
+                                color: decisionFeedback.is_correct ? '#065f46' : '#991b1b',
+                                marginBottom: 4,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6
+                              }}>
+                                {decisionFeedback.is_correct ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+                                <span>{decisionFeedback.is_correct ? 'Correct Scientific Choice!' : 'Science Check & Retry:'}</span>
+                              </div>
+                              <p style={{ margin: 0, fontSize: 13, color: '#333', lineHeight: 1.5 }}>
+                                {decisionFeedback.feedback}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Continue Button */}
+                          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                              disabled={!decisionFeedback?.is_correct}
+                              onClick={handleProceedScene}
+                              className="btn-candy primary"
+                              style={{
+                                padding: '12px 24px', fontSize: 15,
+                                opacity: decisionFeedback?.is_correct ? 1 : 0.45,
+                                cursor: decisionFeedback?.is_correct ? 'pointer' : 'not-allowed'
+                              }}
+                            >
+                              <span>Continue Adventure</span>
+                              <ChevronRight size={18} />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <button
+                            disabled={currentSceneIdx === 0}
+                            onClick={() => {
+                              stopVoice();
+                              setCurrentSceneIdx(prev => Math.max(0, prev - 1));
+                            }}
+                            className="btn-candy secondary"
+                            style={{
+                              padding: '10px 18px', fontSize: 13,
+                              opacity: currentSceneIdx === 0 ? 0.4 : 1,
+                              cursor: currentSceneIdx === 0 ? 'not-allowed' : 'pointer'
                             }}
                           >
-                            <span><strong>Option {opt.id}:</strong> {opt.text}</span>
-                            {isSelected && decisionFeedback && (
-                              <span>{decisionFeedback.is_correct ? '✅' : '❌'}</span>
-                            )}
+                            ← Previous Scene
                           </button>
-                        );
-                      })}
-                    </div>
 
-                    {/* Feedback and Continue */}
-                    {decisionFeedback && (
-                      <div style={{
-                        backgroundColor: decisionFeedback.is_correct ? '#ecfdf5' : '#fef2f2',
-                        border: `2px solid ${decisionFeedback.is_correct ? '#10b981' : '#ef4444'}`,
-                        borderRadius: 12, padding: '12px 16px', marginBottom: 16,
-                        fontSize: 14, color: decisionFeedback.is_correct ? '#065f46' : '#991b1b',
-                        fontWeight: 600
-                      }}>
-                        {decisionFeedback.feedback}
-                      </div>
-                    )}
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <button
+                              onClick={() => setCinemaMode('video')}
+                              className="btn-candy"
+                              style={{ backgroundColor: '#ffffff', color: '#17140d', fontSize: 13, padding: '10px 16px', gap: 6 }}
+                            >
+                              <Video size={15} /> Switch to Video
+                            </button>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-                      {decisionFeedback && decisionFeedback.is_correct ? (
-                        <button
-                          onClick={() => {
-                            if (currentSceneIdx + 1 < selectedStory.scenes.length) {
-                              setCurrentSceneIdx(prev => prev + 1);
-                              setSelectedOption(null);
-                              setDecisionFeedback(null);
-                              setPlayerPhase('scene');
-                            } else {
-                              setPlayerPhase('simulation');
-                            }
-                          }}
-                          className="btn-candy primary"
-                          style={{ padding: '10px 24px', fontSize: 14 }}
-                        >
-                          Continue Adventure ➔
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: 13, color: '#666', fontStyle: 'italic', alignSelf: 'center' }}>
-                          Select the correct scientific action to move forward!
-                        </span>
+                            <button
+                              onClick={handleProceedScene}
+                              className="btn-candy primary"
+                              style={{ padding: '12px 24px', fontSize: 15, gap: 8 }}
+                            >
+                              <span>Next Scene</span>
+                              <ChevronRight size={18} />
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
-                ) : (
-                  /* Standard Scene Action Bar */
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14 }}>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#666' }}>
-                        Scene {currentSceneIdx + 1} of {selectedStory.scenes.length}
-                      </span>
-                    </div>
+                )}
+              </div>
+            )}
 
+            {/* ── MODE 3: AI VIDEO STORYBOARD & PROMPTS ───────────────── */}
+            {cinemaMode === 'ai_storyboard' && (
+              <AIVideoStudio story={selectedStory} />
+            )}
+
+            {/* ── STAGE 2: DIGITAL SIMULATION LAUNCHER ─────────────────── */}
+            {playerPhase === 'simulation' && (
+              <div style={{
+                backgroundColor: '#ffffff',
+                border: '3px solid #17140d',
+                borderRadius: 20,
+                padding: '32px 28px',
+                boxShadow: '6px 6px 0 #17140d',
+                textAlign: 'center'
+              }}>
+                <div style={{
+                  backgroundColor: '#ffc531', color: '#17140d',
+                  padding: '4px 16px', borderRadius: 9999, fontSize: 12, fontWeight: 800,
+                  display: 'inline-block', border: '2px solid #17140d', marginBottom: 12
+                }}>
+                  PHASE 2: HANDS-ON VIRTUAL EXPERIMENT
+                </div>
+
+                <h3 style={{
+                  fontFamily: "'Bricolage Grotesque', sans-serif",
+                  fontSize: 28, fontWeight: 800, margin: '0 0 10px'
+                }}>
+                  Launch Simulation: {selectedStory.simulation_target?.name}
+                </h3>
+
+                <p style={{ maxWidth: 680, margin: '0 auto 24px auto', fontSize: 15, color: '#444', lineHeight: 1.6 }}>
+                  {selectedStory.simulation_target?.learning_hook}
+                </p>
+
+                {/* Embedded Simulation Frame */}
+                {selectedStory.simulation_target?.url && (
+                  <div style={{
+                    width: '100%',
+                    height: 520,
+                    borderRadius: 16,
+                    border: '3px solid #17140d',
+                    boxShadow: '6px 6px 0 #17140d',
+                    overflow: 'hidden',
+                    marginBottom: 24,
+                    backgroundColor: '#000'
+                  }}>
+                    <iframe
+                      src={selectedStory.simulation_target.url}
+                      title={selectedStory.simulation_target.name}
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>
+                  <button
+                    onClick={() => setPlayerPhase('quiz')}
+                    className="btn-candy primary"
+                    style={{ padding: '14px 28px', fontSize: 16, gap: 10 }}
+                  >
+                    <span>I Completed The Lab · Take Mastery Quiz</span>
+                    <Award size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── STAGE 3: MASTERY QUIZ ───────────────────────────────── */}
+            {playerPhase === 'quiz' && selectedStory.quiz && (
+              <div style={{
+                backgroundColor: '#ffffff',
+                border: '3px solid #17140d',
+                borderRadius: 20,
+                padding: '32px 28px',
+                boxShadow: '6px 6px 0 #17140d',
+                maxWidth: 780,
+                margin: '0 auto'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+                  <span style={{
+                    backgroundColor: '#17140d', color: '#ffc531',
+                    padding: '4px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 800
+                  }}>
+                    QUESTION {quizIdx + 1} OF {selectedStory.quiz.length}
+                  </span>
+
+                  <span style={{ fontSize: 14, fontWeight: 800, color: '#059669' }}>
+                    Score: {quizScore} / {selectedStory.quiz.length}
+                  </span>
+                </div>
+
+                <h3 style={{
+                  fontFamily: "'Bricolage Grotesque', sans-serif",
+                  fontSize: 22, fontWeight: 800, margin: '0 0 20px', lineHeight: 1.35
+                }}>
+                  {selectedStory.quiz[quizIdx]?.question}
+                </h3>
+
+                {/* Question Options */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+                  {selectedStory.quiz[quizIdx]?.options?.map((choice, cIdx) => {
+                    const isSelected = selectedQuizAnswer === cIdx;
+                    const isCorrect = cIdx === selectedStory.quiz[quizIdx].correct_index;
+
+                    let bg = '#f5efe2';
+                    let borderCol = '#17140d';
+
+                    if (showQuizExplanation) {
+                      if (isCorrect) {
+                        bg = '#d1fae5';
+                        borderCol = '#059669';
+                      } else if (isSelected) {
+                        bg = '#fee2e2';
+                        borderCol = '#dc2626';
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={cIdx}
+                        disabled={showQuizExplanation}
+                        onClick={() => handleQuizAnswer(cIdx)}
+                        style={{
+                          padding: '14px 18px',
+                          borderRadius: 14,
+                          border: `2.5px solid ${borderCol}`,
+                          backgroundColor: bg,
+                          textAlign: 'left',
+                          fontSize: 14.5,
+                          fontWeight: 700,
+                          cursor: showQuizExplanation ? 'default' : 'pointer',
+                          boxShadow: '2px 2px 0 #17140d',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12
+                        }}
+                      >
+                        <span>{choice}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Explanation */}
+                {showQuizExplanation && (
+                  <div style={{
+                    padding: '14px 18px',
+                    borderRadius: 12,
+                    backgroundColor: '#eff6ff',
+                    border: '2px solid #3b82f6',
+                    marginBottom: 20
+                  }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: '#1e40af', marginBottom: 4 }}>
+                      💡 Concept Explanation:
+                    </div>
+                    <p style={{ margin: 0, fontSize: 13.5, color: '#1e293b', lineHeight: 1.5 }}>
+                      {selectedStory.quiz[quizIdx]?.explanation}
+                    </p>
+                  </div>
+                )}
+
+                {showQuizExplanation && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button
-                      onClick={handleProceedScene}
-                      className="btn-candy teal"
-                      style={{ padding: '12px 28px', fontSize: 15, gap: 8 }}
+                      onClick={handleNextQuizQuestion}
+                      className="btn-candy primary"
+                      style={{ padding: '12px 24px', fontSize: 15, gap: 8 }}
                     >
-                      <span>
-                        {currentSceneIdx + 1 < selectedStory.scenes.length ? 'Next Scene' : 'Complete Story & Launch Simulation'}
-                      </span>
+                      <span>{quizIdx + 1 < selectedStory.quiz.length ? 'Next Question' : 'View Results'}</span>
                       <ChevronRight size={18} />
                     </button>
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── STAGE 2: PHET / INTERACTIVE SIMULATION INTEGRATION ── */}
-          {playerPhase === 'simulation' && (
-            <div style={{ padding: '36px 32px', backgroundColor: '#f0fbfa' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-                <div>
-                  <span style={{
-                    backgroundColor: '#12b3a4', color: '#ffffff',
-                    padding: '3px 10px', borderRadius: 6, fontSize: 12, fontWeight: 800,
-                    border: '1.5px solid #17140d'
-                  }}>
-                    PHASE 2: DIRECT HANDS-ON SIMULATION
-                  </span>
-                  <h3 style={{ fontSize: 24, fontWeight: 800, margin: '6px 0 0' }}>
-                    {selectedStory.simulation_target?.name || 'Interactive Science Lab'}
-                  </h3>
-                  <p style={{ fontSize: 14, color: '#096b62', margin: '4px 0 0' }}>
-                    💡 {selectedStory.simulation_target?.learning_hook}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setPlayerPhase('quiz')}
-                  className="btn-candy primary"
-                  style={{ padding: '12px 24px', fontSize: 15 }}
-                >
-                  Proceed to Mastery Quiz ➔
-                </button>
-              </div>
-
-              {/* Embedded Simulation Iframe */}
+            {/* ── STAGE 4: CELEBRATION & BADGE REWARD ─────────────────── */}
+            {playerPhase === 'celebration' && (
               <div style={{
-                border: '3px solid #17140d', borderRadius: 20,
-                overflow: 'hidden', boxShadow: '6px 6px 0 #17140d',
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                border: '3px solid #17140d',
+                borderRadius: 20,
+                padding: '44px 32px',
+                boxShadow: '8px 8px 0 #17140d',
+                textAlign: 'center',
+                maxWidth: 680,
+                margin: '0 auto'
               }}>
-                <iframe
-                  src={selectedStory.simulation_target?.url || 'https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_all.html'}
-                  title="PhET Simulation"
-                  style={{ width: '100%', height: 580, border: 'none' }}
-                  allow="fullscreen"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          )}
-
-          {/* ── STAGE 3: POST-STORY MASTERY QUIZ ───────────────────── */}
-          {playerPhase === 'quiz' && (
-            <div style={{ padding: '36px 32px', backgroundColor: '#fffbf0' }}>
-              <div style={{ maxWidth: 720, margin: '0 auto' }}>
-                <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                  <span style={{
-                    backgroundColor: '#ffc531', color: '#17140d',
-                    padding: '4px 14px', borderRadius: 9999,
-                    fontSize: 12, fontWeight: 800, border: '2px solid #17140d'
-                  }}>
-                    🎯 POST-ADVENTURE MASTERY QUIZ
-                  </span>
-                  <h3 style={{ fontSize: 26, fontWeight: 800, margin: '8px 0 0' }}>
-                    Question {quizIdx + 1} of {selectedStory.quiz.length}
-                  </h3>
-                  <p style={{ fontSize: 14, color: '#666', margin: '4px 0 0' }}>
-                    Score: {quizScore} / {quizIdx}
-                  </p>
+                <div style={{ fontSize: 64, marginBottom: 12, animation: 'jump 0.8s infinite' }}>
+                  🎉
                 </div>
 
-                {/* Question Card */}
-                {(() => {
-                  const q = selectedStory.quiz[quizIdx];
-                  return (
-                    <div style={{
-                      backgroundColor: '#ffffff',
-                      border: '3px solid #17140d',
-                      borderRadius: 20,
-                      padding: '28px 26px',
-                      boxShadow: '6px 6px 0 #17140d',
-                      marginBottom: 20
-                    }}>
-                      <h4 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20, lineHeight: 1.4 }}>
-                        {q.question}
-                      </h4>
+                <div style={{
+                  backgroundColor: '#ffc531', color: '#17140d',
+                  padding: '4px 14px', borderRadius: 9999, fontSize: 12, fontWeight: 800,
+                  display: 'inline-block', border: '2px solid #17140d', marginBottom: 12
+                }}>
+                  ADVENTURE & QUIZ COMPLETED!
+                </div>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {q.options.map((opt, idx) => {
-                          const isSelected = selectedQuizAnswer === idx;
-                          let bg = '#f5efe2';
-                          let borderCol = '#17140d';
+                <h2 style={{
+                  fontFamily: "'Bricolage Grotesque', sans-serif",
+                  fontSize: 32, fontWeight: 800, margin: '0 0 12px'
+                }}>
+                  Phenomenal Science Work, Explorer!
+                </h2>
 
-                          if (showQuizExplanation) {
-                            if (idx === q.correct_index) {
-                              bg = '#d1fae5';
-                              borderCol = '#059669';
-                            } else if (isSelected) {
-                              bg = '#fee2e2';
-                              borderCol = '#dc2626';
-                            }
-                          }
+                <p style={{ fontSize: 15, color: '#555', marginBottom: 24 }}>
+                  You solved the narrative challenges, ran the digital experiment, and demonstrated mastery in {selectedStory.topic}!
+                </p>
 
-                          return (
-                            <button
-                              key={idx}
-                              onClick={() => !showQuizExplanation && handleQuizAnswer(idx)}
-                              disabled={showQuizExplanation}
-                              style={{
-                                padding: '14px 18px',
-                                borderRadius: 14,
-                                border: `2.5px solid ${borderCol}`,
-                                backgroundColor: bg,
-                                textAlign: 'left',
-                                cursor: showQuizExplanation ? 'default' : 'pointer',
-                                fontWeight: 700,
-                                fontSize: 14,
-                                color: '#17140d',
-                                boxShadow: '2px 2px 0 #17140d'
-                              }}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {showQuizExplanation && (
-                        <div style={{
-                          marginTop: 18,
-                          backgroundColor: '#ecfdf5',
-                          border: '2px solid #10b981',
-                          borderRadius: 12, padding: '12px 16px',
-                          fontSize: 13, color: '#065f46', fontWeight: 600
-                        }}>
-                          💡 <strong>Explanation:</strong> {q.explanation}
-                        </div>
-                      )}
+                {/* Score & XP Card */}
+                <div style={{
+                  display: 'flex', justifyContent: 'center', gap: 16,
+                  marginBottom: 28, flexWrap: 'wrap'
+                }}>
+                  <div style={{
+                    backgroundColor: '#efffed', border: '2px solid #10b981',
+                    borderRadius: 14, padding: '14px 24px', textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: '#047857' }}>
+                      {quizScore} / {selectedStory.quiz.length}
                     </div>
-                  );
-                })()}
-              </div>
-            </div>
-          )}
-
-          {/* ── STAGE 4: CELEBRATION & REWARDS ─────────────────────── */}
-          {playerPhase === 'celebration' && (
-            <div style={{ padding: '60px 32px', textAlign: 'center', backgroundColor: '#efffed' }}>
-              <div style={{ fontSize: 72, marginBottom: 12 }}>🎉</div>
-
-              <h2 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: 36, fontWeight: 800, margin: '0 0 8px' }}>
-                Adventure Completed!
-              </h2>
-
-              <p style={{ fontSize: 16, color: '#047857', fontWeight: 600, maxWidth: 540, margin: '0 auto 24px' }}>
-                You guided your characters through scientific challenges, experimented with simulations, and aced the quiz!
-              </p>
-
-              {/* Scorecard */}
-              <div style={{
-                display: 'inline-flex', gap: 24,
-                backgroundColor: '#ffffff', border: '3px solid #17140d',
-                borderRadius: 20, padding: '20px 36px', boxShadow: '6px 6px 0 #17140d',
-                marginBottom: 32
-              }}>
-                <div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: '#ff5b57' }}>
-                    {quizScore} / {selectedStory.quiz.length}
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#065f46' }}>
+                      Quiz Score
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#666' }}>Quiz Score</div>
+
+                  <div style={{
+                    backgroundColor: '#fef3c7', border: '2px solid #f59e0b',
+                    borderRadius: 14, padding: '14px 24px', textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: '#b45309' }}>
+                      +250 XP
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#78350f' }}>
+                      Experience Points
+                    </div>
+                  </div>
+
+                  <div style={{
+                    backgroundColor: '#f3e8ff', border: '2px solid #8b5cf6',
+                    borderRadius: 14, padding: '14px 24px', textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: '#6d28d9' }}>
+                      🏆 Master
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: '#5b21b6' }}>
+                      Badge Earned
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ width: 2, backgroundColor: '#e2e8f0' }} />
+                {/* Return Buttons */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => {
+                      stopVoice();
+                      setActiveView('catalog');
+                    }}
+                    className="btn-candy primary"
+                    style={{ padding: '12px 24px', fontSize: 15 }}
+                  >
+                    Play Another Adventure
+                  </button>
 
-                <div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: '#ffc531' }}>+250</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#666' }}>XP Earned</div>
-                </div>
-
-                <div style={{ width: 2, backgroundColor: '#e2e8f0' }} />
-
-                <div>
-                  <div style={{ fontSize: 28 }}>🏅</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#666' }}>Mastery Badge</div>
+                  <button
+                    onClick={() => setActiveView('analytics')}
+                    className="btn-candy secondary"
+                    style={{ padding: '12px 24px', fontSize: 15 }}
+                  >
+                    View Learning Analytics
+                  </button>
                 </div>
               </div>
-
-              <div>
-                <button
-                  onClick={() => { stopVoice(); setActiveView('catalog'); }}
-                  className="btn-candy primary"
-                  style={{ padding: '14px 32px', fontSize: 16 }}
-                >
-                  Back to Adventure Library ➔
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          VIEW 3: TEACHER & CREATOR AI STORY GENERATOR STUDIO
+          VIEW 3: TEACHER & STUDENT AI STORY GENERATOR STUDIO
          ══════════════════════════════════════════════════════════════ */}
       {activeView === 'generator' && (
         <div style={{
@@ -1207,164 +2074,17 @@ export default function StoryMode() {
           padding: '36px 32px',
           boxShadow: '8px 8px 0 #17140d'
         }}>
-          <div style={{ maxWidth: 760, margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: 28 }}>
-              <span style={{
-                backgroundColor: '#12b3a4', color: '#ffffff',
-                padding: '4px 14px', borderRadius: 9999,
-                fontSize: 12, fontWeight: 800, border: '2px solid #17140d'
-              }}>
-                🪄 GEMINI AI EDUCATIONAL CARTOON STUDIO
-              </span>
-              <h3 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: 28, fontWeight: 800, margin: '8px 0 6px' }}>
-                Generate a Pixar-Style Adventure with No Code
-              </h3>
-              <p style={{ fontSize: 14, color: '#555', margin: 0 }}>
-                Teachers & students: Enter any science or math topic. Gemini AI will automatically script characters, dialogues, decision checkpoints, simulations, and quiz questions!
-              </p>
-            </div>
-
-            <form onSubmit={handleGenerateStory}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 18 }}>
-                {/* Subject */}
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 }}>
-                    Subject:
-                  </label>
-                  <select
-                    value={genSubject}
-                    onChange={(e) => setGenSubject(e.target.value)}
-                    style={{
-                      width: '100%', padding: '10px 14px',
-                      borderRadius: 12, border: '2px solid #17140d',
-                      fontFamily: "'DM Sans', sans-serif", fontSize: 14,
-                      backgroundColor: '#f5efe2', fontWeight: 700
-                    }}
-                  >
-                    <option value="Biology">Biology (Cells, Genetics, Ecology)</option>
-                    <option value="Physics">Physics (Mechanics, Electricity, Light)</option>
-                    <option value="Chemistry">Chemistry (Atoms, Bonding, Reactions)</option>
-                    <option value="Mathematics">Mathematics (Fractions, Geometry, Algebra)</option>
-                    <option value="Space Science">Space Science & Astronomy</option>
-                    <option value="Environmental Science">Environmental Science & Ecology</option>
-                  </select>
-                </div>
-
-                {/* Grade */}
-                <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 }}>
-                    Class / Grade Level:
-                  </label>
-                  <select
-                    value={genGrade}
-                    onChange={(e) => setGenGrade(e.target.value)}
-                    style={{
-                      width: '100%', padding: '10px 14px',
-                      borderRadius: 12, border: '2px solid #17140d',
-                      fontFamily: "'DM Sans', sans-serif", fontSize: 14,
-                      backgroundColor: '#f5efe2', fontWeight: 700
-                    }}
-                  >
-                    {['Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'].map((g) => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Topic Input */}
-              <div style={{ marginBottom: 18 }}>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 }}>
-                  Curriculum Topic / Concept:
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Newton's 3rd Law, Photosynthesis, Water Cycle, Pythagorean Theorem..."
-                  value={genTopic}
-                  onChange={(e) => setGenTopic(e.target.value)}
-                  required
-                  style={{
-                    width: '100%', padding: '12px 16px',
-                    borderRadius: 12, border: '2px solid #17140d',
-                    fontFamily: "'DM Sans', sans-serif", fontSize: 14,
-                    boxSizing: 'border-box', outline: 'none'
-                  }}
-                />
-              </div>
-
-              {/* Roleplay Mode Option */}
-              <div style={{
-                backgroundColor: '#efffed',
-                border: '2px solid #12b3a4',
-                borderRadius: 14, padding: '16px 20px',
-                marginBottom: 24,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                flexWrap: 'wrap', gap: 12
-              }}>
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: '#096b62' }}>
-                    🎮 "Become the Character" Mode (1st-Person RPG)
-                  </div>
-                  <div style={{ fontSize: 12, color: '#555', marginTop: 2 }}>
-                    The student is cast as the lead character (e.g. "You are Leo the Leaf") with choices directing survival.
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsFirstPersonMode(!isFirstPersonMode)}
-                  className="btn-candy"
-                  style={{
-                    backgroundColor: isFirstPersonMode ? '#2bd980' : '#ffffff',
-                    color: '#17140d', fontSize: 13, padding: '6px 14px'
-                  }}
-                >
-                  {isFirstPersonMode ? '✓ Roleplay Enabled' : 'Enable RPG Mode'}
-                </button>
-              </div>
-
-              {/* Submit Button */}
-              <div style={{ textAlign: 'center' }}>
-                <button
-                  type="submit"
-                  disabled={isGenerating}
-                  className="btn-candy primary"
-                  style={{
-                    padding: '14px 36px', fontSize: 16, gap: 10,
-                    width: '100%', maxWidth: 380
-                  }}
-                >
-                  <Wand2 size={20} />
-                  <span>{isGenerating ? 'Gemini AI is Scripting Adventure...' : '⚡ Generate StoryVerse Adventure'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════
-          VIEW 4: LEARNING ANALYTICS DASHBOARD (CHART.JS)
-         ══════════════════════════════════════════════════════════════ */}
-      {activeView === 'analytics' && (
-        <div style={{
-          backgroundColor: '#ffffff',
-          border: '3px solid #17140d',
-          borderRadius: 24,
-          padding: '36px 32px',
-          boxShadow: '8px 8px 0 #17140d'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
               <span style={{
-                backgroundColor: '#6b5be6', color: '#ffffff',
+                backgroundColor: '#ffc531', color: '#17140d',
                 padding: '3px 10px', borderRadius: 6, fontSize: 12, fontWeight: 800,
                 border: '1.5px solid #17140d'
               }}>
-                STUDENT STORY ANALYTICS
+                ZERO-CODE AI ADVENTURE STUDIO
               </span>
-              <h3 style={{ fontSize: 24, fontWeight: 800, margin: '6px 0 0' }}>
-                Concept Retention & Storyverse Progress
+              <h3 style={{ fontSize: 28, fontWeight: 800, margin: '6px 0 0' }}>
+                Generate Custom Pixar Adventure & Videos with Gemini
               </h3>
             </div>
 
@@ -1377,117 +2097,262 @@ export default function StoryMode() {
             </button>
           </div>
 
-          {/* Quick Stats Grid */}
+          <p style={{ fontSize: 15, color: '#555', marginBottom: 28, maxWidth: 800 }}>
+            Teachers and students can type any STEM chapter or village science question. Gemini AI creates a full Pixar-style story with animated cartoon video mappings, characters, voice dialogues, decision checkpoints, virtual labs, and quizzes!
+          </p>
+
+          <form onSubmit={handleGenerateStory} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20, marginBottom: 28 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 }}>
+                Subject
+              </label>
+              <select
+                value={genSubject}
+                onChange={(e) => setGenSubject(e.target.value)}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 12,
+                  border: '2.5px solid #17140d', backgroundColor: '#fdfbf7',
+                  fontSize: 14, fontWeight: 700
+                }}
+              >
+                <option value="Biology">Biology (Life Sciences)</option>
+                <option value="Physics">Physics (Mechanics, Energy & Circuits)</option>
+                <option value="Chemistry">Chemistry (Matter & Reactions)</option>
+                <option value="SpaceScience">Astronomy & Space Science</option>
+                <option value="Mathematics">Applied Mathematics</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 }}>
+                Class / Grade Level
+              </label>
+              <select
+                value={genGrade}
+                onChange={(e) => setGenGrade(e.target.value)}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 12,
+                  border: '2.5px solid #17140d', backgroundColor: '#fdfbf7',
+                  fontSize: 14, fontWeight: 700
+                }}
+              >
+                <option value="Class 6">Class 6 (Middle School)</option>
+                <option value="Class 7">Class 7 (Middle School)</option>
+                <option value="Class 8">Class 8 (Middle School)</option>
+                <option value="Class 9">Class 9 (High School)</option>
+                <option value="Class 10">Class 10 (Board Exam Level)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 }}>
+                Specific Topic or Question
+              </label>
+              <input
+                type="text"
+                value={genTopic}
+                onChange={(e) => setGenTopic(e.target.value)}
+                placeholder="e.g. Photosynthesis, Gravity, Electric Circuit, Water Cycle"
+                required
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 12,
+                  border: '2.5px solid #17140d', backgroundColor: '#fdfbf7',
+                  fontSize: 14, fontWeight: 700
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 800, marginBottom: 6 }}>
+                Hero Character Name (Optional)
+              </label>
+              <input
+                type="text"
+                value={genCharacterName}
+                onChange={(e) => setGenCharacterName(e.target.value)}
+                placeholder="e.g. Leo, Priya, Tara, Arjun"
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 12,
+                  border: '2.5px solid #17140d', backgroundColor: '#fdfbf7',
+                  fontSize: 14, fontWeight: 700
+                }}
+              />
+            </div>
+          </form>
+
+          {/* Roleplay Mode Option */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            backgroundColor: '#f5efe2', padding: '14px 20px', borderRadius: 14,
+            border: '2px solid #17140d', marginBottom: 28
+          }}>
+            <input
+              type="checkbox"
+              id="firstPersonCheck"
+              checked={isFirstPersonMode}
+              onChange={(e) => setIsFirstPersonMode(e.target.checked)}
+              style={{ width: 18, height: 18, cursor: 'pointer' }}
+            />
+            <label htmlFor="firstPersonCheck" style={{ fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+              Enable "Become the Character Mode" (Student roleplays in 1st-person: "You are Leo the Leaf saving the forest!")
+            </label>
+          </div>
+
+          <button
+            onClick={handleGenerateStory}
+            disabled={isGenerating}
+            className="btn-candy primary"
+            style={{
+              padding: '14px 32px', fontSize: 16, gap: 10,
+              opacity: isGenerating ? 0.6 : 1, cursor: isGenerating ? 'wait' : 'pointer'
+            }}
+          >
+            <Sparkles size={18} />
+            <span>{isGenerating ? 'Gemini is Crafting Cartoon Adventure & Video...' : 'Generate Cartoon Adventure Now'}</span>
+          </button>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════
+          VIEW 4: STUDENT RETENTION & LEARNING ANALYTICS (CHART.JS)
+         ══════════════════════════════════════════════════════════════ */}
+      {activeView === 'analytics' && analytics && (
+        <div style={{
+          backgroundColor: '#ffffff',
+          border: '3px solid #17140d',
+          borderRadius: 24,
+          padding: '36px 32px',
+          boxShadow: '8px 8px 0 #17140d'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+            <div>
+              <span style={{
+                backgroundColor: '#10b981', color: '#fff',
+                padding: '3px 10px', borderRadius: 6, fontSize: 12, fontWeight: 800
+              }}>
+                STUDENT RETENTION DASHBOARD
+              </span>
+              <h3 style={{ fontSize: 28, fontWeight: 800, margin: '6px 0 0' }}>
+                Your StoryVerse Learning Metrics
+              </h3>
+            </div>
+
+            <button
+              onClick={() => setActiveView('catalog')}
+              className="btn-candy secondary"
+              style={{ fontSize: 13, padding: '8px 16px' }}
+            >
+              ← Back to Catalog
+            </button>
+          </div>
+
+          {/* Metric KPI Cards */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: 16, marginBottom: 32
+            gap: 18,
+            marginBottom: 36
           }}>
-            <div style={{
-              backgroundColor: '#efffed', border: '2.5px solid #17140d',
-              borderRadius: 16, padding: '18px 20px', boxShadow: '3px 3px 0 #17140d'
-            }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#096b62', textTransform: 'uppercase' }}>Stories Completed</div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#17140d', marginTop: 4 }}>
-                {analytics?.completedStoriesCount || 4}
+            {[
+              { label: 'Retention Score', val: `${analytics.retentionScore}%`, sub: 'Above State Average', bg: '#efffed', col: '#047857' },
+              { label: 'Time Spent Learning', val: `${analytics.totalLearningMinutes} mins`, sub: 'Active engagement', bg: '#fef3c7', col: '#b45309' },
+              { label: 'Decisions Made', val: `${analytics.decisionsMade}`, sub: `${analytics.correctDecisions} correct choices`, bg: '#eff6ff', col: '#1d4ed8' },
+              { label: 'Favorite Character', val: analytics.favoriteCharacter, sub: 'Most replayed guide', bg: '#fdf4ff', col: '#a21caf' },
+            ].map((kpi, idx) => (
+              <div
+                key={idx}
+                style={{
+                  backgroundColor: kpi.bg,
+                  border: '2.5px solid #17140d',
+                  borderRadius: 18,
+                  padding: '20px',
+                  boxShadow: '4px 4px 0 #17140d'
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 800, color: '#444', textTransform: 'uppercase' }}>
+                  {kpi.label}
+                </div>
+                <div style={{ fontSize: 32, fontWeight: 900, color: kpi.col, margin: '6px 0 4px' }}>
+                  {kpi.val}
+                </div>
+                <div style={{ fontSize: 12, color: '#666' }}>
+                  {kpi.sub}
+                </div>
               </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#fff8e6', border: '2.5px solid #17140d',
-              borderRadius: 16, padding: '18px 20px', boxShadow: '3px 3px 0 #17140d'
-            }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#b45309', textTransform: 'uppercase' }}>Time Spent Learning</div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#17140d', marginTop: 4 }}>
-                {analytics?.totalLearningMinutes || 48} mins
-              </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#f4f2ff', border: '2.5px solid #17140d',
-              borderRadius: 16, padding: '18px 20px', boxShadow: '3px 3px 0 #17140d'
-            }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#6b5be6', textTransform: 'uppercase' }}>Knowledge Retention</div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#17140d', marginTop: 4 }}>
-                {analytics?.retentionScore || 92}%
-              </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#fff0f0', border: '2.5px solid #17140d',
-              borderRadius: 16, padding: '18px 20px', boxShadow: '3px 3px 0 #17140d'
-            }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: '#ff5b57', textTransform: 'uppercase' }}>Favourite Character</div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: '#17140d', marginTop: 8 }}>
-                🍃 Leo the Leaf
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* Charts Row */}
+          {/* Chart.js Visualizations */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: 24
+            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+            gap: 28
           }}>
-            {/* Chart 1: Subject Distribution (Doughnut) */}
+            {/* Chart 1: Subject Engagement Distribution */}
             <div style={{
-              border: '2.5px solid #17140d', borderRadius: 18,
-              padding: '20px', backgroundColor: '#fcfbf8',
+              backgroundColor: '#fdfbf7',
+              border: '2.5px solid #17140d',
+              borderRadius: 20,
+              padding: '24px',
               boxShadow: '4px 4px 0 #17140d'
             }}>
-              <h4 style={{ fontSize: 16, fontWeight: 800, marginBottom: 14 }}>
-                Stories Completed by Subject
+              <h4 style={{ fontSize: 16, fontWeight: 800, margin: '0 0 16px' }}>
+                Subject Engagement Distribution
               </h4>
               <div style={{ height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Doughnut
                   data={{
-                    labels: ['Biology', 'Physics', 'Chemistry', 'Mathematics', 'Space Science'],
-                    datasets: [{
-                      data: [3, 2, 2, 1, 1],
-                      backgroundColor: ['#10b981', '#f59e0b', '#6366f1', '#ff5b57', '#3b82f6'],
-                      borderColor: '#17140d',
-                      borderWidth: 2,
-                    }]
+                    labels: Object.keys(analytics.subjectBreakdown),
+                    datasets: [
+                      {
+                        data: Object.values(analytics.subjectBreakdown),
+                        backgroundColor: ['#10b981', '#f59e0b', '#6366f1', '#ec4899', '#06b6d4'],
+                        borderColor: '#17140d',
+                        borderWidth: 2,
+                      }
+                    ]
                   }}
                   options={{
+                    responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                      legend: { position: 'bottom', labels: { font: { family: "'DM Sans', sans-serif", weight: 700 } } }
-                    }
+                    plugins: { legend: { position: 'bottom' } }
                   }}
                 />
               </div>
             </div>
 
-            {/* Chart 2: Weekly Learning Minutes (Bar) */}
+            {/* Chart 2: Weekly Learning Minutes */}
             <div style={{
-              border: '2.5px solid #17140d', borderRadius: 18,
-              padding: '20px', backgroundColor: '#fcfbf8',
+              backgroundColor: '#fdfbf7',
+              border: '2.5px solid #17140d',
+              borderRadius: 20,
+              padding: '24px',
               boxShadow: '4px 4px 0 #17140d'
             }}>
-              <h4 style={{ fontSize: 16, fontWeight: 800, marginBottom: 14 }}>
-                Weekly Interactive Learning (Minutes)
+              <h4 style={{ fontSize: 16, fontWeight: 800, margin: '0 0 16px' }}>
+                Weekly Learning Velocity (Minutes)
               </h4>
               <div style={{ height: 240 }}>
                 <Bar
                   data={{
                     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                      label: 'Minutes',
-                      data: [12, 18, 8, 24, 15, 30, 20],
-                      backgroundColor: '#ffc531',
-                      borderColor: '#17140d',
-                      borderWidth: 2,
-                      borderRadius: 6,
-                    }]
+                    datasets: [
+                      {
+                        label: 'Minutes Spent',
+                        data: [12, 18, 25, 14, 30, 22, 15],
+                        backgroundColor: '#ffc531',
+                        borderColor: '#17140d',
+                        borderWidth: 2,
+                        borderRadius: 6
+                      }
+                    ]
                   }}
                   options={{
+                    responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                      y: { grid: { color: '#e2e8f0' } },
-                      x: { grid: { display: false } }
+                      y: { beginAtZero: true }
                     }
                   }}
                 />
@@ -1542,7 +2407,7 @@ export default function StoryMode() {
             overflowX: 'auto', lineHeight: 1.6,
             border: '3px solid #17140d'
           }}>
-{`-- 1. Stories Catalog Table
+{`-- 1. Stories Catalog Table (with animated video & storyboard support)
 create table public.stories (
   id text primary key,
   title text not null,
@@ -1551,9 +2416,13 @@ create table public.stories (
   topic text not null,
   grade text not null,
   cover_gradient text,
+  video_url text,
+  video_title text,
+  video_duration text,
   characters jsonb default '[]'::jsonb,
   learning_objectives text[],
   scenes jsonb not null,
+  ai_video_storyboard jsonb,
   simulation_target jsonb,
   quiz jsonb,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null

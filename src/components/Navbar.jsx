@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Microscope, Globe, Sparkles, Layers, ChevronDown, User, LogIn,
   Menu, X, Home, Camera, Beaker, Bot, Compass, BookOpen, ClipboardCheck,
-  MapPin, Trophy
+  MapPin, Trophy, Moon, Sun
 } from 'lucide-react';
 import { realtime } from '../services/realtime';
 import UserProfilePanel from './UserProfilePanel';
@@ -13,7 +13,29 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const stored = localStorage.getItem('dark');
+    return stored === 'true';
+  });
+
+  const toggleDark = () => {
+    const next = !darkMode;
+    setDarkMode(next);
+    localStorage.setItem('dark', next);
+    if (next) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  };
+
+  // Apply on mount
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark');
+    }
+  }, []);
+
   const [profile, setProfile] = useState({ name: '', avatar: null });
   const [progress, setProgress] = useState(null);
 
@@ -172,6 +194,10 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
                 {languages.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
               </select>
             </div>
+            {/* Dark Mode Toggle */}
+            <button onClick={toggleDark} className="btn-candy secondary" style={{ marginLeft: 8, padding: '8px 12px' }}>
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
 
             {/* ── User Status or Log In CTA ── */}
             {profile?.name ? (

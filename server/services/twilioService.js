@@ -7,20 +7,20 @@
 
 import twilio from 'twilio';
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID || '';
-const authToken = process.env.TWILIO_AUTH_TOKEN || '';
-const twilioSmsNumber = process.env.TWILIO_PHONE_NUMBER || '';
-const twilioWhatsAppNumber = process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886'; // Default Twilio Sandbox
-
-const isTwilioConfigured = !!(accountSid && authToken && (twilioSmsNumber || twilioWhatsAppNumber));
-
-let twilioClient = null;
-if (isTwilioConfigured) {
-  try {
-    twilioClient = twilio(accountSid, authToken);
-  } catch (err) {
-    console.warn('[TwilioService] Initialization error:', err.message);
+/**
+ * Returns an initialized Twilio client using fresh environment variables
+ */
+function getTwilioClient() {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID || '';
+  const authToken = process.env.TWILIO_AUTH_TOKEN || '';
+  if (accountSid && authToken) {
+    try {
+      return twilio(accountSid, authToken);
+    } catch (err) {
+      console.warn('[TwilioService] Client init failed:', err.message);
+    }
   }
+  return null;
 }
 
 /**
@@ -140,6 +140,10 @@ export async function sendParentNotification({
   };
 
   // If Twilio is configured, dispatch messages
+  const twilioClient = getTwilioClient();
+  const twilioSmsNumber = (process.env.TWILIO_PHONE_NUMBER || '').trim().replace(/\s+/g, '');
+  const twilioWhatsAppNumber = (process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886').trim();
+
   if (twilioClient) {
     // 1. WhatsApp Delivery
     if (channels.includes('whatsapp')) {
@@ -158,35 +162,48 @@ export async function sendParentNotification({
         results.whatsapp.sent = true;
         results.whatsapp.sid = msg.sid;
       } catch (err) {
-        console.warn('[TwilioService] WhatsApp send error:', err.message);
-        results.whatsapp.error = err.message;
+        console.warn('[TwilioService] WhatsApp send error:', err.message, err.code);
+        let friendlyErr = err.message;
+        if (err.code === 21608 || err.code === 63015 || err.message?.includes('sandbox')) {
+          friendlyErr = `WhatsApp Sandbox not joined yet: The parent phone (${formattedPhone}) must send "join storm-about" to +1 415 523 8886 once from WhatsApp to receive messages.`;
+        }
+        results.whatsapp.error = friendlyErr;
+        results.whatsapp.code = err.code;
       }
     }
 
     // 2. SMS Delivery
-    if (channels.includes('sms') && twilioSmsNumber) {
-      try {
-        // SMS has 160-char segments; send concise version
-        const smsText = `VidyaVerse: ${studentName}'s weekly test score: ${assessmentScore}/${totalQuestions} (${percentage}%). Career: ${careerTrack?.title || 'STEM'}. Streak: ${streak} days. Badges: ${badges.length}. Keep learning!`;
-        const msg = await twilioClient.messages.create({
-          from: twilioSmsNumber,
-          to: formattedPhone,
-          body: smsText
-        });
+    if (channels.includes('sms')) {
+      if (!twilioSmsNumber) {
+        results.sms.error = 'TWILIO_PHONE_NUMBER is not configured in server .env';
+      } else {
+        try {
+          // SMS has 160-char segments; send concise version
+          const smsText = `VidyaVerse: ${studentName}'s weekly test score: ${assessmentScore}/${totalQuestions} (${percentage}%). Career: ${careerTrack?.title || 'STEM'}. Streak: ${streak} days. Badges: ${badges.length}. Keep learning!`;
+          const msg = await twilioClient.messages.create({
+            from: twilioSmsNumber,
+            to: formattedPhone,
+            body: smsText
+          });
 
-        results.sms.sent = true;
-        results.sms.sid = msg.sid;
-      } catch (err) {
-        console.warn('[TwilioService] SMS send error:', err.message);
-        results.sms.error = err.message;
+          results.sms.sent = true;
+          results.sms.sid = msg.sid;
+        } catch (err) {
+          console.warn('[TwilioService] SMS send error:', err.message, err.code);
+          let friendlyErr = err.message;
+          if (err.code === 21608 || err.message?.includes('unverified')) {
+            friendlyErr = `Twilio Trial Account can only send SMS to verified numbers (+918210868501). Verify this number in Twilio Console or upgrade your account.`;
+          }
+          results.sms.error = friendlyErr;
+          results.sms.code = err.code;
+        }
       }
     }
   } else {
-    // Development / Demo mode: simulated dispatch
     results.isDemoMode = true;
-    results.demoMessage = 'Twilio credentials not in .env. Dispatched via direct WhatsApp link & demo dispatcher.';
-    results.whatsapp.sent = true;
-    results.sms.sent = true;
+    results.error = 'Twilio Account SID or Auth Token missing in server .env';
+    results.whatsapp.error = 'Twilio credentials not configured in server .env';
+    results.sms.error = 'Twilio credentials not configured in server .env';
   }
 
   return results;

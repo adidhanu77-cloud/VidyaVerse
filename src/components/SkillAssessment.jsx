@@ -60,8 +60,16 @@ export default function SkillAssessment({ onNavigate }) {
         const parsed = JSON.parse(storedProfile);
         if (parsed.grade) setSelectedGrade(parsed.grade);
         if (parsed.name) setProfileName(parsed.name);
-        if (parsed.parentPhone) setParentPhone(parsed.parentPhone);
+        if (parsed.parentPhone) {
+          setParentPhone(parsed.parentPhone);
+        } else if (parsed.phone) {
+          setParentPhone(parsed.phone);
+        } else {
+          setParentPhone('+918210868501');
+        }
         if (parsed.parentName) setParentName(parsed.parentName);
+      } else {
+        setParentPhone('+918210868501');
       }
     } catch {}
 
@@ -165,8 +173,19 @@ export default function SkillAssessment({ onNavigate }) {
       };
 
       const res = await api.sendParentReport(payload);
-      setParentReportResult(res?.data || res);
-      setParentSendStatus('sent');
+      const deliveryData = res?.data || res;
+      setParentReportResult(deliveryData);
+
+      const waOk = deliveryData?.whatsapp?.sent;
+      const smsOk = deliveryData?.sms?.sent;
+
+      if (waOk && smsOk) {
+        setParentSendStatus('sent');
+      } else if (waOk || smsOk) {
+        setParentSendStatus('partial');
+      } else {
+        setParentSendStatus('failed');
+      }
 
       // Update parent phone in profile for future weekly assessments
       try {
@@ -177,7 +196,8 @@ export default function SkillAssessment({ onNavigate }) {
       } catch {}
     } catch (err) {
       console.warn('Error sending parent notification:', err);
-      setParentSendStatus('error');
+      setParentSendStatus('failed');
+      setParentReportResult({ error: err.message || 'Network error dispatching parent report' });
     }
   }
 
@@ -754,22 +774,135 @@ export default function SkillAssessment({ onNavigate }) {
             </div>
           </div>
 
-          {/* Delivery Status Toast */}
+          {/* Twilio Sandbox Info Banner */}
+          <div style={{
+            background: '#f8f4ff', border: '2px dashed #804dee', borderRadius: 12,
+            padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', flexWrap: 'wrap', gap: 10
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 700, color: '#17140d' }}>
+              <span>💡</span>
+              <span><strong>Twilio WhatsApp Sandbox:</strong> To receive test WhatsApp messages, the parent's phone must send <code>join storm-about</code> to <code>+1 415 523 8886</code> once.</span>
+            </div>
+            <a
+              href="https://wa.me/14155238886?text=join%20storm-about"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: '#804dee', color: '#ffffff', padding: '5px 12px', borderRadius: 8,
+                fontWeight: 800, fontSize: 11.5, textDecoration: 'none', border: '1.5px solid #17140d',
+                display: 'inline-flex', alignItems: 'center', gap: 5, boxShadow: '2px 2px 0 #17140d'
+              }}
+            >
+              <span>⚡ 1-Click Join Sandbox</span>
+              <ExternalLink size={12} />
+            </a>
+          </div>
+
+          {/* Delivery Status Toast: All Sent */}
           {parentSendStatus === 'sent' && (
             <div style={{
               background: '#e8fbf2', border: '2px solid #2bd980', borderRadius: 12,
-              padding: '12px 16px', marginBottom: 18, color: '#17140d', fontWeight: 700, fontSize: 13.5,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10
+              padding: '14px 16px', marginBottom: 18, color: '#17140d', fontWeight: 700, fontSize: 13.5
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CheckCircle2 size={18} color="#2bd980" />
-                <span>
-                  Report dispatched successfully to <strong>{parentPhone}</strong> via Twilio WhatsApp & SMS!
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <CheckCircle2 size={18} color="#2bd980" />
+                  <span>
+                    Report dispatched successfully to <strong>{parentPhone}</strong>!
+                  </span>
+                </div>
+                {parentReportResult?.directWhatsAppUrl && (
+                  <a
+                    href={parentReportResult.directWhatsAppUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '6px 12px', borderRadius: 8, background: '#25D366', color: '#fff',
+                      textDecoration: 'none', fontWeight: 800, fontSize: 12, border: '1.5px solid #17140d'
+                    }}
+                  >
+                    <Share2 size={14} /> Open in WhatsApp
+                  </a>
+                )}
               </div>
-              {parentReportResult?.directWhatsAppUrl && (
+              <div style={{ fontSize: 12, color: '#333', display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                {parentReportResult?.whatsapp?.sid && (
+                  <span>💬 WhatsApp SID: <code>{parentReportResult.whatsapp.sid}</code></span>
+                )}
+                {parentReportResult?.sms?.sid && (
+                  <span>📱 SMS SID: <code>{parentReportResult.sms.sid}</code></span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Delivery Status Toast: Partial Delivery */}
+          {parentSendStatus === 'partial' && (
+            <div style={{
+              background: '#fffbe6', border: '2px solid #ffc531', borderRadius: 12,
+              padding: '14px 16px', marginBottom: 18, color: '#17140d', fontWeight: 700, fontSize: 13
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertCircle size={18} color="#f59e0b" />
+                  <span>Partial Dispatch to <strong>{parentPhone}</strong>:</span>
+                </div>
+                {parentReportResult?.directWhatsAppUrl && (
+                  <a
+                    href={parentReportResult.directWhatsAppUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '6px 12px', borderRadius: 8, background: '#25D366', color: '#fff',
+                      textDecoration: 'none', fontWeight: 800, fontSize: 12, border: '1.5px solid #17140d'
+                    }}
+                  >
+                    <Share2 size={14} /> Send Directly via WhatsApp
+                  </a>
+                )}
+              </div>
+              <ul style={{ margin: '6px 0 0', paddingLeft: 20, fontSize: 12, lineHeight: 1.6 }}>
+                {parentReportResult?.whatsapp?.sent ? (
+                  <li style={{ color: '#10b981' }}>✅ WhatsApp: Dispatched (SID: {parentReportResult.whatsapp.sid})</li>
+                ) : (
+                  <li style={{ color: '#d97706' }}>⚠️ WhatsApp: {parentReportResult?.whatsapp?.error || 'Failed'}</li>
+                )}
+                {parentReportResult?.sms?.sent ? (
+                  <li style={{ color: '#10b981' }}>✅ SMS: Dispatched (SID: {parentReportResult.sms.sid})</li>
+                ) : (
+                  <li style={{ color: '#d97706' }}>⚠️ SMS: {parentReportResult?.sms?.error || 'Failed'}</li>
+                )}
+              </ul>
+            </div>
+          )}
+
+          {/* Delivery Status Toast: Failed */}
+          {parentSendStatus === 'failed' && (
+            <div style={{
+              background: '#fff0f0', border: '2px solid #ff5b57', borderRadius: 12,
+              padding: '14px 16px', marginBottom: 18, color: '#ff5b57', fontWeight: 700, fontSize: 13
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertCircle size={18} color="#ff5b57" />
+                  <span>Twilio Dispatch could not complete for <strong>{parentPhone}</strong></span>
+                </div>
                 <a
-                  href={parentReportResult.directWhatsAppUrl}
+                  href={`https://wa.me/${parentPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                    `🎓 *VidyaVerse Student Performance Report*\n\n` +
+                    `Dear Parent, ${profileName || 'Your Child'} (${selectedGrade}) has completed this week's Skill Assessment:\n\n` +
+                    `📊 *Score:* ${res.totalCorrect}/40 (${res.percentage}% - ${res.masteryTier})\n` +
+                    `• ⚛️ Physics: ${res.sectionBreakdown?.Physics?.score || 0}/10\n` +
+                    `• 🧪 Chemistry: ${res.sectionBreakdown?.Chemistry?.score || 0}/10\n` +
+                    `• 📐 Mathematics: ${res.sectionBreakdown?.Mathematics?.score || 0}/10\n` +
+                    `• 🧬 Biology: ${res.sectionBreakdown?.Biology?.score || 0}/10\n\n` +
+                    `🎯 *Predicted Career Fit:* Generated live in Career Navigator\n` +
+                    `🔥 *Consistency:* Active Learning Streak & Badges Logged\n\n` +
+                    `📱 Check progress live on VidyaVerse!`
+                  )}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -778,20 +911,13 @@ export default function SkillAssessment({ onNavigate }) {
                     textDecoration: 'none', fontWeight: 800, fontSize: 12, border: '1.5px solid #17140d'
                   }}
                 >
-                  <Share2 size={14} /> Open in WhatsApp Web / App
+                  <Share2 size={14} /> Send Directly via WhatsApp (100% Reliable)
                 </a>
-              )}
-            </div>
-          )}
-
-          {parentSendStatus === 'error' && (
-            <div style={{
-              background: '#fff0f0', border: '2px solid #ff5b57', borderRadius: 12,
-              padding: '10px 14px', marginBottom: 16, color: '#ff5b57', fontWeight: 700, fontSize: 13,
-              display: 'flex', alignItems: 'center', gap: 8
-            }}>
-              <AlertCircle size={16} />
-              <span>Please enter a valid 10-digit mobile number for your parent.</span>
+              </div>
+              <div style={{ fontSize: 12, color: '#444', background: '#fff', padding: '8px 12px', borderRadius: 8, border: '1px solid #ffd0d0' }}>
+                <div><strong>Twilio WhatsApp:</strong> {parentReportResult?.whatsapp?.error || 'Unavailable'}</div>
+                <div style={{ marginTop: 4 }}><strong>Twilio SMS:</strong> {parentReportResult?.sms?.error || 'Unavailable'}</div>
+              </div>
             </div>
           )}
 

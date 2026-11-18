@@ -948,16 +948,19 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reportPayload),
-        signal: AbortSignal.timeout(6000),
+        signal: AbortSignal.timeout(10000),
       });
       if (res.ok) {
         return await res.json();
+      } else {
+        const errJson = await res.json().catch(() => null);
+        if (errJson) return errJson;
       }
     } catch (err) {
-      console.warn('[API] Parent notification backend fallback:', err.message);
+      console.warn('[API] Parent notification backend error:', err.message);
     }
 
-    // Direct client fallback: Generate WhatsApp Click-to-Chat URL directly
+    // Direct fallback: Generate WhatsApp Click-to-Chat URL directly
     const student = reportPayload.studentName || 'Student';
     const score = reportPayload.assessmentScore || 0;
     const total = reportPayload.totalQuestions || 40;
@@ -975,14 +978,14 @@ export const api = {
       `📱 *VidyaVerse Student Portal*`;
 
     return {
-      status: 'success',
-      source: 'client_fallback',
+      status: 'offline_fallback',
+      message: 'VidyaVerse backend was not reached. Please use direct WhatsApp Click-to-Chat.',
       data: {
         parentPhone: phone,
         reportMessage: message,
         directWhatsAppUrl: `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
-        whatsapp: { sent: true, mode: 'direct_whatsapp' },
-        sms: { sent: true, mode: 'direct' }
+        whatsapp: { sent: false, error: 'Backend offline or unreachable. Click "Send Directly via WhatsApp" below.' },
+        sms: { sent: false, error: 'Backend offline or unreachable.' }
       }
     };
   },

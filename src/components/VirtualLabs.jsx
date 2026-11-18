@@ -103,8 +103,8 @@ const S = {
   /* Sim grid */
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: 20,
+    gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 260px), 1fr))',
+    gap: 'clamp(14px, 2.5vw, 20px)',
     marginBottom: 40,
   },
 
@@ -254,7 +254,7 @@ const S = {
   },
   iframe: {
     width: '100%',
-    height: 620,
+    height: 'clamp(360px, 68vh, 620px)',
     border: 'none',
     display: 'block',
   },

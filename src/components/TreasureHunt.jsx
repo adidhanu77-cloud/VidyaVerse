@@ -182,8 +182,8 @@ export default function TreasureHunt({ userId: propUserId }) {
         ))}
       </div>
 
-      {/* Main 3-column layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 200px', gap: 20, alignItems: 'start' }}>
+      {/* Main 3-column layout (collapses to 1 column on mobile/tablet) */}
+      <div className="treasure-hunt-grid" style={{ display: 'grid', gridTemplateColumns: '180px 1fr 200px', gap: 20, alignItems: 'start' }}>
 
         {/* LEFT: Badges Panel */}
         <div style={{ border: '3px solid #17140d', borderRadius: 18, background: '#fff', boxShadow: '6px 6px 0 #17140d', overflow: 'hidden' }}>

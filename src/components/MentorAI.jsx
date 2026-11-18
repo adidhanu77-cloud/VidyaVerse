@@ -1035,7 +1035,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
             {gradeMisconceptions.map((m, i) => (
               <div
                 key={i}
@@ -1107,7 +1107,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
             {gradeExperiments.map((exp) => (
               <div
                 key={exp.id}
@@ -1229,7 +1229,7 @@ export default function MentorAI({ currentLang = 'en', onNavigate }) {
           </div>
 
           {/* Concepts Breakdown */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 16 }}>
             {/* Mastered Concepts */}
             <div
               style={{

@@ -110,7 +110,7 @@ export default function UserProfilePanel({ isOpen, onClose }) {
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(23,20,13,.5)', zIndex: 400, backdropFilter: 'blur(2px)' }} />
-      <div style={{ position: 'fixed', top: 0, right: 0, width: 400, height: '100vh', background: '#f5efe2', borderLeft: '3px solid #17140d', boxShadow: '-10px 0 0 #17140d', zIndex: 401, display: 'flex', flexDirection: 'column', overflowY: 'auto', fontFamily: "'DM Sans', sans-serif", color: '#17140d' }}>
+      <div style={{ position: 'fixed', top: 0, right: 0, width: 'min(100vw, 420px)', maxWidth: '100vw', height: '100vh', background: '#f5efe2', borderLeft: '3px solid #17140d', boxShadow: '-10px 0 0 #17140d', zIndex: 401, display: 'flex', flexDirection: 'column', overflowY: 'auto', fontFamily: "'DM Sans', sans-serif", color: '#17140d' }}>
 
         {/* Header */}
         <div style={{ background: '#17140d', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>

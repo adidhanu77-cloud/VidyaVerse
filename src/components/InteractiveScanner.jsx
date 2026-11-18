@@ -518,10 +518,11 @@ export default function InteractiveScanner({ currentLang }) {
 
       {/* ================= 2-COLUMN SCANNER VIEWPORT ================= */}
       <div
+        className="scanner-viewport-grid"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-          gap: 28,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+          gap: 'clamp(16px, 2.5vw, 28px)',
           alignItems: 'start',
         }}
       >

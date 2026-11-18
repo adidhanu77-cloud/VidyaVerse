@@ -34,8 +34,8 @@ export default function LeaderboardAndDashboards() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-            gap: 36,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+            gap: 'clamp(20px, 3vw, 36px)',
           }}
         >
           {/* ================= 1. SCHOOL VS SCHOOL LEADERBOARD ================= */}

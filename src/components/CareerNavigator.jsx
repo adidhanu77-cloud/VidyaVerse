@@ -68,7 +68,7 @@ export default function CareerNavigator({ onNavigate }) {
         {/* CTA Card: Take Assessment First */}
         <div style={{
           background: '#ffffff', border: '3.5px solid #17140d', borderRadius: 24,
-          boxShadow: '8px 8px 0 #17140d', padding: '52px 44px', textAlign: 'center',
+          boxShadow: '8px 8px 0 #17140d', padding: 'clamp(28px, 4vw, 52px) clamp(16px, 4vw, 44px)', textAlign: 'center',
           marginBottom: 36
         }}>
           <div style={{ fontSize: 64, marginBottom: 16 }}>🎯</div>

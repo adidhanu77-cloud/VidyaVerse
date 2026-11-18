@@ -7,7 +7,7 @@ export default function Footer() {
       style={{
         backgroundColor: '#f5efe2',
         borderTop: '3px solid #17140d',
-        padding: '60px 0 40px 0',
+        padding: 'clamp(36px, 5vw, 60px) 0 88px 0',
       }}
     >
       <div className="container-1440">

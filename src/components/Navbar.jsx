@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Microscope, Globe, Sparkles, Layers, ChevronDown, User, LogIn } from 'lucide-react';
+import {
+  Microscope, Globe, Sparkles, Layers, ChevronDown, User, LogIn,
+  Menu, X, Home, Camera, Beaker, Bot, Compass, BookOpen, ClipboardCheck,
+  MapPin, Trophy
+} from 'lucide-react';
 import { realtime } from '../services/realtime';
 import UserProfilePanel from './UserProfilePanel';
 import AuthModal from './AuthModal';
 
 export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSection, onGoHome, activeTab }) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -80,35 +85,37 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
   return (
     <>
       <header style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: 'rgba(245,239,226,0.97)', backdropFilter: 'blur(8px)', borderBottom: '3px solid #17140d' }}>
-        <div className="container-1440" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px' }}>
+        <div className="container-1440" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', gap: 12 }}>
 
           {/* Brand Left */}
           <button
             onClick={(e) => {
               e.preventDefault();
+              setIsMobileMenuOpen(false);
               if (onGoHome) onGoHome();
             }}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 12,
+              gap: 10,
               textDecoration: 'none',
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
               padding: 0,
+              flexShrink: 0,
             }}
           >
-            <div style={{ width: 44, height: 44, backgroundColor: '#ffc531', borderRadius: 12, border: '3px solid #17140d', boxShadow: '4px 4px 0 #17140d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Microscope size={24} color="#17140d" strokeWidth={2.6} />
+            <div style={{ width: 40, height: 40, backgroundColor: '#ffc531', borderRadius: 12, border: '2.5px solid #17140d', boxShadow: '3px 3px 0 #17140d', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Microscope size={22} color="#17140d" strokeWidth={2.6} />
             </div>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: '#17140d', letterSpacing: '-0.03em' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px, 4vw, 25px)', fontWeight: 800, color: '#17140d', letterSpacing: '-0.03em' }}>
               Vidya<span style={{ color: '#ff5b57' }}>Verse</span>
             </span>
           </button>
 
-          {/* Center: Module Selector & Quick Back */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Center (Desktop only): Module Selector & Quick Back */}
+          <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {activeTab && (
               <button
                 onClick={onGoHome}
@@ -155,8 +162,8 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
             </div>
           </div>
 
-          {/* Right side */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Right side (Desktop): Full Controls */}
+          <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
 
             {/* Real-time WS indicator */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: isWsConnected ? '#e8fbf2' : '#fff2f1', border: '2px solid #17140d', padding: '5px 10px', borderRadius: 9999, fontSize: 11.5, fontWeight: 800, boxShadow: '2px 2px 0 #17140d' }}>
@@ -240,8 +247,271 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
             </div>
 
           </div>
+
+          {/* Right side (Mobile / Tablet < 1024px): Compact Profile + Hamburger Toggle */}
+          <div className="hide-on-desktop" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {/* Real-time pulse dot on mobile */}
+            <div
+              title={isWsConnected ? 'WebSocket Live' : 'WebSocket Connecting'}
+              style={{
+                width: 10, height: 10, borderRadius: '50%',
+                backgroundColor: isWsConnected ? '#2bd980' : '#ff5b57',
+                border: '1.5px solid #17140d',
+                boxShadow: isWsConnected ? '0 0 6px #2bd980' : 'none'
+              }}
+            />
+
+            {/* Compact Avatar */}
+            <button
+              onClick={() => setShowProfile(true)}
+              style={{
+                width: 38, height: 38, borderRadius: '50%', border: '2.5px solid #17140d',
+                boxShadow: '2.5px 2.5px 0 #17140d', cursor: 'pointer', background: avatarBg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                position: 'relative', flexShrink: 0
+              }}
+              title="Open Profile"
+            >
+              <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {profile?.avatar
+                  ? <img src={profile.avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ fontSize: 14, fontWeight: 800, color: '#fff', fontFamily: "'Bricolage Grotesque', sans-serif" }}>{initials}</span>
+                }
+              </div>
+              {badgeCount > 0 && (
+                <div style={{ position: 'absolute', top: -4, right: -4, background: '#ff5b57', color: '#fff', borderRadius: 999, fontSize: 9, fontWeight: 800, padding: '0 4px', border: '1.5px solid #17140d', minWidth: 14, textAlign: 'center' }}>
+                  {badgeCount}
+                </div>
+              )}
+            </button>
+
+            {/* Hamburger Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              style={{
+                width: 40, height: 40, borderRadius: 10,
+                background: isMobileMenuOpen ? '#ff5b57' : '#ffffff',
+                color: isMobileMenuOpen ? '#ffffff' : '#17140d',
+                border: '2.5px solid #17140d',
+                boxShadow: '3px 3px 0 #17140d',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.15s'
+              }}
+              title={isMobileMenuOpen ? 'Close Menu' : 'Open Menu'}
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+
         </div>
+
+        {/* ══════════════════════════════════════════════════════════
+            MOBILE NAVIGATION DRAWER (Expands on Hamburger Tap)
+            ══════════════════════════════════════════════════════════ */}
+        {isMobileMenuOpen && (
+          <div
+            className="hide-on-desktop"
+            style={{
+              backgroundColor: '#ffffff',
+              borderTop: '2.5px solid #17140d',
+              borderBottom: '3.5px solid #17140d',
+              boxShadow: '0 10px 0 rgba(23,20,13,0.15)',
+              padding: '16px 18px 24px',
+              maxHeight: '80vh',
+              overflowY: 'auto'
+            }}
+          >
+            {/* Top row: User greeting or login CTA */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, paddingBottom: 12, borderBottom: '2px solid #f0e6d6', flexWrap: 'wrap', gap: 10 }}>
+              {profile?.name ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: '#17140d' }}>
+                    👋 Hi, <strong>{profile.name}</strong>
+                  </span>
+                  {profile.provider === 'google' && (
+                    <span style={{ fontSize: 10, background: '#e8f0fe', color: '#1a73e8', padding: '1px 6px', borderRadius: 999, border: '1px solid #1a73e8' }}>
+                      Gmail ✅
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setIsMobileMenuOpen(false); setShowAuthModal(true); }}
+                  className="btn-candy"
+                  style={{
+                    fontSize: 13, padding: '7px 14px', background: '#ffc531', color: '#17140d',
+                    boxShadow: '2.5px 2.5px 0 #17140d', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 6
+                  }}
+                >
+                  <LogIn size={14} />
+                  <span>Log In / Register</span>
+                </button>
+              )}
+
+              {/* Language Selector Dropdown on Mobile */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f5efe2', padding: '5px 10px', borderRadius: 999, border: '2px solid #17140d' }}>
+                <Globe size={14} color="#17140d" />
+                <select
+                  value={currentLang}
+                  onChange={e => setLang(e.target.value)}
+                  style={{ border: 'none', background: 'transparent', fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 12, color: '#17140d', cursor: 'pointer', outline: 'none' }}
+                >
+                  {languages.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Quick All Features Button if inside a section */}
+            {activeTab && (
+              <button
+                onClick={() => { setIsMobileMenuOpen(false); onGoHome(); }}
+                className="btn-candy"
+                style={{
+                  width: '100%', marginBottom: 14, padding: '9px 16px',
+                  backgroundColor: '#ffffff', color: '#17140d', fontSize: 13.5,
+                  boxShadow: '3px 3px 0 #17140d', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                }}
+              >
+                <span>🏠</span>
+                <span>Return to All Features Directory</span>
+              </button>
+            )}
+
+            {/* 8 Laboratory Modules List */}
+            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: '#777', marginBottom: 8, letterSpacing: '.06em' }}>
+              Laboratory Modules (8):
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 16 }}>
+              {verticalTabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => { setIsMobileMenuOpen(false); onSelectSection(tab.id); }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '10px 12px', borderRadius: 12,
+                      border: '2px solid #17140d',
+                      backgroundColor: isActive ? '#ffc531' : '#fcfaf6',
+                      boxShadow: isActive ? '3px 3px 0 #17140d' : '1.5px 1.5px 0 #17140d',
+                      cursor: 'pointer', textAlign: 'left',
+                      fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13,
+                      color: '#17140d', transition: 'all 0.1s'
+                    }}
+                  >
+                    <span style={{ fontSize: 18 }}>{tab.icon}</span>
+                    <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Direct Try Scanner Action */}
+            <button
+              onClick={() => { setIsMobileMenuOpen(false); onOpenScanner(); }}
+              className="btn-candy teal"
+              style={{ width: '100%', fontSize: 14, padding: '11px 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+            >
+              <Sparkles size={16} />
+              <span>Launch Camera Object Scanner</span>
+            </button>
+          </div>
+        )}
       </header>
+
+      {/* ══════════════════════════════════════════════════════════
+          STICKY MOBILE BOTTOM NAVIGATION BAR (< 768px Phones)
+          ══════════════════════════════════════════════════════════ */}
+      <nav
+        className="hide-on-desktop"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 62,
+          backgroundColor: '#ffffff',
+          borderTop: '2.5px solid #17140d',
+          boxShadow: '0 -3px 0 rgba(23,20,13,0.06)',
+          zIndex: 80,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          padding: '0 8px',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        }}
+      >
+        {/* 1. Home / All Features */}
+        <button
+          onClick={onGoHome}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            color: !activeTab ? '#ff5b57' : '#666', padding: '6px 12px',
+            borderRadius: 8, transition: 'all 0.15s'
+          }}
+        >
+          <Home size={20} strokeWidth={!activeTab ? 2.8 : 2} />
+          <span style={{ fontSize: 10.5, fontWeight: !activeTab ? 800 : 600 }}>Home</span>
+        </button>
+
+        {/* 2. Object Scanner */}
+        <button
+          onClick={() => onSelectSection('scanner')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            color: activeTab === 'scanner' ? '#ff5b57' : '#666', padding: '6px 12px',
+            borderRadius: 8, transition: 'all 0.15s'
+          }}
+        >
+          <Camera size={20} strokeWidth={activeTab === 'scanner' ? 2.8 : 2} />
+          <span style={{ fontSize: 10.5, fontWeight: activeTab === 'scanner' ? 800 : 600 }}>Scanner</span>
+        </button>
+
+        {/* 3. Virtual Labs */}
+        <button
+          onClick={() => onSelectSection('labs')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            color: activeTab === 'labs' ? '#12b3a4' : '#666', padding: '6px 12px',
+            borderRadius: 8, transition: 'all 0.15s'
+          }}
+        >
+          <Beaker size={20} strokeWidth={activeTab === 'labs' ? 2.8 : 2} />
+          <span style={{ fontSize: 10.5, fontWeight: activeTab === 'labs' ? 800 : 600 }}>Labs</span>
+        </button>
+
+        {/* 4. AI Tutor */}
+        <button
+          onClick={() => onSelectSection('mentor')}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            color: activeTab === 'mentor' ? '#6b5be6' : '#666', padding: '6px 12px',
+            borderRadius: 8, transition: 'all 0.15s'
+          }}
+        >
+          <Bot size={20} strokeWidth={activeTab === 'mentor' ? 2.8 : 2} />
+          <span style={{ fontSize: 10.5, fontWeight: activeTab === 'mentor' ? 800 : 600 }}>AI Tutor</span>
+        </button>
+
+        {/* 5. User Profile */}
+        <button
+          onClick={() => setShowProfile(true)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            color: '#666', padding: '6px 12px',
+            borderRadius: 8, transition: 'all 0.15s'
+          }}
+        >
+          <User size={20} />
+          <span style={{ fontSize: 10.5, fontWeight: 600 }}>Profile</span>
+        </button>
+      </nav>
 
       {/* Profile Panel */}
       <UserProfilePanel isOpen={showProfile} onClose={() => setShowProfile(false)} />

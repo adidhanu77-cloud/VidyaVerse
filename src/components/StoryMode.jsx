@@ -1768,8 +1768,8 @@ export default function StoryMode() {
 
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: 24
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
+              gap: 20
             }}>
               {stories.map((story) => (
                 <div
@@ -2799,8 +2799,8 @@ export default function StoryMode() {
           {/* Chart.js Real-Time Visualizations */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: 28
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+            gap: 20
           }}>
             {/* Chart 1: Subject Engagement Distribution */}
             <div style={{

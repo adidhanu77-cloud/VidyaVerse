@@ -320,13 +320,13 @@ export default function SkillAssessment({ onNavigate }) {
           })}
         </div>
 
-        {/* Exam Split Workspace: Left 40-Grid / Right Active Question */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 24, alignItems: 'start' }}>
+        {/* Exam Split Workspace: Left 40-Grid / Right Active Question (collapses to 1-col on mobile) */}
+        <div className="assessment-split-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 300px', gap: 20, alignItems: 'start' }}>
 
           {/* Active Question Card */}
           <div style={{
             background: '#ffffff', border: '3px solid #17140d', borderRadius: 20,
-            boxShadow: '6px 6px 0 #17140d', padding: '28px 32px'
+            boxShadow: '6px 6px 0 #17140d', padding: 'clamp(18px, 3vw, 30px) clamp(16px, 3vw, 32px)'
           }}>
             {/* Question Meta Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>

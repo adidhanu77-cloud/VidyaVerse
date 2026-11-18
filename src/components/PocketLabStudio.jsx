@@ -35,56 +35,56 @@ function FeaturePage({ tab, onBack, currentLang, onSelectTab }) {
         background: tab.color, borderBottom: '3px solid #17140d',
         padding: '0',
       }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto', padding: '20px 32px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+        <div className="feature-page-header" style={{ maxWidth: 1400, margin: '0 auto', padding: '18px 28px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           {/* Back button */}
           <button onClick={onBack}
             style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '10px 18px', border: '2.5px solid #17140d', borderRadius: 999,
-              background: '#fff', fontWeight: 800, fontSize: 14, cursor: 'pointer',
-              boxShadow: '4px 4px 0 #17140d', flexShrink: 0,
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 16px', border: '2.5px solid #17140d', borderRadius: 999,
+              background: '#fff', fontWeight: 800, fontSize: 13.5, cursor: 'pointer',
+              boxShadow: '3px 3px 0 #17140d', flexShrink: 0,
               fontFamily: "'DM Sans', sans-serif",
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px,-2px)'; e.currentTarget.style.boxShadow = '6px 6px 0 #17140d'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0 #17140d'; }}>
-            <ArrowLeft size={16} />
-            All Features
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px,-2px)'; e.currentTarget.style.boxShadow = '5px 5px 0 #17140d'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '3px 3px 0 #17140d'; }}>
+            <ArrowLeft size={15} />
+            <span>All Features</span>
           </button>
 
           {/* Feature icon */}
           <div style={{
-            width: 56, height: 56, background: 'rgba(255,255,255,.25)',
-            border: '3px solid rgba(255,255,255,.7)', borderRadius: 16,
+            width: 48, height: 48, background: 'rgba(255,255,255,.25)',
+            border: '2.5px solid rgba(255,255,255,.7)', borderRadius: 14,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 28, flexShrink: 0,
+            fontSize: 24, flexShrink: 0,
           }}>
             {tab.emoji}
           </div>
 
           {/* Title + subtitle */}
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 'clamp(20px,3vw,30px)', color: '#fff', margin: 0, lineHeight: 1.1 }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontWeight: 800, fontSize: 'clamp(18px,2.8vw,28px)', color: '#fff', margin: 0, lineHeight: 1.15 }}>
                 {tab.title}
               </h1>
-              <span style={{ background: 'rgba(255,255,255,.25)', color: '#fff', border: '2px solid rgba(255,255,255,.6)', borderRadius: 999, padding: '3px 12px', fontSize: 12, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase' }}>
+              <span style={{ background: 'rgba(255,255,255,.25)', color: '#fff', border: '1.5px solid rgba(255,255,255,.6)', borderRadius: 999, padding: '2px 10px', fontSize: 11, fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase' }}>
                 {tab.badge}
               </span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,.88)', fontSize: 15, margin: '4px 0 0', fontWeight: 500 }}>
+            <p style={{ color: 'rgba(255,255,255,.9)', fontSize: 13.5, margin: '3px 0 0', fontWeight: 500, lineHeight: 1.4 }}>
               {tab.subtitle}
             </p>
           </div>
 
           {/* VidyaVerse badge */}
-          <div style={{ background: 'rgba(255,255,255,.18)', border: '2px solid rgba(255,255,255,.5)', borderRadius: 12, padding: '6px 14px', fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+          <div className="hide-on-mobile" style={{ background: 'rgba(255,255,255,.18)', border: '2px solid rgba(255,255,255,.5)', borderRadius: 12, padding: '6px 14px', fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
             VidyaVerse
           </div>
         </div>
       </div>
 
       {/* Full-width content area */}
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '36px 32px 80px' }}>
+      <div className="feature-page-content" style={{ maxWidth: 1400, margin: '0 auto', padding: '28px 24px 80px' }}>
         {tab.id === 'scanner'   && <InteractiveScanner currentLang={currentLang} />}
         {tab.id === 'labs'      && <VirtualLabs />}
         {tab.id === 'hunt'      && <TreasureHunt />}
@@ -161,8 +161,8 @@ function FeatureGrid({ tabs, onSelect }) {
           <div style={{ height: 3, flex: 1, backgroundColor: '#17140d', borderRadius: 999 }} />
         </div>
 
-        {/* Feature Cards Grid (7 Core Modules) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 28, marginBottom: 40 }}>
+        {/* Feature Cards Grid (8 Core Modules) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 'clamp(16px, 2.5vw, 26px)', marginBottom: 40 }}>
           {tabs.map((tab, i) => (
             <FeatureCard key={tab.id} tab={tab} index={i} onSelect={() => onSelect(tab.id)} />
           ))}

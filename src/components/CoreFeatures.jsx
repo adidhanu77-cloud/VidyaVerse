@@ -106,8 +106,8 @@ export default function CoreFeatures({ onSelectSection }) {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: 28,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
+            gap: 'clamp(16px, 2.5vw, 28px)',
           }}
         >
           {features.map((feat) => (
@@ -115,7 +115,7 @@ export default function CoreFeatures({ onSelectSection }) {
               key={feat.id}
               className="memphis-card"
               style={{
-                padding: '32px 28px',
+                padding: 'clamp(20px, 3vw, 32px) clamp(18px, 3vw, 28px)',
                 cursor: 'pointer',
               }}
               onClick={() => onSelectSection(feat.id)}

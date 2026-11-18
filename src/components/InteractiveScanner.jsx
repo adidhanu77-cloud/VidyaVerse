@@ -362,7 +362,7 @@ export default function InteractiveScanner({ currentLang }) {
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <h3 style={{ fontSize: 26, margin: 0 }}>AI Real-Time Object Scanner</h3>
+              <h3 style={{ fontSize: 26, margin: 0 }}>What is this?</h3>
               <span style={{
                 backgroundColor: '#2bd980',
                 color: '#17140d',

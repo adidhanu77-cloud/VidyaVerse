@@ -15,7 +15,7 @@ import SkillAssessment from './SkillAssessment';
 
 /* ─── Tab definitions (8 Core Modules) ───────────────────────────── */
 const BASE_TABS = [
-  { id: 'scanner',   title: 'Object Scanner',        subtitle: 'Point your camera at any everyday object to decode STEM', badge: 'AI Vision',   color: '#ff5b57', bg: '#fff0f0', icon: Camera,    emoji: '📷' },
+  { id: 'scanner',   title: 'What is this?',        subtitle: 'Point your camera at any everyday object to decode STEM', badge: 'AI Vision',   color: '#ff5b57', bg: '#fff0f0', icon: Camera,    emoji: '📷' },
   { id: 'labs',      title: 'Virtual Labs',           subtitle: 'Zero-glassware PhET simulations for every science subject', badge: 'PhET Sims',   color: '#12b3a4', bg: '#f0fbfa', icon: Beaker,    emoji: '🧪' },
   { id: 'hunt',      title: 'Treasure Hunt',          subtitle: 'AI quiz quest paths with XP, streaks & badges',             badge: 'Gemini AI',   color: '#ffc531', bg: '#fffbf0', icon: Compass,   emoji: '🧭' },
   { id: 'stories',   title: 'StoryVerse Learning',    subtitle: 'Disney/Pixar cartoon adventures, voice narration, decisions & labs', badge: 'StoryVerse',  color: '#3aa0ff', bg: '#f0f7ff', icon: BookOpen,  emoji: '🎬' },

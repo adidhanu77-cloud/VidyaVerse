@@ -62,7 +62,7 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
   ];
 
   const verticalTabs = [
-    { id: 'scanner',    label: 'Object Scanner',        icon: '📷', tag: 'Vision' },
+    { id: 'scanner',    label: 'What is this?',         icon: '📷', tag: 'Vision' },
     { id: 'labs',       label: 'Virtual Labs',           icon: '🧪', tag: 'Physics/Chem' },
     { id: 'hunt',       label: 'Treasure Hunt',          icon: '🧭', tag: 'Gamified' },
     { id: 'stories',    label: 'StoryVerse Learning',    icon: '🎬', tag: 'Pixar Mode' },
@@ -179,10 +179,10 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
               </select>
             </div>
 
-            {/* Try Scanner CTA */}
+            {/* Try What is this? CTA */}
             <button onClick={onOpenScanner} className="btn-candy teal" style={{ fontSize: 14, padding: '10px 18px' }}>
               <Sparkles size={16} />
-              Try Scanner
+              What is this?
             </button>
 
             {/* ── User Status or Log In CTA ── */}
@@ -407,14 +407,14 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
               })}
             </div>
 
-            {/* Direct Try Scanner Action */}
+            {/* Direct Try What is this? Action */}
             <button
               onClick={() => { setIsMobileMenuOpen(false); onOpenScanner(); }}
               className="btn-candy teal"
               style={{ width: '100%', fontSize: 14, padding: '11px 18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
             >
               <Sparkles size={16} />
-              <span>Launch Camera Object Scanner</span>
+              <span>Launch "What is this?" Scanner</span>
             </button>
           </div>
         )}
@@ -456,7 +456,7 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
           <span style={{ fontSize: 10.5, fontWeight: !activeTab ? 800 : 600 }}>Home</span>
         </button>
 
-        {/* 2. Object Scanner */}
+        {/* 2. What is this? */}
         <button
           onClick={() => onSelectSection('scanner')}
           style={{
@@ -467,7 +467,7 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
           }}
         >
           <Camera size={20} strokeWidth={activeTab === 'scanner' ? 2.8 : 2} />
-          <span style={{ fontSize: 10.5, fontWeight: activeTab === 'scanner' ? 800 : 600 }}>Scanner</span>
+          <span style={{ fontSize: 10, fontWeight: activeTab === 'scanner' ? 800 : 600, whiteSpace: 'nowrap' }}>What is this?</span>
         </button>
 
         {/* 3. Virtual Labs */}

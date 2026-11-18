@@ -52,7 +52,7 @@ export default function Footer() {
               Features
             </h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14, fontWeight: 700 }}>
-              <li><a href="#scanner" style={{ color: '#17140d', textDecoration: 'none' }}>AI Object Scanner</a></li>
+              <li><a href="#scanner" style={{ color: '#17140d', textDecoration: 'none' }}>What is this?</a></li>
               <li><a href="#labs" style={{ color: '#17140d', textDecoration: 'none' }}>Virtual Science Labs</a></li>
               <li><a href="#hunt" style={{ color: '#17140d', textDecoration: 'none' }}>STEM Treasure Hunt</a></li>
               <li><a href="#careers" style={{ color: '#17140d', textDecoration: 'none' }}>Dr. APJ Mentor</a></li>

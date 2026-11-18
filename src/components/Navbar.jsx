@@ -13,6 +13,8 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+
+
   const [darkMode, setDarkMode] = useState(() => {
     const stored = localStorage.getItem('dark');
     return stored === 'true';

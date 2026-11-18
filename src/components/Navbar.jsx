@@ -165,12 +165,6 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
           {/* Right side (Desktop): Full Controls */}
           <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
 
-            {/* Real-time WS indicator */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: isWsConnected ? '#e8fbf2' : '#fff2f1', border: '2px solid #17140d', padding: '5px 10px', borderRadius: 9999, fontSize: 11.5, fontWeight: 800, boxShadow: '2px 2px 0 #17140d' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: isWsConnected ? '#2bd980' : '#ff5b57', display: 'inline-block', boxShadow: isWsConnected ? '0 0 6px #2bd980' : 'none' }} />
-              <span>{isWsConnected ? 'REAL-TIME LIVE' : 'WS CONNECTING'}</span>
-            </div>
-
             {/* Language Selector */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: '#ffffff', padding: '6px 12px', borderRadius: 9999, border: '3px solid #17140d', boxShadow: '3px 3px 0 #17140d' }}>
               <Globe size={16} color="#17140d" />
@@ -178,12 +172,6 @@ export default function Navbar({ currentLang, setLang, onOpenScanner, onSelectSe
                 {languages.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
               </select>
             </div>
-
-            {/* Try What is this? CTA */}
-            <button onClick={onOpenScanner} className="btn-candy teal" style={{ fontSize: 14, padding: '10px 18px' }}>
-              <Sparkles size={16} />
-              What is this?
-            </button>
 
             {/* ── User Status or Log In CTA ── */}
             {profile?.name ? (
